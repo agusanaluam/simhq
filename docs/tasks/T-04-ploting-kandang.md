@@ -1,6 +1,6 @@
 # T-04: Ploting Kandang Visual
 
-**Status:** `TODO`
+**Status:** `DONE`
 **Phase:** 1 (Fondasi) | **Priority:** Must Have | **Sprint:** 2 Sprint
 **Dependencies:** T-01, T-02, T-03
 
