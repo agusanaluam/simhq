@@ -1,6 +1,6 @@
 # T-02: Master Data (Harga, Kelas, Karyawan)
 
-**Status:** `TODO`
+**Status:** `DONE`
 **Phase:** 1 (Fondasi) | **Priority:** Must Have | **Sprint:** 1 Sprint
 **Dependencies:** T-01
 
