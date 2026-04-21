@@ -8,7 +8,7 @@ class TransferHewanRequest extends FormRequest
     public function authorize(): bool { return true; }
     public function rules(): array {
         return [
-            'ke_petak_id' => ['required', 'integer'],
+            'ke_petak_id' => ['required', 'integer', 'exists:petak_kandang,id'],
             'catatan'     => ['nullable', 'string', 'max:500'],
         ];
     }

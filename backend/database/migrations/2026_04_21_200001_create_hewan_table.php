@@ -18,7 +18,7 @@ return new class extends Migration {
             $table->date('tgl_masuk');
             $table->year('musim');
             $table->enum('status', ['AVAILABLE', 'BOOKED', 'SOLD', 'DELIVERED', 'MATI'])->default('AVAILABLE');
-            $table->unsignedBigInteger('petak_id')->nullable();
+            $table->foreignId('petak_id')->nullable()->constrained('petak_kandang')->nullOnDelete();
             $table->timestamps();
             $table->unique(['depot_id', 'musim', 'no_hewan'], 'hewan_no_unique');
         });

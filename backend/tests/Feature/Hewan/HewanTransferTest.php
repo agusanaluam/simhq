@@ -4,6 +4,7 @@ namespace Tests\Feature\Hewan;
 use App\Models\Depot;
 use App\Models\Hewan;
 use App\Models\KelasHewan;
+use App\Models\PetakKandang;
 use App\Models\Supplier;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -15,6 +16,8 @@ class HewanTransferTest extends TestCase
 
     private User $superAdmin;
     private Hewan $hewan;
+    private PetakKandang $petakAsal;
+    private PetakKandang $petakTujuan;
 
     protected function setUp(): void
     {
@@ -23,6 +26,9 @@ class HewanTransferTest extends TestCase
         $depot    = Depot::factory()->create();
         $kelas    = KelasHewan::create(['kode' => 'B', 'nama' => 'Bagus', 'urutan' => 3]);
         $supplier = Supplier::create(['nama' => 'GUM', 'is_gum' => true, 'is_active' => true]);
+
+        $this->petakAsal    = PetakKandang::create(['depot_id' => $depot->id, 'no_petak' => 'S-01', 'jenis_kandang' => 'SAPI', 'kapasitas' => 5, 'posisi_x' => 0, 'posisi_y' => 0]);
+        $this->petakTujuan  = PetakKandang::create(['depot_id' => $depot->id, 'no_petak' => 'S-02', 'jenis_kandang' => 'SAPI', 'kapasitas' => 5, 'posisi_x' => 1, 'posisi_y' => 0]);
 
         $this->hewan = Hewan::create([
             'depot_id'      => $depot->id,
@@ -35,7 +41,7 @@ class HewanTransferTest extends TestCase
             'tgl_masuk'     => '2026-05-01',
             'musim'         => 2026,
             'status'        => 'AVAILABLE',
-            'petak_id'      => 1,
+            'petak_id'      => $this->petakAsal->id,
         ]);
     }
 
@@ -43,7 +49,7 @@ class HewanTransferTest extends TestCase
     {
         $this->actingAs($this->superAdmin)
             ->postJson("/api/hewan/{$this->hewan->id}/transfer", [
-                'ke_petak_id' => 2,
+                'ke_petak_id' => $this->petakTujuan->id,
                 'catatan'     => 'Pindah ke kandang besar',
             ])
             ->assertOk()
@@ -51,8 +57,8 @@ class HewanTransferTest extends TestCase
 
         $this->assertDatabaseHas('riwayat_perpindahan', [
             'hewan_id'      => $this->hewan->id,
-            'dari_petak_id' => 1,
-            'ke_petak_id'   => 2,
+            'dari_petak_id' => $this->petakAsal->id,
+            'ke_petak_id'   => $this->petakTujuan->id,
         ]);
     }
 

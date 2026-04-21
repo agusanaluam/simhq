@@ -3,6 +3,7 @@
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\DepotController;
 use App\Http\Controllers\HewanController;
+use App\Http\Controllers\PetakController;
 use App\Http\Controllers\SupplierController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
@@ -60,5 +61,13 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('supplier', [SupplierController::class, 'index']);
     Route::middleware('role:SUPER_ADMIN,KEPALA_DEPOT')->group(function () {
         Route::post('supplier', [SupplierController::class, 'store']);
+    });
+
+    // Petak Kandang — static routes before wildcard
+    Route::get('petak', [PetakController::class, 'index']);
+    Route::middleware('role:SUPER_ADMIN,KEPALA_DEPOT,KANDANG_SAPI_KETUA,KANDANG_DOMBA_KETUA')->group(function () {
+        Route::post('petak/layout',  [PetakController::class, 'saveLayout']);
+        Route::post('petak',         [PetakController::class, 'store']);
+        Route::put('petak/{petak}',  [PetakController::class, 'update']);
     });
 });
