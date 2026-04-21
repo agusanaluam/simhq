@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import {
   LayoutDashboard, ShoppingCart, Package, Users,
-  Wallet, Truck, ClipboardList, LogOut
+  Wallet, Truck, ClipboardList, LogOut, Database
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -24,6 +24,7 @@ const navItems: NavItem[] = [
   { href: '/pengiriman',    label: 'Pengiriman',    icon: Truck,          roles: ['SUPER_ADMIN','KEPALA_DEPOT','LOGISTIK_KETUA','LOGISTIK_ANGGOTA'] },
   { href: '/absensi',       label: 'Absensi',       icon: ClipboardList },
   { href: '/admin/users',   label: 'Manaj. User',   icon: Users,          roles: ['SUPER_ADMIN'] },
+  { href: '/admin/master-data', label: 'Master Data', icon: Database, roles: ['SUPER_ADMIN', 'KEPALA_DEPOT'] },
 ]
 
 export function Sidebar() {
