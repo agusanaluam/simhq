@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import {
   LayoutDashboard, ShoppingCart, Package, Users,
-  Wallet, Truck, ClipboardList, LogOut, Database, PawPrint
+  Wallet, Truck, ClipboardList, LogOut, Database, PawPrint, Grid3x3
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -19,6 +19,7 @@ type NavItem = {
 const navItems: NavItem[] = [
   { href: '/dashboard',     label: 'Dashboard',    icon: LayoutDashboard },
   { href: '/depot/pengadaan', label: 'Pengadaan', icon: PawPrint, roles: ['SUPER_ADMIN','KEPALA_DEPOT','KANDANG_SAPI_KETUA','KANDANG_SAPI_ANGGOTA','KANDANG_DOMBA_KETUA','KANDANG_DOMBA_ANGGOTA'] },
+  { href: '/depot/kandang', label: 'Ploting Kandang', icon: Grid3x3, roles: ['SUPER_ADMIN','KEPALA_DEPOT','KANDANG_SAPI_KETUA','KANDANG_SAPI_ANGGOTA','KANDANG_DOMBA_KETUA','KANDANG_DOMBA_ANGGOTA'] },
   { href: '/pos',           label: 'POS Penjualan', icon: ShoppingCart,   roles: ['SUPER_ADMIN','KEPALA_DEPOT','ADMIN_KETUA','ADMIN_ANGGOTA'] },
 { href: '/keuangan',      label: 'Keuangan',      icon: Wallet,         roles: ['SUPER_ADMIN','KEPALA_DEPOT'] },
   { href: '/pengiriman',    label: 'Pengiriman',    icon: Truck,          roles: ['SUPER_ADMIN','KEPALA_DEPOT','LOGISTIK_KETUA','LOGISTIK_ANGGOTA'] },
