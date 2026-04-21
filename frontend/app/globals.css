@@ -1,27 +1,46 @@
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap');
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --font-manrope: 'Manrope', sans-serif;
+  --font-inter:   'Inter', sans-serif;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+@layer base {
+  body {
+    @apply bg-surface-low text-on-surface font-body;
+  }
+
+  h1, h2, h3 {
+    @apply font-display;
   }
 }
 
-body {
-  color: var(--foreground);
-  background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
-}
+@layer components {
+  .btn-primary {
+    @apply inline-flex items-center justify-center px-6 py-2.5
+           rounded-xl text-on-primary font-display font-semibold
+           transition-opacity hover:opacity-90 active:opacity-80;
+    background: linear-gradient(135deg, #2779a7, #1e6090);
+  }
 
-@layer utilities {
-  .text-balance {
-    text-wrap: balance;
+  .btn-accent {
+    @apply inline-flex items-center justify-center px-6 py-2.5
+           rounded-xl text-on-accent font-display font-semibold
+           transition-opacity hover:opacity-90;
+    background: linear-gradient(135deg, #ECD06F, #d4b84e);
+  }
+
+  .input-field {
+    @apply w-full bg-surface-highest border-none rounded-md px-3 py-2
+           text-on-surface placeholder-on-surface-variant
+           focus:outline-none focus:ring-2 focus:ring-primary/30
+           transition-shadow;
+  }
+
+  .card {
+    @apply bg-surface-lowest rounded-lg shadow-card p-6;
   }
 }
