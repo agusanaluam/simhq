@@ -5,6 +5,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Yayasan extends Model
 {
+    protected $table = 'yayasan';
     protected $fillable = ['nama', 'alamat', 'kontak_pic', 'telepon', 'is_active'];
     protected $casts = ['is_active' => 'boolean'];
 }
