@@ -2,22 +2,40 @@
 
 namespace Database\Seeders;
 
+use App\Enums\UserRole;
+use App\Models\Depot;
 use App\Models\User;
-// use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Hash;
 
 class DatabaseSeeder extends Seeder
 {
-    /**
-     * Seed the application's database.
-     */
     public function run(): void
     {
-        // User::factory(10)->create();
+        $depot = Depot::firstOrCreate(
+            ['nama' => 'Depot Utama'],
+            ['alamat' => 'Jl. Contoh No. 1', 'kota' => 'Jakarta', 'is_active' => true]
+        );
 
-        User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
-        ]);
+        User::firstOrCreate(
+            ['email' => 'superadmin@simhq.id'],
+            [
+                'name'      => 'Super Admin',
+                'password'  => Hash::make('Admin@12345'),
+                'role'      => UserRole::SUPER_ADMIN,
+                'is_active' => true,
+            ]
+        );
+
+        User::firstOrCreate(
+            ['email' => 'kepala@simhq.id'],
+            [
+                'depot_id'  => $depot->id,
+                'name'      => 'Kepala Depot Utama',
+                'password'  => Hash::make('Kepala@12345'),
+                'role'      => UserRole::KEPALA_DEPOT,
+                'is_active' => true,
+            ]
+        );
     }
 }
