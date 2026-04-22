@@ -4,6 +4,7 @@ use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\DepotController;
 use App\Http\Controllers\HewanController;
+use App\Http\Controllers\PembayaranController;
 use App\Http\Controllers\PetakController;
 use App\Http\Controllers\SlotSapiController;
 use App\Http\Controllers\SupplierController;
@@ -85,6 +86,16 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('petak',         [PetakController::class, 'store']);
         Route::put('petak/{petak}',  [PetakController::class, 'update']);
     });
+
+    // Pembayaran routes
+    Route::get('transaksi/{transaksi}/pembayaran', [PembayaranController::class, 'index']);
+    Route::middleware('role:SUPER_ADMIN,KEPALA_DEPOT,ADMIN_ANGGOTA')->group(function () {
+        Route::post('transaksi/{transaksi}/bayar',          [PembayaranController::class, 'store']);
+        Route::post('transaksi/{transaksi}/biaya-tambahan', [PembayaranController::class, 'storeBiaya']);
+    });
+
+    // Laporan
+    Route::get('laporan/rekap-setoran', [PembayaranController::class, 'rekapSetoran']);
 
     // Customer
     Route::get('customer',  [CustomerController::class, 'index']);
