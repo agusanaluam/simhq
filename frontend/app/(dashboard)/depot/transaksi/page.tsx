@@ -114,7 +114,11 @@ export default function TransaksiPage() {
               <tbody>
                 {list.map(t => (
                   <tr key={t.id} className="border-b border-surface-high last:border-0">
-                    <td className="py-2 pr-4 font-body font-medium text-primary">{t.no_faktur}</td>
+                    <td className="py-2 pr-4">
+                      <Link href={`/depot/transaksi/${t.id}`} className="font-body font-medium text-primary hover:underline">
+                        {t.no_faktur}
+                      </Link>
+                    </td>
                     <td className="py-2 pr-4 font-body">
                       <p className="font-medium text-on-surface">{t.customer?.nama ?? '—'}</p>
                       <p className="text-xs text-on-surface-variant">{t.customer?.hp}</p>
