@@ -5,6 +5,7 @@ use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\DepotController;
 use App\Http\Controllers\HewanController;
+use App\Http\Controllers\JamKerjaDefaultController;
 use App\Http\Controllers\PembayaranController;
 use App\Http\Controllers\PetakController;
 use App\Http\Controllers\SlotSapiController;
@@ -103,6 +104,14 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('hari-ini',     [AbsensiController::class, 'hariIni']);
         Route::get('rekap/export', [AbsensiController::class, 'exportCsv']);
         Route::get('rekap',        [AbsensiController::class, 'rekap']);
+
+        // Jam kerja default
+        Route::get('jam-kerja', [JamKerjaDefaultController::class, 'index']);
+        Route::middleware('role:SUPER_ADMIN,KEPALA_DEPOT')->group(function () {
+            Route::post('jam-kerja',           [JamKerjaDefaultController::class, 'store']);
+            Route::put('jam-kerja/{jamKerja}', [JamKerjaDefaultController::class, 'update']);
+        });
+
         Route::post('checkin',     [AbsensiController::class, 'checkIn']);
         Route::post('checkout',    [AbsensiController::class, 'checkOut']);
         Route::middleware('role:SUPER_ADMIN,KEPALA_DEPOT,KANDANG_SAPI_KETUA,KANDANG_DOMBA_KETUA')
