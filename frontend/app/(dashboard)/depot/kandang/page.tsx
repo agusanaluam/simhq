@@ -1,16 +1,168 @@
 'use client'
 
 import { useCallback, useEffect, useState } from 'react'
+import { useSession } from 'next-auth/react'
 import { KandangGrid } from './KandangGrid'
 import { HewanPanel } from './HewanPanel'
 import type { PetakData } from './PetakCard'
 import api from '@/lib/api'
 
+// ---------------------------------------------------------------------------
+// TambahPetakModal
+// ---------------------------------------------------------------------------
+interface TambahPetakModalProps {
+  defaultJenis: 'SAPI' | 'DOMBA'
+  onClose: () => void
+  onSuccess: () => void
+}
+
+function TambahPetakModal({ defaultJenis, onClose, onSuccess }: TambahPetakModalProps) {
+  const { data: session } = useSession()
+  const depotId = (session?.user as any)?.depot_id as number | undefined
+
+  const [noPetak,      setNoPetak]      = useState('')
+  const [jenis,        setJenis]        = useState<'SAPI' | 'DOMBA'>(defaultJenis)
+  const [kapasitas,    setKapasitas]    = useState(5)
+  const [posisiX,      setPosisiX]      = useState(0)
+  const [posisiY,      setPosisiY]      = useState(0)
+  const [loading,      setLoading]      = useState(false)
+  const [error,        setError]        = useState('')
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault()
+    if (!depotId) { setError('depot_id tidak ditemukan di sesi'); return }
+    if (!noPetak.trim()) { setError('No. petak wajib diisi'); return }
+
+    setLoading(true)
+    setError('')
+    try {
+      await api.post('/api/petak', {
+        depot_id: depotId,
+        no_petak: noPetak.trim(),
+        jenis_kandang: jenis,
+        kapasitas,
+        posisi_x: posisiX,
+        posisi_y: posisiY,
+      })
+      onSuccess()
+    } catch (err: any) {
+      const msg = err?.response?.data?.message ?? err?.response?.data?.error ?? 'Gagal menyimpan petak'
+      setError(msg)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+      <div className="bg-surface-lowest rounded-2xl shadow-xl w-full max-w-md p-6">
+        <h2 className="font-display font-bold text-lg text-on-surface mb-4">Tambah Petak Kandang</h2>
+
+        <form onSubmit={handleSubmit} className="space-y-4">
+          {/* No. Petak */}
+          <div>
+            <label className="block text-sm font-body font-medium text-on-surface mb-1">No. Petak</label>
+            <input
+              type="text"
+              value={noPetak}
+              onChange={e => setNoPetak(e.target.value)}
+              placeholder="Contoh: S-01"
+              className="input-field w-full"
+              required
+            />
+          </div>
+
+          {/* Jenis toggle */}
+          <div>
+            <label className="block text-sm font-body font-medium text-on-surface mb-1">Jenis Kandang</label>
+            <div className="flex bg-surface-high rounded-xl p-1 gap-1 w-fit">
+              {(['SAPI', 'DOMBA'] as const).map(j => (
+                <button
+                  key={j}
+                  type="button"
+                  onClick={() => setJenis(j)}
+                  className={`px-4 py-1.5 rounded-lg text-sm font-body font-medium transition-colors ${
+                    jenis === j
+                      ? 'bg-surface-lowest text-on-surface shadow-card'
+                      : 'text-on-surface-variant hover:text-on-surface'
+                  }`}
+                >
+                  {j === 'SAPI' ? 'Sapi' : 'Domba'}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Kapasitas */}
+          <div>
+            <label className="block text-sm font-body font-medium text-on-surface mb-1">Kapasitas</label>
+            <input
+              type="number"
+              min={1}
+              value={kapasitas}
+              onChange={e => setKapasitas(Number(e.target.value))}
+              className="input-field w-full"
+              required
+            />
+          </div>
+
+          {/* Posisi */}
+          <div className="flex gap-3">
+            <div className="flex-1">
+              <label className="block text-sm font-body font-medium text-on-surface mb-1">Posisi X</label>
+              <input
+                type="number"
+                min={0}
+                value={posisiX}
+                onChange={e => setPosisiX(Number(e.target.value))}
+                className="input-field w-full"
+              />
+            </div>
+            <div className="flex-1">
+              <label className="block text-sm font-body font-medium text-on-surface mb-1">Posisi Y</label>
+              <input
+                type="number"
+                min={0}
+                value={posisiY}
+                onChange={e => setPosisiY(Number(e.target.value))}
+                className="input-field w-full"
+              />
+            </div>
+          </div>
+
+          {error && <p className="text-sm text-red-600">{error}</p>}
+
+          <div className="flex gap-3 justify-end pt-2">
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-4 py-2 rounded-xl text-sm font-body font-medium text-on-surface-variant hover:bg-surface-high transition-colors"
+            >
+              Batal
+            </button>
+            <button
+              type="submit"
+              disabled={loading}
+              className="px-4 py-2 rounded-xl text-sm font-body font-medium bg-primary text-white disabled:opacity-60 hover:bg-primary/90 transition-colors"
+            >
+              {loading ? 'Menyimpan...' : 'Simpan'}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  )
+}
+
+// ---------------------------------------------------------------------------
+// KandangPage
+// ---------------------------------------------------------------------------
 export default function KandangPage() {
   const [petak, setPetak]           = useState<PetakData[]>([])
   const [selectedId, setSelectedId] = useState<number | null>(null)
   const [jenis, setJenis]           = useState<'SAPI' | 'DOMBA'>('SAPI')
   const [loading, setLoading]       = useState(true)
+  const [showTambah, setShowTambah] = useState(false)
 
   const loadPetak = useCallback(() => {
     setLoading(true)
@@ -36,20 +188,29 @@ export default function KandangPage() {
           <p className="text-sm text-on-surface-variant mt-1">Grid visual posisi hewan per petak</p>
         </div>
 
-        <div className="flex bg-surface-high rounded-xl p-1 gap-1">
-          {(['SAPI', 'DOMBA'] as const).map(j => (
-            <button
-              key={j}
-              onClick={() => setJenis(j)}
-              className={`px-4 py-1.5 rounded-lg text-sm font-body font-medium transition-colors ${
-                jenis === j
-                  ? 'bg-surface-lowest text-on-surface shadow-card'
-                  : 'text-on-surface-variant hover:text-on-surface'
-              }`}
-            >
-              {j === 'SAPI' ? 'Sapi' : 'Domba'}
-            </button>
-          ))}
+        <div className="flex items-center gap-3">
+          <div className="flex bg-surface-high rounded-xl p-1 gap-1">
+            {(['SAPI', 'DOMBA'] as const).map(j => (
+              <button
+                key={j}
+                onClick={() => setJenis(j)}
+                className={`px-4 py-1.5 rounded-lg text-sm font-body font-medium transition-colors ${
+                  jenis === j
+                    ? 'bg-surface-lowest text-on-surface shadow-card'
+                    : 'text-on-surface-variant hover:text-on-surface'
+                }`}
+              >
+                {j === 'SAPI' ? 'Sapi' : 'Domba'}
+              </button>
+            ))}
+          </div>
+
+          <button
+            onClick={() => setShowTambah(true)}
+            className="px-4 py-2 rounded-xl text-sm font-body font-medium bg-primary text-white hover:bg-primary/90 transition-colors"
+          >
+            + Tambah Petak
+          </button>
         </div>
       </div>
 
@@ -85,6 +246,14 @@ export default function KandangPage() {
 
         <HewanPanel petak={selectedPetak} onClose={() => setSelectedId(null)} />
       </div>
+
+      {showTambah && (
+        <TambahPetakModal
+          defaultJenis={jenis}
+          onClose={() => setShowTambah(false)}
+          onSuccess={() => { setShowTambah(false); loadPetak() }}
+        />
+      )}
     </div>
   )
 }
