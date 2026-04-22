@@ -18,14 +18,12 @@ class SlotSapiController extends Controller
             ->when($request->depot, fn($q) => $q->where('depot_id', $request->depot))
             ->whereNotIn('status', ['MATI', 'DELIVERED'])
             ->orderBy('no_hewan')
+            ->withCount('slotSapi')
             ->get()
-            ->map(function (Hewan $h) {
-                $terisi = SlotSapi::where('hewan_id', $h->id)->count();
-                return array_merge($h->toArray(), [
-                    'slot_terisi' => $terisi,
-                    'slot_total'  => 7,
-                ]);
-            });
+            ->map(fn(Hewan $h) => array_merge($h->toArray(), [
+                'slot_terisi' => $h->slot_sapi_count,
+                'slot_total'  => 7,
+            ]));
 
         return response()->json(['data' => $sapi]);
     }

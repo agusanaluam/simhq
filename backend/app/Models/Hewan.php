@@ -34,6 +34,7 @@ class Hewan extends Model
     public function kelasJual(): BelongsTo { return $this->belongsTo(KelasHewan::class, 'kelas_jual_id'); }
     public function petak(): BelongsTo           { return $this->belongsTo(PetakKandang::class, 'petak_id'); }
     public function riwayatPerpindahan(): HasMany { return $this->hasMany(RiwayatPerpindahan::class); }
+    public function slotSapi(): HasMany { return $this->hasMany(SlotSapi::class); }
 
     public function qrString(): string
     {
