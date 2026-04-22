@@ -16,6 +16,10 @@ class Transaksi extends Model
         'harga', 'total', 'status_transaksi', 'musim', 'catatan',
     ];
 
+    protected $attributes = [
+        'status_transaksi' => 'MENUNGGU_HEWAN',
+    ];
+
     protected $casts = [
         'status_transaksi' => StatusTransaksi::class,
         'harga'            => 'integer',

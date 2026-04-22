@@ -14,12 +14,17 @@ class TransaksiService
     public function generateNoFaktur(int $depotId, int $musim): string
     {
         return DB::transaction(function () use ($depotId, $musim) {
-            $count = Transaksi::where('depot_id', $depotId)
+            $lastFaktur = Transaksi::where('depot_id', $depotId)
                 ->where('musim', $musim)
                 ->lockForUpdate()
-                ->count();
+                ->orderByDesc('id')
+                ->value('no_faktur');
 
-            $seq = $count + 1;
+            $lastSeq = $lastFaktur
+                ? (int) substr($lastFaktur, strrpos($lastFaktur, '-') + 1)
+                : 0;
+
+            $seq = $lastSeq + 1;
 
             return "{$depotId}-{$musim}-" . str_pad($seq, 4, '0', STR_PAD_LEFT);
         });
