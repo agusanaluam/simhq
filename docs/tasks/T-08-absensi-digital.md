@@ -1,6 +1,6 @@
 # T-08: Absensi Digital (Check-in / Check-out)
 
-**Status:** `TODO`
+**Status:** `DONE`
 **Phase:** 1 (Fondasi) | **Priority:** Must Have | **Sprint:** 1 Sprint
 **Dependencies:** T-01, T-02
 
