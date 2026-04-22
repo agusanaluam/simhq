@@ -7,18 +7,23 @@ use SimpleSoftwareIO\QrCode\Facades\QrCode;
 
 class HewanService
 {
-    public function generateNoHewan(int $depotId, int $musim): string
+    public function generateNoHewan(int $depotId, int $musim, string $jenis = 'SAPI'): string
     {
-        return DB::transaction(function () use ($depotId, $musim) {
+        // SAPI: 600–999, DOMBA: 001–599
+        $start = $jenis === 'SAPI' ? 600 : 1;
+        $max   = $jenis === 'SAPI' ? 999 : 599;
+
+        return DB::transaction(function () use ($depotId, $musim, $jenis, $start, $max) {
             $last = Hewan::where('depot_id', $depotId)
                 ->where('musim', $musim)
+                ->where('jenis', $jenis)
                 ->lockForUpdate()
                 ->max('no_hewan');
 
-            $next = $last ? ((int) $last) + 1 : 1;
+            $next = $last ? ((int) $last) + 1 : $start;
 
-            if ($next > 999) {
-                throw new \RuntimeException('Nomor hewan depot ini sudah mencapai maksimum 999.');
+            if ($next > $max) {
+                throw new \RuntimeException("Nomor hewan {$jenis} depot ini sudah mencapai maksimum {$max}.");
             }
 
             return str_pad($next, 3, '0', STR_PAD_LEFT);

@@ -45,7 +45,7 @@ class HewanRegistrasiTest extends TestCase
         $this->actingAs($this->superAdmin)
             ->postJson('/api/hewan', $this->hewanPayload())
             ->assertCreated()
-            ->assertJsonPath('hewan.no_hewan', '001')
+            ->assertJsonPath('hewan.no_hewan', '600')
             ->assertJsonPath('hewan.status', 'AVAILABLE');
     }
 
@@ -53,7 +53,7 @@ class HewanRegistrasiTest extends TestCase
     {
         $this->actingAs($this->superAdmin)->postJson('/api/hewan', $this->hewanPayload());
         $r2 = $this->actingAs($this->superAdmin)->postJson('/api/hewan', $this->hewanPayload());
-        $r2->assertJsonPath('hewan.no_hewan', '002');
+        $r2->assertJsonPath('hewan.no_hewan', '601');
     }
 
     public function test_list_hewan_with_status_filter(): void

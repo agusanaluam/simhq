@@ -33,7 +33,7 @@ class HewanController extends Controller
     public function store(StoreHewanRequest $request): JsonResponse
     {
         $data             = $request->validated();
-        $data['no_hewan'] = $this->hewanService->generateNoHewan($data['depot_id'], $data['musim']);
+        $data['no_hewan'] = $this->hewanService->generateNoHewan($data['depot_id'], $data['musim'], $data['jenis']);
 
         $hewan = Hewan::create($data);
 
