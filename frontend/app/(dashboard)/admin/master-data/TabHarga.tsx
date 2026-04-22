@@ -14,6 +14,95 @@ interface Harga {
   kelas: KelasHewan
 }
 
+interface Kelas { id: number; kode: string; nama: string }
+
+function TambahHargaModal({ depotId, musim, onDone, onClose }: {
+  depotId: string; musim: string; onDone: () => void; onClose: () => void
+}) {
+  const [kelasList, setKelasList] = useState<Kelas[]>([])
+  const [form, setForm] = useState({
+    kelas_id: '', jenis: 'SAPI', harga_beli: '', harga_jual: '', fee_sales: '0',
+  })
+  const [saving, setSaving] = useState(false)
+  const [error, setError]   = useState('')
+
+  useEffect(() => {
+    api.get('/api/master/kelas').then(r => setKelasList(r.data.data ?? []))
+  }, [])
+
+  function set(k: string, v: string) { setForm(f => ({ ...f, [k]: v })) }
+
+  async function submit() {
+    if (!form.kelas_id || !form.harga_beli || !form.harga_jual) {
+      setError('Kelas, harga beli, dan harga jual wajib diisi'); return
+    }
+    setSaving(true); setError('')
+    try {
+      await api.post('/api/master/harga', {
+        depot_id:   Number(depotId),
+        kelas_id:   Number(form.kelas_id),
+        jenis:      form.jenis,
+        musim:      Number(musim),
+        harga_beli: Number(form.harga_beli),
+        harga_jual: Number(form.harga_jual),
+        fee_sales:  Number(form.fee_sales),
+      })
+      onDone()
+    } catch (e: any) {
+      setError(e?.response?.data?.message ?? 'Gagal menyimpan')
+    } finally { setSaving(false) }
+  }
+
+  return (
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+      <div className="bg-surface-lowest rounded-2xl w-full max-w-md p-6 shadow-card">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="font-display font-semibold text-on-surface">Tambah Harga</h2>
+          <button onClick={onClose} className="text-on-surface-variant text-xl leading-none">×</button>
+        </div>
+        <p className="text-xs text-on-surface-variant mb-4 font-body">Depot terpilih · Musim {musim}</p>
+        <div className="space-y-3">
+          <div>
+            <label className="block text-xs font-body font-medium text-on-surface mb-1">Kelas *</label>
+            <select value={form.kelas_id} onChange={e => set('kelas_id', e.target.value)} className="input-field w-full">
+              <option value="">— Pilih kelas —</option>
+              {kelasList.map(k => <option key={k.id} value={k.id}>{k.kode} — {k.nama}</option>)}
+            </select>
+          </div>
+          <div>
+            <label className="block text-xs font-body font-medium text-on-surface mb-1">Jenis</label>
+            <div className="flex gap-2">
+              {['SAPI', 'DOMBA'].map(j => (
+                <button key={j} onClick={() => set('jenis', j)}
+                  className={`px-4 py-1.5 rounded-lg border-2 text-xs font-body transition-colors ${form.jenis === j ? 'border-primary bg-primary text-white' : 'border-surface-high text-on-surface'}`}>
+                  {j}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div>
+            <label className="block text-xs font-body font-medium text-on-surface mb-1">Harga Beli (Rp) *</label>
+            <Input type="number" value={form.harga_beli} onChange={e => set('harga_beli', e.target.value)} placeholder="5000000" />
+          </div>
+          <div>
+            <label className="block text-xs font-body font-medium text-on-surface mb-1">Harga Jual (Rp) *</label>
+            <Input type="number" value={form.harga_jual} onChange={e => set('harga_jual', e.target.value)} placeholder="6000000" />
+          </div>
+          <div>
+            <label className="block text-xs font-body font-medium text-on-surface mb-1">Fee Sales (Rp)</label>
+            <Input type="number" value={form.fee_sales} onChange={e => set('fee_sales', e.target.value)} placeholder="50000" />
+          </div>
+          {error && <p className="text-xs text-red-600">{error}</p>}
+        </div>
+        <div className="flex gap-2 justify-end mt-5">
+          <Button variant="ghost" onClick={onClose}>Batal</Button>
+          <Button onClick={submit} loading={saving}>Simpan</Button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 export function TabHarga() {
   const [kelas, setKelas]     = useState<KelasHewan[]>([])
   const [depots, setDepots]   = useState<Depot[]>([])
@@ -21,6 +110,7 @@ export function TabHarga() {
   const [depotId, setDepotId] = useState<string>('')
   const [musim, setMusim]     = useState<string>(String(new Date().getFullYear()))
   const [loading, setLoading] = useState(false)
+  const [showModal, setShowModal] = useState(false)
 
   useEffect(() => {
     api.get('/api/master/kelas').then(r => setKelas(r.data.data))
@@ -57,7 +147,10 @@ export function TabHarga() {
           <label className="text-xs uppercase tracking-widest text-on-surface-variant font-body">Musim</label>
           <Input value={musim} onChange={e => setMusim(e.target.value)} className="mt-1.5 w-28" />
         </div>
-        <Button onClick={loadHarga} disabled={!depotId}>Tampilkan</Button>
+        <div className="flex gap-2">
+          <Button onClick={loadHarga} disabled={!depotId}>Tampilkan</Button>
+          {depotId && <Button onClick={() => setShowModal(true)}>+ Tambah Harga</Button>}
+        </div>
       </div>
 
       {loading && <p className="text-sm text-on-surface-variant">Memuat...</p>}
@@ -89,6 +182,15 @@ export function TabHarga() {
 
       {harga.length === 0 && depotId && !loading && (
         <p className="text-sm text-on-surface-variant text-center py-8">Belum ada harga untuk depot + musim ini.</p>
+      )}
+
+      {showModal && (
+        <TambahHargaModal
+          depotId={depotId}
+          musim={musim}
+          onDone={() => { setShowModal(false); loadHarga() }}
+          onClose={() => setShowModal(false)}
+        />
       )}
     </div>
   )
