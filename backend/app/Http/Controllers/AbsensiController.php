@@ -111,20 +111,23 @@ class AbsensiController extends Controller
             ->when($request->depot, fn($q) => $q->where('depot_id', $request->depot))
             ->get();
 
-        $data = $karyawanList->map(function (Karyawan $k) use ($year, $month) {
-            $records = Absensi::where('karyawan_id', $k->id)
-                ->whereYear('tgl', $year)
-                ->whereMonth('tgl', $month)
-                ->get();
+        $records = Absensi::whereIn('karyawan_id', $karyawanList->pluck('id'))
+            ->whereYear('tgl', $year)
+            ->whereMonth('tgl', $month)
+            ->get()
+            ->groupBy('karyawan_id');
+
+        $data = $karyawanList->map(function (Karyawan $k) use ($records) {
+            $recs = $records->get($k->id, collect());
 
             return [
                 'karyawan_id'  => $k->id,
                 'nama'         => $k->nama,
                 'divisi'       => $k->divisi,
-                'hadir'        => $records->where('status', 'HADIR')->count(),
-                'terlambat'    => $records->where('status', 'TERLAMBAT')->count(),
-                'tidak_hadir'  => $records->where('status', 'TIDAK_HADIR')->count(),
-                'total_durasi' => $records->sum('durasi'),
+                'hadir'        => $recs->where('status', 'HADIR')->count(),
+                'terlambat'    => $recs->where('status', 'TERLAMBAT')->count(),
+                'tidak_hadir'  => $recs->where('status', 'TIDAK_HADIR')->count(),
+                'total_durasi' => $recs->sum('durasi'),
             ];
         });
 
