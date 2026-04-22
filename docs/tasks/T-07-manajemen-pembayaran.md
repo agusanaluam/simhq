@@ -1,6 +1,6 @@
 # T-07: Manajemen Pembayaran
 
-**Status:** `TODO`
+**Status:** `DONE`
 **Phase:** 1 (Fondasi) | **Priority:** Must Have | **Sprint:** 1 Sprint
 **Dependencies:** T-05, T-06
 
