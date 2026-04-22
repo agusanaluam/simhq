@@ -1,6 +1,6 @@
 # T-06: Ploting Slot Pembeli per Sapi
 
-**Status:** `TODO`
+**Status:** `DONE`
 **Phase:** 1 (Fondasi) | **Priority:** Must Have | **Sprint:** 2 Sprint
 **Dependencies:** T-05
 
