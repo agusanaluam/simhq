@@ -5,6 +5,7 @@ use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\DepotController;
 use App\Http\Controllers\HewanController;
 use App\Http\Controllers\PetakController;
+use App\Http\Controllers\SlotSapiController;
 use App\Http\Controllers\SupplierController;
 use App\Http\Controllers\TransaksiController;
 use App\Http\Controllers\UserController;
@@ -52,6 +53,18 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('hewan/statistik',  [HewanController::class, 'statistik']);
     Route::get('hewan/cetak-label',[HewanController::class, 'cetakLabel']);
     Route::get('hewan',            [HewanController::class, 'index']);
+
+    // Slot Sapi — static dashboard route before {hewan} wildcard
+    Route::get('hewan/sapi/ploting', [SlotSapiController::class, 'dashboard']);
+
+    // Slot CRUD
+    Route::get('hewan/{hewan}/slot', [SlotSapiController::class, 'index']);
+    Route::middleware('role:SUPER_ADMIN,KEPALA_DEPOT,ADMIN_ANGGOTA')->group(function () {
+        Route::post('hewan/{hewan}/slot',            [SlotSapiController::class, 'store']);
+        Route::put('hewan/{hewan}/slot/{noSlot}',    [SlotSapiController::class, 'update']);
+        Route::delete('hewan/{hewan}/slot/{noSlot}', [SlotSapiController::class, 'destroy']);
+    });
+
     Route::get('hewan/{hewan}',    [HewanController::class, 'show']);
     Route::middleware('role:SUPER_ADMIN,KEPALA_DEPOT,KANDANG_SAPI_KETUA,KANDANG_DOMBA_KETUA')->group(function () {
         Route::post('hewan',                    [HewanController::class, 'store']);
