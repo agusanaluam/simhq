@@ -12,7 +12,7 @@ class CustomerController extends Controller
         $customers = Customer::when(
                 $request->q,
                 fn($query) => $query->where('nama', 'ilike', "%{$request->q}%")
-                    ->orWhere('hp', 'like', "%{$request->q}%")
+                    ->orWhere('hp', 'ilike', "%{$request->q}%")
             )
             ->orderBy('nama')
             ->limit(20)

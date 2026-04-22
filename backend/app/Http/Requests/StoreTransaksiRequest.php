@@ -2,6 +2,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class StoreTransaksiRequest extends FormRequest
 {
@@ -11,7 +12,7 @@ class StoreTransaksiRequest extends FormRequest
     {
         return [
             'depot_id'    => ['required', 'exists:depots,id'],
-            'hewan_id'    => ['nullable', 'exists:hewan,id'],
+            'hewan_id'    => ['nullable', Rule::exists('hewan', 'id')->where('status', 'AVAILABLE')],
             'customer_id' => ['required', 'exists:customers,id'],
             'cs_id'       => ['nullable', 'exists:users,id'],
             'teller_id'   => ['nullable', 'exists:users,id'],

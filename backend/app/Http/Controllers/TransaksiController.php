@@ -9,6 +9,7 @@ use App\Models\Transaksi;
 use App\Services\TransaksiService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class TransaksiController extends Controller
 {
@@ -58,14 +59,16 @@ class TransaksiController extends Controller
             ? StatusTransaksi::HEWAN_TERALOKASI->value
             : StatusTransaksi::MENUNGGU_HEWAN->value;
 
-        $noFaktur = $this->svc->generateNoFaktur($data['depot_id'], $data['musim']);
+        $transaksi = DB::transaction(function () use ($data, $harga, $status) {
+            $noFaktur = $this->svc->generateNoFaktur($data['depot_id'], $data['musim']);
 
-        $transaksi = Transaksi::create(array_merge($data, [
-            'no_faktur'        => $noFaktur,
-            'harga'            => $harga,
-            'total'            => $harga,
-            'status_transaksi' => $status,
-        ]));
+            return Transaksi::create(array_merge($data, [
+                'no_faktur'        => $noFaktur,
+                'harga'            => $harga,
+                'total'            => $harga,
+                'status_transaksi' => $status,
+            ]));
+        });
 
         return response()->json(['transaksi' => $transaksi->load(['customer', 'hewan', 'kelas'])], 201);
     }
@@ -110,8 +113,8 @@ class TransaksiController extends Controller
     public function batal(Transaksi $transaksi): JsonResponse
     {
         abort_if(
-            $transaksi->status_transaksi === StatusTransaksi::DIBATALKAN,
-            422, 'Transaksi sudah dibatalkan.'
+            in_array($transaksi->status_transaksi, [StatusTransaksi::DIBATALKAN, StatusTransaksi::SELESAI]),
+            422, 'Transaksi tidak bisa dibatalkan.'
         );
 
         if ($transaksi->hewan_id) {
