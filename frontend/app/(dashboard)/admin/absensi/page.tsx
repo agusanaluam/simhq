@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { useSession } from 'next-auth/react'
 import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
@@ -40,17 +41,21 @@ interface TambahJamKerjaModalProps {
 }
 
 function TambahJamKerjaModal({ onClose, onSuccess }: TambahJamKerjaModalProps) {
+  const { data: session }                  = useSession()
+  const sessionDepotId                     = (session?.user as any)?.depot_id as number | undefined
   const [depots,         setDepots]        = useState<Depot[]>([])
-  const [depotId,        setDepotId]       = useState<string>('')
+  const [depotId,        setDepotId]       = useState<string>(sessionDepotId ? String(sessionDepotId) : '')
   const [divisi,         setDivisi]        = useState('')
-  const [jamMasuk,       setJamMasuk]      = useState('08:00')
-  const [jamKeluar,      setJamKeluar]     = useState('17:00')
+  const [jamMasuk,       setJamMasuk]      = useState('07:00')
+  const [jamKeluar,      setJamKeluar]     = useState('16:00')
   const [toleransi,      setToleransi]     = useState(15)
   const [loading,        setLoading]       = useState(false)
-  const [loadingDepots,  setLoadingDepots] = useState(true)
+  const [loadingDepots,  setLoadingDepots] = useState(!sessionDepotId)
   const [error,          setError]         = useState('')
 
   useEffect(() => {
+    // KEPALA_DEPOT already has depot_id from session — skip fetching depots list
+    if (sessionDepotId) { setLoadingDepots(false); return }
     api.get('/api/depots')
       .then(r => {
         const list: Depot[] = r.data.data ?? r.data ?? []
@@ -59,7 +64,7 @@ function TambahJamKerjaModal({ onClose, onSuccess }: TambahJamKerjaModalProps) {
       })
       .catch(() => setError('Gagal memuat daftar depot'))
       .finally(() => setLoadingDepots(false))
-  }, [])
+  }, [sessionDepotId])
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -96,7 +101,11 @@ function TambahJamKerjaModal({ onClose, onSuccess }: TambahJamKerjaModalProps) {
             <label className="block text-sm font-body font-medium text-on-surface mb-1">
               Depot <span className="text-red-500">*</span>
             </label>
-            {loadingDepots ? (
+            {sessionDepotId ? (
+              <p className="text-sm font-body text-on-surface-variant py-2">
+                Depot Anda (ID: {sessionDepotId})
+              </p>
+            ) : loadingDepots ? (
               <p className="text-xs text-on-surface-variant">Memuat depot...</p>
             ) : (
               <select
