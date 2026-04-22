@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AbsensiController;
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\DepotController;
@@ -96,6 +97,19 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Laporan
     Route::get('laporan/rekap-setoran', [PembayaranController::class, 'rekapSetoran']);
+
+    // Absensi — static routes ordered: export before rekap, checkin/checkout before wildcards
+    Route::prefix('absensi')->group(function () {
+        Route::get('hari-ini',     [AbsensiController::class, 'hariIni']);
+        Route::get('rekap/export', [AbsensiController::class, 'exportCsv']);
+        Route::get('rekap',        [AbsensiController::class, 'rekap']);
+        Route::post('checkin',     [AbsensiController::class, 'checkIn']);
+        Route::post('checkout',    [AbsensiController::class, 'checkOut']);
+        Route::middleware('role:SUPER_ADMIN,KEPALA_DEPOT,KANDANG_SAPI_KETUA,KANDANG_DOMBA_KETUA')
+            ->group(function () {
+                Route::post('manual', [AbsensiController::class, 'manual']);
+            });
+    });
 
     // Customer
     Route::get('customer',  [CustomerController::class, 'index']);

@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\StatusAbsensi;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -16,10 +17,18 @@ class Absensi extends Model
     ];
 
     protected $casts = [
-        'tgl'    => 'date',
+        'tgl'    => 'date:Y-m-d',
         'durasi' => 'integer',
         'status' => StatusAbsensi::class,
     ];
+
+    /** Force tgl to be stored as Y-m-d (SQLite stores Carbon as datetime otherwise). */
+    public function setTglAttribute(mixed $value): void
+    {
+        $this->attributes['tgl'] = $value instanceof Carbon
+            ? $value->format('Y-m-d')
+            : Carbon::parse($value)->format('Y-m-d');
+    }
 
     public function karyawan(): BelongsTo   { return $this->belongsTo(Karyawan::class); }
     public function overrideBy(): BelongsTo { return $this->belongsTo(User::class, 'override_by'); }
