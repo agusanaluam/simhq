@@ -1,10 +1,12 @@
 <?php
 
 use App\Http\Controllers\Auth\AuthController;
+use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\DepotController;
 use App\Http\Controllers\HewanController;
 use App\Http\Controllers\PetakController;
 use App\Http\Controllers\SupplierController;
+use App\Http\Controllers\TransaksiController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
@@ -69,5 +71,19 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('petak/layout',  [PetakController::class, 'saveLayout']);
         Route::post('petak',         [PetakController::class, 'store']);
         Route::put('petak/{petak}',  [PetakController::class, 'update']);
+    });
+
+    // Customer
+    Route::get('customer',  [CustomerController::class, 'index']);
+    Route::post('customer', [CustomerController::class, 'store']);
+
+    // Transaksi — static action routes BEFORE {transaksi} wildcard
+    Route::get('transaksi',             [TransaksiController::class, 'index']);
+    Route::get('transaksi/{transaksi}', [TransaksiController::class, 'show']);
+    Route::middleware('role:SUPER_ADMIN,KEPALA_DEPOT,ADMIN_ANGGOTA')->group(function () {
+        Route::post('transaksi',                            [TransaksiController::class, 'store']);
+        Route::put('transaksi/{transaksi}/assign-hewan',    [TransaksiController::class, 'assignHewan']);
+        Route::put('transaksi/{transaksi}/konfirmasi',      [TransaksiController::class, 'konfirmasi']);
+        Route::put('transaksi/{transaksi}/batal',           [TransaksiController::class, 'batal']);
     });
 });
