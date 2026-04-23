@@ -10,12 +10,12 @@ class KasHarianFactory extends Factory
 {
     public function definition(): array
     {
-        $tipe = $this->faker->randomElement(['MASUK', 'KELUAR']);
+        $tipe = $this->faker->randomElement(TipeKas::cases());
         return [
             'depot_id'      => Depot::factory(),
             'tipe'          => $tipe,
-            'sumber'        => $tipe === 'MASUK' ? $this->faker->randomElement(['PENJUALAN', 'DEPOSIT', 'LAIN']) : null,
-            'divisi'        => $tipe === 'KELUAR' ? $this->faker->randomElement(['ADMIN', 'LOGISTIK', 'KANDANG']) : null,
+            'sumber'        => $tipe === TipeKas::MASUK ? $this->faker->randomElement(['PENJUALAN', 'DEPOSIT', 'LAIN']) : null,
+            'divisi'        => $tipe === TipeKas::KELUAR ? $this->faker->randomElement(['ADMIN', 'LOGISTIK', 'KANDANG']) : null,
             'keterangan'    => $this->faker->sentence(4),
             'jumlah'        => $this->faker->numberBetween(100_000, 5_000_000),
             'metode'        => $this->faker->randomElement(['CASH', 'TRANSFER_BCA']),
