@@ -54,7 +54,7 @@ export function useDashboard(musim?: number) {
     setLoading(true)
     try {
       const params = new URLSearchParams()
-      if (musim) params.set('musim', String(musim))
+      if (musim !== undefined) params.set('musim', String(musim))
       const res = await api.get<DashboardData>(`/api/dashboard/depot?${params}`)
       setData(res.data)
       setError(null)
