@@ -29,6 +29,15 @@ Route::middleware('auth:sanctum')->group(function () {
     // Dashboard
     Route::get('dashboard/depot', [\App\Http\Controllers\DashboardController::class, 'depot']);
 
+    // Keuangan BIOP
+    Route::middleware('role:SUPER_ADMIN,KEPALA_DEPOT,ADMIN_KETUA')->group(function () {
+        Route::get('keuangan/kas/export', [\App\Http\Controllers\KasController::class, 'export']);
+        Route::get('keuangan/kas',        [\App\Http\Controllers\KasController::class, 'index']);
+        Route::post('keuangan/kas',       [\App\Http\Controllers\KasController::class, 'store']);
+        Route::get('keuangan/saldo',      [\App\Http\Controllers\KasController::class, 'saldo']);
+        Route::get('keuangan/cashflow',   [\App\Http\Controllers\KasController::class, 'cashflow']);
+    });
+
     // SUPER_ADMIN only
     Route::middleware('role:SUPER_ADMIN')->group(function () {
         Route::apiResource('users', UserController::class);
