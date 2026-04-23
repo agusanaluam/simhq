@@ -22,7 +22,7 @@ class DashboardController extends Controller
         return response()->json([
             'stok'               => $this->queryStok($depotId, $musim),
             'pendapatan'         => $this->queryPendapatan($depotId, $musim),
-            'transaksi_hari_ini' => $this->queryTransaksiHariIni($depotId),
+            'transaksi_hari_ini' => $this->queryTransaksiHariIni($depotId, $musim),
             'grafik_7hari'       => $this->queryGrafik7Hari($depotId, $musim),
             'alert_stok'         => $this->queryAlertStok($depotId, $musim),
         ]);
@@ -101,9 +101,10 @@ class DashboardController extends Controller
         ];
     }
 
-    private function queryTransaksiHariIni(?int $depotId): array
+    private function queryTransaksiHariIni(?int $depotId, int $musim): array
     {
         $base = Transaksi::whereDate('created_at', today())
+            ->where('musim', $musim)
             ->where('status_transaksi', '!=', 'DIBATALKAN');
 
         if ($depotId !== null) {

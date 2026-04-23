@@ -233,6 +233,61 @@ class DashboardTest extends TestCase
         $this->assertEmpty($res->json('alert_stok'));
     }
 
+    public function test_transaksi_hari_ini_scoped_to_current_musim(): void
+    {
+        $customer = Customer::create(['nama' => 'Musim Test', 'hp' => '08199999999']);
+
+        // Transaksi for musim 2025 — should NOT be counted
+        $hewan2025 = Hewan::create([
+            'depot_id'      => $this->depot->id,
+            'kelas_asal_id' => $this->kelas->id,
+            'kelas_jual_id' => $this->kelas->id,
+            'no_hewan'      => '800',
+            'jenis'         => 'SAPI',
+            'bobot_masuk'   => 200,
+            'tgl_masuk'     => now()->toDateString(),
+            'musim'         => 2025,
+            'status'        => 'SOLD',
+        ]);
+        Transaksi::create([
+            'depot_id'         => $this->depot->id,
+            'no_faktur'        => 'INV-M2025',
+            'hewan_id'         => $hewan2025->id,
+            'customer_id'      => $customer->id,
+            'tipe_qurban'      => 'SHQ',
+            'jenis'            => 'SAPI',
+            'kelas_id'         => $this->kelas->id,
+            'harga'            => 5_000_000,
+            'total'            => 5_000_000,
+            'musim'            => 2025,
+            'status_bayar'     => 'LUNAS',
+            'status_transaksi' => 'SELESAI',
+        ]);
+
+        // Transaksi for musim 2026 — should be counted
+        $hewan2026 = $this->makeHewan(['status' => 'SOLD']);
+        Transaksi::create([
+            'depot_id'         => $this->depot->id,
+            'no_faktur'        => 'INV-M2026',
+            'hewan_id'         => $hewan2026->id,
+            'customer_id'      => $customer->id,
+            'tipe_qurban'      => 'SHQ',
+            'jenis'            => 'SAPI',
+            'kelas_id'         => $this->kelas->id,
+            'harga'            => 6_000_000,
+            'total'            => 6_000_000,
+            'musim'            => 2026,
+            'status_bayar'     => 'LUNAS',
+            'status_transaksi' => 'SELESAI',
+        ]);
+
+        $res = $this->actingAs($this->kepala)
+            ->getJson('/api/dashboard/depot?musim=2026');
+
+        $res->assertOk()
+            ->assertJsonPath('transaksi_hari_ini.total', 1);
+    }
+
     public function test_unauthenticated_cannot_access_dashboard(): void
     {
         $this->getJson('/api/dashboard/depot?musim=2026')
