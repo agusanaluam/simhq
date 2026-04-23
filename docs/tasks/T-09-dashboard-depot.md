@@ -1,6 +1,6 @@
 # T-09: Dashboard Depot
 
-**Status:** `TODO`
+**Status:** `DONE`
 **Phase:** 2 (Operasional) | **Priority:** Must Have | **Sprint:** 1 Sprint
 **Dependencies:** T-03, T-05, T-07
 
@@ -16,13 +16,13 @@ Dashboard real-time untuk kepala depot dan admin: ringkasan penjualan, sisa stok
 
 ## Acceptance Criteria
 
-- [ ] Card: total hewan masuk, terjual, tersisa, mati (per musim)
-- [ ] Breakdown stok per kelas per jenis (sapi/domba)
-- [ ] Total pendapatan hari ini dan akumulasi musim
-- [ ] Jumlah transaksi hari ini (per tipe: SHQ/THQ/PHQ)
-- [ ] Grafik penjualan harian (7 hari terakhir)
-- [ ] Alert: stok kelas tertentu < threshold (misal < 5 ekor)
-- [ ] Data refresh otomatis setiap 5 menit atau manual refresh
+- [x] Card: total hewan masuk, terjual, tersisa, mati (per musim)
+- [x] Breakdown stok per kelas per jenis (sapi/domba)
+- [x] Total pendapatan hari ini dan akumulasi musim
+- [x] Jumlah transaksi hari ini (per tipe: SHQ/THQ/PHQ)
+- [x] Grafik penjualan harian (7 hari terakhir)
+- [x] Alert: stok kelas tertentu < threshold (misal < 5 ekor)
+- [x] Data refresh otomatis setiap 5 menit atau manual refresh
 
 ## Technical Tasks
 
