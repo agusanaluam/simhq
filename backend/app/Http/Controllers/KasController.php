@@ -5,7 +5,7 @@ use App\Enums\SumberKas;
 use App\Models\KasHarian;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Http\Response;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 
@@ -101,7 +101,7 @@ class KasController extends Controller
         return response()->json(['data' => $rows]);
     }
 
-    public function export(Request $request): Response
+    public function export(Request $request): StreamedResponse
     {
         $user    = $request->user();
         $depotId = $user->isSuperAdmin() ? ($request->depot_id ?? $user->depot_id) : $user->depot_id;
