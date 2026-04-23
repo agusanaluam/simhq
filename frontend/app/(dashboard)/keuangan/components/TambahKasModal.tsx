@@ -57,6 +57,7 @@ export function TambahKasModal({ onDone, onClose }: TambahKasModalProps) {
       const msg = (e as { response?: { data?: { message?: string } } })
         ?.response?.data?.message
       setError(msg ?? 'Gagal menyimpan.')
+    } finally {
       setSaving(false)
     }
   }
