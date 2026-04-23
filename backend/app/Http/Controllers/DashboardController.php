@@ -13,10 +13,17 @@ use Illuminate\Support\Facades\DB;
 
 class DashboardController extends Controller
 {
+    private const ALERT_THRESHOLD = 5;
+
     public function depot(Request $request): JsonResponse
     {
         $musim   = (int) $request->input('musim', now()->year);
         $user    = $request->user();
+
+        if ($user->role !== UserRole::SUPER_ADMIN && $user->depot_id === null) {
+            return response()->json(['message' => 'Akun tidak terhubung ke depot.'], 403);
+        }
+
         $depotId = $this->resolveDepotId($user, $request->input('depot_id'));
 
         return response()->json([
@@ -33,7 +40,7 @@ class DashboardController extends Controller
         if ($user->role === UserRole::SUPER_ADMIN) {
             return $requested !== null ? (int) $requested : null;
         }
-        return $user->depot_id;
+        return $user->depot_id !== null ? (int) $user->depot_id : null;
     }
 
     private function queryStok(?int $depotId, int $musim): array
@@ -180,7 +187,7 @@ class DashboardController extends Controller
         return $result;
     }
 
-    private function queryAlertStok(?int $depotId, int $musim, int $threshold = 5): array
+    private function queryAlertStok(?int $depotId, int $musim): array
     {
         $base = Hewan::query()
             ->join('kelas_hewan as kj', 'hewan.kelas_jual_id', '=', 'kj.id')
@@ -199,7 +206,7 @@ class DashboardController extends Controller
                 DB::raw('count(*) as sisa')
             )
             ->groupBy('kj.kode', 'kj.nama', 'hewan.jenis')
-            ->havingRaw('count(*) < ?', [$threshold])
+            ->havingRaw('count(*) < ?', [self::ALERT_THRESHOLD])
             ->orderBy('sisa')
             ->get()
             ->map(fn($row) => [

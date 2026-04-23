@@ -23,6 +23,7 @@ class DashboardTest extends TestCase
     private User $kepala;
     private Depot $depot;
     private KelasHewan $kelas;
+    private Customer $customer;
     private int $seq = 0;
 
     protected function setUp(): void
@@ -33,7 +34,8 @@ class DashboardTest extends TestCase
             'depot_id' => $this->depot->id,
             'role'     => UserRole::KEPALA_DEPOT,
         ]);
-        $this->kelas = KelasHewan::create(['kode' => 'A1', 'nama' => 'Kelas A1', 'urutan' => 1]);
+        $this->kelas    = KelasHewan::create(['kode' => 'A1', 'nama' => 'Kelas A1', 'urutan' => 1]);
+        $this->customer = Customer::create(['nama' => 'Test Customer', 'hp' => '08111111111']);
     }
 
     private function makeHewan(array $attrs = []): Hewan
@@ -54,7 +56,7 @@ class DashboardTest extends TestCase
 
     private function makePembayaran(Hewan $hewan, int $jumlah, string $tglBayar = null): void
     {
-        $customer  = Customer::create(['nama' => 'Test', 'hp' => '08111111111']);
+        $customer  = $this->customer;
         $transaksi = Transaksi::create([
             'depot_id'         => $this->depot->id,
             'no_faktur'        => 'INV-' . $hewan->no_hewan,
@@ -194,6 +196,9 @@ class DashboardTest extends TestCase
         $hewan = $this->makeHewan(['status' => 'SOLD']);
         $this->makePembayaran($hewan, 3_000_000, today()->toDateString());
 
+        // makePembayaran also creates a transaksi with status SELESAI today
+        // so ekor should be 1
+
         $res = $this->actingAs($this->kepala)
             ->getJson('/api/dashboard/depot?musim=2026');
 
@@ -201,6 +206,7 @@ class DashboardTest extends TestCase
         $today  = collect($grafik)->firstWhere('tanggal', today()->toDateString());
 
         $this->assertEquals(3_000_000, $today['pendapatan']);
+        $this->assertEquals(1, $today['ekor']);
     }
 
     public function test_alert_stok_flags_kelas_below_threshold(): void
@@ -223,7 +229,7 @@ class DashboardTest extends TestCase
 
     public function test_alert_stok_empty_when_all_kelas_above_threshold(): void
     {
-        for ($i = 1; $i <= 6; $i++) {
+        for ($i = 1; $i <= 20; $i++) {
             $this->makeHewan();
         }
 
