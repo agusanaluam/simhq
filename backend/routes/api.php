@@ -26,6 +26,9 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('logout', [AuthController::class, 'logout']);
     });
 
+    // Dashboard
+    Route::get('dashboard/depot', [\App\Http\Controllers\DashboardController::class, 'depot']);
+
     // SUPER_ADMIN only
     Route::middleware('role:SUPER_ADMIN')->group(function () {
         Route::apiResource('users', UserController::class);
