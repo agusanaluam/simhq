@@ -52,6 +52,14 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('keuangan/rab/{rab}/realisasi', [\App\Http\Controllers\RabController::class, 'storeRealisasi']);
     });
 
+    // SDM — Upah Harian
+    Route::middleware('role:SUPER_ADMIN,KEPALA_DEPOT,ADMIN_KETUA')->group(function () {
+        Route::post('sdm/tarif',       [\App\Http\Controllers\SdmController::class, 'setTarif']);
+        Route::get('sdm/tarif',        [\App\Http\Controllers\SdmController::class, 'listTarif']);
+        Route::get('sdm/upah/export',  [\App\Http\Controllers\SdmController::class, 'export']);
+        Route::get('sdm/upah',         [\App\Http\Controllers\SdmController::class, 'upah']);
+    });
+
     // SUPER_ADMIN only
     Route::middleware('role:SUPER_ADMIN')->group(function () {
         Route::apiResource('users', UserController::class);
