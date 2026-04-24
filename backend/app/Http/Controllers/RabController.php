@@ -62,8 +62,12 @@ class RabController extends Controller
 
         $rab = Rab::updateOrCreate(
             ['depot_id' => $depotId, 'divisi' => $data['divisi'], 'musim' => $data['musim']],
-            ['jumlah_anggaran' => $data['jumlah_anggaran'], 'created_by' => $user->id]
+            ['jumlah_anggaran' => $data['jumlah_anggaran']]
         );
+
+        if ($rab->wasRecentlyCreated) {
+            $rab->update(['created_by' => $user->id]);
+        }
 
         $status = $rab->wasRecentlyCreated ? 201 : 200;
 
@@ -76,7 +80,7 @@ class RabController extends Controller
             ? ($request->depot_id ?? $request->user()->depot_id)
             : $request->user()->depot_id;
 
-        abort_unless($rab->depot_id === $depotId, 403);
+        abort_unless($rab->depot_id === (int) $depotId, 403);
 
         $items = $rab->realisasi()
             ->with('inputBy:id,name')
@@ -93,7 +97,7 @@ class RabController extends Controller
             ? ($request->depot_id ?? $request->user()->depot_id)
             : $request->user()->depot_id;
 
-        abort_unless($rab->depot_id === $depotId, 403);
+        abort_unless($rab->depot_id === (int) $depotId, 403);
 
         $data = $request->validate([
             'keterangan'      => ['required', 'string', 'max:300'],
