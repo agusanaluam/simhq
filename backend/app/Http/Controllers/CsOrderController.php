@@ -10,6 +10,10 @@ class CsOrderController extends Controller
 {
     public function index(Request $request): JsonResponse
     {
+        $request->validate([
+            'status' => ['nullable', 'in:BARU,DIKONFIRMASI,DP_DIBAYAR,LUNAS,DIJADWALKAN,DIBATALKAN'],
+        ]);
+
         $user    = $request->user();
         $depotId = $user->isSuperAdmin() ? ($request->depot_id ?? $user->depot_id) : $user->depot_id;
 

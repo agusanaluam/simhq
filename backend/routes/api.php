@@ -21,7 +21,8 @@ Route::prefix('auth')->group(function () {
 
 // Public Catalog (no auth)
 Route::get('katalog',        [\App\Http\Controllers\KatalogController::class, 'catalog']);
-Route::post('katalog/order', [\App\Http\Controllers\KatalogController::class, 'order']);
+Route::post('katalog/order', [\App\Http\Controllers\KatalogController::class, 'order'])
+     ->middleware('throttle:10,1');
 
 // Authenticated
 Route::middleware('auth:sanctum')->group(function () {
