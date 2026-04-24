@@ -18,7 +18,7 @@ interface TambahPetakModalProps {
 
 function TambahPetakModal({ defaultJenis, onClose, onSuccess }: TambahPetakModalProps) {
   const { data: session } = useSession()
-  const depotId = (session?.user as any)?.depot_id as number | undefined
+  const depotId = (session?.user as any)?.depotId as number | undefined
 
   const [noPetak,      setNoPetak]      = useState('')
   const [jenis,        setJenis]        = useState<'SAPI' | 'DOMBA'>(defaultJenis)
@@ -109,7 +109,7 @@ function TambahPetakModal({ defaultJenis, onClose, onSuccess }: TambahPetakModal
           {/* Posisi */}
           <div className="flex gap-3">
             <div className="flex-1">
-              <label className="block text-sm font-body font-medium text-on-surface mb-1">Posisi X</label>
+              <label className="block text-sm font-body font-medium text-on-surface mb-1">Baris</label>
               <input
                 type="number"
                 min={0}
@@ -119,7 +119,7 @@ function TambahPetakModal({ defaultJenis, onClose, onSuccess }: TambahPetakModal
               />
             </div>
             <div className="flex-1">
-              <label className="block text-sm font-body font-medium text-on-surface mb-1">Posisi Y</label>
+              <label className="block text-sm font-body font-medium text-on-surface mb-1">Kolom</label>
               <input
                 type="number"
                 min={0}
