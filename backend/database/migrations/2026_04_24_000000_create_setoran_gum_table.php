@@ -10,7 +10,7 @@ return new class extends Migration {
             $table->foreignId('depot_id')->constrained('depots')->cascadeOnDelete();
             $table->foreignId('supplier_id')->nullable()->constrained('supplier')->nullOnDelete();
             $table->date('tgl_setor');
-            $table->unsignedBigInteger('jumlah');
+            $table->unsignedInteger('jumlah');
             $table->enum('metode', ['CASH', 'TRANSFER_BCA', 'TRANSFER_LAIN'])->default('CASH');
             $table->string('keterangan', 300)->nullable();
             $table->foreignId('input_by')->nullable()->constrained('users')->nullOnDelete();
