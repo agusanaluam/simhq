@@ -59,7 +59,7 @@
 
 | ID | Task | Status | Sprint | Dependencies |
 |----|------|--------|--------|--------------|
-| [T-19](tasks/T-19-manajemen-pengiriman.md) | Manajemen Pengiriman & Status Tracking | `⬜ TODO` | 2 | T-05, T-06, T-17 |
+| [T-19](tasks/T-19-manajemen-pengiriman.md) | Manajemen Pengiriman & Status Tracking | `✅ DONE` | 2 | T-05, T-06, T-17 |
 | [T-20](tasks/T-20-kesehatan-hewan.md) | Kendali Kesehatan & Riwayat Hewan | `⬜ TODO` | 1 | T-03, T-04 |
 | [T-21](tasks/T-21-faktur-pdf.md) | Cetak / Unduh Faktur PDF | `⬜ TODO` | 1 | T-05, T-06, T-07 |
 | [T-22](tasks/T-22-forecast-penjualan.md) | Forecast Penjualan (Grafik Proyeksi) | `⬜ TODO` | 1 | T-05, T-09 |
@@ -67,7 +67,7 @@
 | [T-24](tasks/T-24-laporan-multidepot.md) | Laporan Multi-Depot (Admin Pusat) | `⬜ TODO` | 1 | T-09, T-13 |
 | [T-25](tasks/T-25-kasbon-karyawan.md) | Modul Kasbon Karyawan | `⬜ TODO` | 1 | T-01, T-02, T-18 |
 
-**Progress Phase 3:** 0 / 7 selesai ⬜
+**Progress Phase 3:** 1 / 7 selesai ✅
 
 ---
 
@@ -77,8 +77,8 @@
 |-------|-------|---------|------|
 | Phase 1 – Fondasi | 8 | 8 | 0 |
 | Phase 2 – Operasional | 10 | 10 | 0 |
-| Phase 3 – Lengkap | 7 | 0 | 7 |
-| **TOTAL** | **25** | **18** | **7** |
+| Phase 3 – Lengkap | 7 | 1 | 6 |
+| **TOTAL** | **25** | **19** | **6** |
 
 ---
 
