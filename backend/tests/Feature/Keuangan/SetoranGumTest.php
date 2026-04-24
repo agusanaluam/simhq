@@ -19,7 +19,6 @@ class SetoranGumTest extends TestCase
     private User $kepala;
     private Depot $depot;
     private Supplier $gum;
-    private KelasHewan $kelas;
     private int $musim = 2026;
     private int $seq = 0;
 
@@ -37,33 +36,30 @@ class SetoranGumTest extends TestCase
             'is_gum'    => true,
             'is_active' => true,
         ]);
-        $this->kelas = KelasHewan::create([
-            'kode'    => 'A1',
-            'nama'    => 'Kelas A',
-            'urutan'  => 1,
-        ]);
     }
 
     /** Create a hewan from GUM with harga_beli linked via harga_kelas */
     private function makeHewan(int $hargaBeli): Hewan
     {
         $this->seq++;
-
-        HargaKelas::firstOrCreate(
-            [
-                'depot_id' => $this->depot->id,
-                'kelas_id' => $this->kelas->id,
-                'jenis'    => 'SAPI',
-                'musim'    => $this->musim,
-            ],
-            ['harga_beli' => $hargaBeli, 'harga_jual' => $hargaBeli + 1_000_000]
-        );
-
+        $kelas = KelasHewan::create([
+            'kode'   => 'K' . $this->seq,
+            'nama'   => 'Kelas ' . $this->seq,
+            'urutan' => $this->seq,
+        ]);
+        HargaKelas::create([
+            'depot_id'   => $this->depot->id,
+            'kelas_id'   => $kelas->id,
+            'jenis'      => 'SAPI',
+            'musim'      => $this->musim,
+            'harga_beli' => $hargaBeli,
+            'harga_jual' => $hargaBeli + 1_000_000,
+        ]);
         return Hewan::create([
             'depot_id'      => $this->depot->id,
             'supplier_id'   => $this->gum->id,
-            'kelas_asal_id' => $this->kelas->id,
-            'kelas_jual_id' => $this->kelas->id,
+            'kelas_asal_id' => $kelas->id,
+            'kelas_jual_id' => $kelas->id,
             'no_hewan'      => str_pad($this->seq, 3, '0', STR_PAD_LEFT),
             'jenis'         => 'SAPI',
             'bobot_masuk'   => 300.00,
@@ -190,17 +186,32 @@ class SetoranGumTest extends TestCase
         // 1 hewan from GUM, 1 from non-GUM — only GUM hewan counted in pengadaan
         $this->makeHewan(10_000_000);
 
-        HargaKelas::firstOrCreate(
-            ['depot_id' => $this->depot->id, 'kelas_id' => $this->kelas->id, 'jenis' => 'SAPI', 'musim' => $this->musim],
-            ['harga_beli' => 10_000_000, 'harga_jual' => 11_000_000]
-        );
+        // 1 non-GUM hewan — same price, different supplier
         $this->seq++;
+        $nonGumKelas = KelasHewan::create([
+            'kode'   => 'K' . $this->seq,
+            'nama'   => 'Kelas ' . $this->seq,
+            'urutan' => $this->seq,
+        ]);
+        HargaKelas::create([
+            'depot_id'   => $this->depot->id,
+            'kelas_id'   => $nonGumKelas->id,
+            'jenis'      => 'SAPI',
+            'musim'      => $this->musim,
+            'harga_beli' => 10_000_000,
+            'harga_jual' => 11_000_000,
+        ]);
         Hewan::create([
-            'depot_id' => $this->depot->id, 'supplier_id' => $nonGum->id,
-            'kelas_asal_id' => $this->kelas->id, 'kelas_jual_id' => $this->kelas->id,
-            'no_hewan' => str_pad($this->seq, 3, '0', STR_PAD_LEFT),
-            'jenis' => 'SAPI', 'bobot_masuk' => 300.00,
-            'tgl_masuk' => today()->toDateString(), 'musim' => $this->musim, 'status' => 'AVAILABLE',
+            'depot_id'      => $this->depot->id,
+            'supplier_id'   => $nonGum->id,
+            'kelas_asal_id' => $nonGumKelas->id,
+            'kelas_jual_id' => $nonGumKelas->id,
+            'no_hewan'      => str_pad($this->seq, 3, '0', STR_PAD_LEFT),
+            'jenis'         => 'SAPI',
+            'bobot_masuk'   => 300.00,
+            'tgl_masuk'     => today()->toDateString(),
+            'musim'         => $this->musim,
+            'status'        => 'AVAILABLE',
         ]);
 
         $res = $this->actingAs($this->kepala)->getJson('/api/keuangan/setoran-gum/posisi');
@@ -249,5 +260,6 @@ class SetoranGumTest extends TestCase
     {
         $this->getJson('/api/keuangan/setoran-gum')->assertUnauthorized();
         $this->getJson('/api/keuangan/setoran-gum/posisi')->assertUnauthorized();
+        $this->postJson('/api/keuangan/setoran-gum', [])->assertUnauthorized();
     }
 }
