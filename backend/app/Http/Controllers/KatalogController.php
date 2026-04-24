@@ -6,6 +6,7 @@ use App\Models\OrderKatalog;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 
 class KatalogController extends Controller
 {
@@ -57,10 +58,9 @@ class KatalogController extends Controller
             ->unique(fn($r) => "{$r->kelas}_{$r->jenis}")
             ->keyBy(fn($r) => "{$r->kelas}_{$r->jenis}");
 
-        $appUrl        = config('app.url');
         $itemsWithFoto = $items->map(fn($item) => array_merge($item, [
             'foto_url' => isset($fotoRows["{$item['kelas']}_{$item['jenis']}"])
-                ? "{$appUrl}/storage/" . $fotoRows["{$item['kelas']}_{$item['jenis']}"]->url
+                ? Storage::disk('public')->url($fotoRows["{$item['kelas']}_{$item['jenis']}"]->url)
                 : null,
         ]));
 
