@@ -36,6 +36,8 @@ class Hewan extends Model
     public function riwayatPerpindahan(): HasMany { return $this->hasMany(RiwayatPerpindahan::class); }
     public function slotSapi(): HasMany { return $this->hasMany(SlotSapi::class); }
 
+    public function fotos(): HasMany { return $this->hasMany(FotoHewan::class); }
+
     public function qrString(): string
     {
         return "{$this->depot_id}-{$this->musim}-{$this->no_hewan}";
