@@ -9,6 +9,7 @@ interface CatalogItem {
   jenis:           string
   harga_jual:      number
   jumlah_tersedia: number
+  foto_url:        string | null
 }
 
 interface KatalogContentProps {
@@ -59,6 +60,7 @@ export function KatalogContent({ items, depotId, musim }: KatalogContentProps) {
             jenis={item.jenis}
             harga_jual={item.harga_jual}
             jumlah_tersedia={item.jumlah_tersedia}
+            foto_url={item.foto_url}
             onOrder={() => setSelectedItem(item)}
           />
         ))}
