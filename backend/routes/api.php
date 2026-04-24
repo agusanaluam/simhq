@@ -194,6 +194,14 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('crm/customer/{customer}/log', [\App\Http\Controllers\CrmController::class, 'storeLog']);
     });
 
+    // Pengiriman
+    Route::get('pengiriman/rekap',  [\App\Http\Controllers\PengirimanController::class, 'rekap']);
+    Route::get('pengiriman',        [\App\Http\Controllers\PengirimanController::class, 'index']);
+    Route::middleware('role:SUPER_ADMIN,KEPALA_DEPOT,LOGISTIK_KETUA,LOGISTIK_ANGGOTA')->group(function () {
+        Route::post('pengiriman',                    [\App\Http\Controllers\PengirimanController::class, 'store']);
+        Route::put('pengiriman/{pengiriman}/status',  [\App\Http\Controllers\PengirimanController::class, 'updateStatus']);
+    });
+
     // WA Log
     Route::middleware('role:SUPER_ADMIN,KEPALA_DEPOT,ADMIN_KETUA')->group(function () {
         Route::get('admin/wa-log', [\App\Http\Controllers\WaLogController::class, 'index']);
