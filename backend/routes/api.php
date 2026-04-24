@@ -31,11 +31,15 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Keuangan BIOP
     Route::middleware('role:SUPER_ADMIN,KEPALA_DEPOT,ADMIN_KETUA')->group(function () {
-        Route::get('keuangan/kas/export', [\App\Http\Controllers\KasController::class, 'export']);
-        Route::get('keuangan/kas',        [\App\Http\Controllers\KasController::class, 'index']);
-        Route::post('keuangan/kas',       [\App\Http\Controllers\KasController::class, 'store']);
-        Route::get('keuangan/saldo',      [\App\Http\Controllers\KasController::class, 'saldo']);
-        Route::get('keuangan/cashflow',   [\App\Http\Controllers\KasController::class, 'cashflow']);
+        Route::get('keuangan/kas/export',        [\App\Http\Controllers\KasController::class,       'export']);
+        Route::get('keuangan/kas',               [\App\Http\Controllers\KasController::class,       'index']);
+        Route::post('keuangan/kas',              [\App\Http\Controllers\KasController::class,       'store']);
+        Route::get('keuangan/saldo',             [\App\Http\Controllers\KasController::class,       'saldo']);
+        Route::get('keuangan/cashflow',          [\App\Http\Controllers\KasController::class,       'cashflow']);
+        // Setoran GUM — posisi MUST be before the GET collection route
+        Route::get('keuangan/setoran-gum/posisi', [\App\Http\Controllers\SetoranGumController::class, 'posisi']);
+        Route::get('keuangan/setoran-gum',        [\App\Http\Controllers\SetoranGumController::class, 'index']);
+        Route::post('keuangan/setoran-gum',       [\App\Http\Controllers\SetoranGumController::class, 'store']);
     });
 
     // SUPER_ADMIN only
