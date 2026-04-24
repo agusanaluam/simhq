@@ -89,6 +89,7 @@ Route::middleware('auth:sanctum')->group(function () {
     // Hewan — static routes MUST come before {hewan} wildcard
     Route::get('hewan/statistik',  [HewanController::class, 'statistik']);
     Route::get('hewan/cetak-label',[HewanController::class, 'cetakLabel']);
+    Route::get('hewan/mortalitas', [\App\Http\Controllers\KesehatanController::class, 'mortalitas']);
     Route::get('hewan',            [HewanController::class, 'index']);
 
     // Slot Sapi — static dashboard route before {hewan} wildcard
@@ -107,6 +108,12 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::middleware('role:SUPER_ADMIN,KEPALA_DEPOT,KANDANG_SAPI_KETUA,KANDANG_DOMBA_KETUA,KANDANG_SAPI_ANGGOTA,KANDANG_DOMBA_ANGGOTA')->group(function () {
         Route::post('hewan/{hewan}/foto',          [\App\Http\Controllers\FotoHewanController::class, 'store']);
         Route::delete('hewan/{hewan}/foto/{foto}', [\App\Http\Controllers\FotoHewanController::class, 'destroy']);
+    });
+
+    Route::get('hewan/{hewan}/riwayat',  [\App\Http\Controllers\KesehatanController::class, 'indexRiwayat']);
+    Route::middleware('role:SUPER_ADMIN,KEPALA_DEPOT,KANDANG_SAPI_KETUA,KANDANG_DOMBA_KETUA,KANDANG_SAPI_ANGGOTA,KANDANG_DOMBA_ANGGOTA')->group(function () {
+        Route::post('hewan/{hewan}/riwayat',  [\App\Http\Controllers\KesehatanController::class, 'storeRiwayat']);
+        Route::post('hewan/{hewan}/kematian', [\App\Http\Controllers\KesehatanController::class, 'storeKematian']);
     });
 
     Route::get('hewan/{hewan}',    [HewanController::class, 'show']);
