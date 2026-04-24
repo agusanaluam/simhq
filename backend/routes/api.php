@@ -60,6 +60,14 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('sdm/upah',         [\App\Http\Controllers\SdmController::class, 'upah']);
     });
 
+    // Kasbon Karyawan
+    Route::middleware('role:SUPER_ADMIN,KEPALA_DEPOT,ADMIN_KETUA')->group(function () {
+        Route::get('sdm/kasbon',                   [\App\Http\Controllers\KasbonController::class, 'index']);
+        Route::post('sdm/kasbon',                  [\App\Http\Controllers\KasbonController::class, 'store']);
+        Route::put('sdm/kasbon/{kasbon}/approve',  [\App\Http\Controllers\KasbonController::class, 'approve']);
+        Route::put('sdm/kasbon/{kasbon}/reject',   [\App\Http\Controllers\KasbonController::class, 'reject']);
+    });
+
     // SUPER_ADMIN only
     Route::middleware('role:SUPER_ADMIN')->group(function () {
         Route::apiResource('users', UserController::class);

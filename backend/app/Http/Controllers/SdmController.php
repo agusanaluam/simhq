@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\CicilanKasbon;
 use App\Models\Karyawan;
 use App\Models\TarifUpah;
 use Illuminate\Http\JsonResponse;
@@ -79,7 +80,7 @@ class SdmController extends Controller
 
         return response()->streamDownload(function () use ($rows) {
             $h = fopen('php://output', 'w');
-            fputcsv($h, ['Nama', 'Divisi', 'Hari Hadir', 'Tarif Harian', 'Total Upah']);
+            fputcsv($h, ['Nama', 'Divisi', 'Hari Hadir', 'Tarif Harian', 'Total Upah', 'Potongan Kasbon', 'Upah Bersih']);
             foreach ($rows as $row) {
                 fputcsv($h, [
                     $row['nama'],
@@ -87,6 +88,8 @@ class SdmController extends Controller
                     $row['hari_hadir'],
                     $row['tarif_harian'],
                     $row['total_upah'],
+                    $row['potongan_kasbon'],
+                    $row['upah_bersih'],
                 ]);
             }
             fclose($h);
@@ -118,16 +121,29 @@ class SdmController extends Controller
             ->groupBy('karyawan_id')
             ->pluck('hari', 'karyawan_id');
 
-        return $karyawanList->map(function (Karyawan $k) use ($tarifs, $hariHadir): array {
-            $tarif = (int) $tarifs->get($k->id, 0);
-            $hari  = (int) $hariHadir->get($k->id, 0);
+        // Active cicilan kasbon per karyawan (APPROVED, cicil_terbayar < jumlah_cicil)
+        $activeCicilan = CicilanKasbon::whereHas('kasbon', fn($q) =>
+            $q->where('depot_id', $depotId)->where('status', 'APPROVED')
+        )
+        ->whereColumn('cicil_terbayar', '<', 'jumlah_cicil')
+        ->with('kasbon:id,karyawan_id')
+        ->get()
+        ->groupBy(fn($c) => $c->kasbon->karyawan_id)
+        ->map(fn($group) => $group->sum('nominal_cicilan'));
+
+        return $karyawanList->map(function (Karyawan $k) use ($tarifs, $hariHadir, $activeCicilan): array {
+            $tarif    = (int) $tarifs->get($k->id, 0);
+            $hari     = (int) $hariHadir->get($k->id, 0);
+            $potongan = (int) $activeCicilan->get($k->id, 0);
             return [
-                'karyawan_id'  => $k->id,
-                'nama'         => $k->nama,
-                'divisi'       => $k->divisi,
-                'hari_hadir'   => $hari,
-                'tarif_harian' => $tarif,
-                'total_upah'   => $hari * $tarif,
+                'karyawan_id'     => $k->id,
+                'nama'            => $k->nama,
+                'divisi'          => $k->divisi,
+                'hari_hadir'      => $hari,
+                'tarif_harian'    => $tarif,
+                'total_upah'      => $hari * $tarif,
+                'potongan_kasbon' => $potongan,
+                'upah_bersih'     => ($hari * $tarif) - $potongan,
             ];
         })->values()->all();
     }
