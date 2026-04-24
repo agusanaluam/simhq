@@ -176,4 +176,13 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('cs/order',                     [\App\Http\Controllers\CsOrderController::class, 'index']);
         Route::put('cs/order/{order}/status',       [\App\Http\Controllers\CsOrderController::class, 'updateStatus']);
     });
+
+    // CRM
+    Route::middleware('role:SUPER_ADMIN,KEPALA_DEPOT,CS_KETUA,CS_ANGGOTA,ADMIN_KETUA')->group(function () {
+        Route::get('crm/customer/retargeting',     [\App\Http\Controllers\CrmController::class, 'retargeting']);
+        Route::get('crm/customer',                 [\App\Http\Controllers\CrmController::class, 'index']);
+        Route::get('crm/customer/{customer}',      [\App\Http\Controllers\CrmController::class, 'show']);
+        Route::put('crm/customer/{customer}',      [\App\Http\Controllers\CrmController::class, 'update']);
+        Route::post('crm/customer/{customer}/log', [\App\Http\Controllers\CrmController::class, 'storeLog']);
+    });
 });
