@@ -21,6 +21,15 @@ interface FotoItem {
   foto_url: string
 }
 
+interface KesehatanRiwayatItem {
+  id:      number
+  tgl:     string
+  kondisi: string
+  bobot:   string | null
+  catatan: string | null
+  petugas: { name: string } | null
+}
+
 interface HewanDetail {
   id:                  number
   no_hewan:            string
@@ -50,6 +59,10 @@ export default function HewanDetailPage() {
   const [uploading,   setUploading]   = useState(false)
   const [uploadError, setUploadError] = useState('')
 
+  const [riwayatList,   setRiwayatList]   = useState<KesehatanRiwayatItem[]>([])
+  const [riwayatForm,   setRiwayatForm]   = useState({ tgl: new Date().toISOString().slice(0, 10), kondisi: 'SEHAT', bobot: '', catatan: '' })
+  const [riwayatSaving, setRiwayatSaving] = useState(false)
+
   const fileRef = useRef<HTMLInputElement>(null)
 
   async function loadFotos() {
@@ -57,10 +70,16 @@ export default function HewanDetailPage() {
     setFotos(res.data.data ?? [])
   }
 
+  async function loadRiwayat() {
+    const res = await api.get(`/api/hewan/${id}/riwayat`)
+    setRiwayatList(res.data.data ?? [])
+  }
+
   useEffect(() => {
     if (!id) return
     api.get(`/api/hewan/${id}`).then(r => setHewan(r.data.hewan))
     loadFotos()
+    loadRiwayat()
   }, [id])
 
   async function handleUpload(e: React.ChangeEvent<HTMLInputElement>) {
@@ -94,6 +113,25 @@ export default function HewanDetailPage() {
       setFotos((prev) => prev.filter((f) => f.id !== fotoId))
     } catch {
       alert('Gagal menghapus foto.')
+    }
+  }
+
+  async function submitRiwayat(e: React.FormEvent) {
+    e.preventDefault()
+    setRiwayatSaving(true)
+    try {
+      await api.post(`/api/hewan/${id}/riwayat`, {
+        tgl:     riwayatForm.tgl,
+        kondisi: riwayatForm.kondisi,
+        bobot:   riwayatForm.bobot ? Number(riwayatForm.bobot) : undefined,
+        catatan: riwayatForm.catatan || undefined,
+      })
+      setRiwayatForm({ tgl: new Date().toISOString().slice(0, 10), kondisi: 'SEHAT', bobot: '', catatan: '' })
+      await loadRiwayat()
+    } catch {
+      alert('Gagal simpan riwayat.')
+    } finally {
+      setRiwayatSaving(false)
     }
   }
 
@@ -202,7 +240,7 @@ export default function HewanDetailPage() {
       </Card>
 
       {/* Riwayat Perpindahan */}
-      <Card>
+      <Card className="mb-4">
         <CardHeader><CardTitle>Riwayat Perpindahan</CardTitle></CardHeader>
         {hewan.riwayat_perpindahan.length === 0 ? (
           <p className="text-sm text-on-surface-variant">Belum ada perpindahan.</p>
@@ -216,6 +254,66 @@ export default function HewanDetailPage() {
                 {r.user && <span className="text-xs text-on-surface-variant ml-auto">{r.user.name}</span>}
               </div>
             ))}
+          </div>
+        )}
+      </Card>
+
+      {/* Riwayat Kesehatan */}
+      <Card>
+        <CardHeader><CardTitle>Riwayat Kesehatan</CardTitle></CardHeader>
+
+        <form onSubmit={submitRiwayat} className="grid grid-cols-2 gap-3 mb-4">
+          <div>
+            <label className="text-xs text-on-surface-variant uppercase tracking-widest font-body mb-1 block">Tanggal</label>
+            <input type="date" value={riwayatForm.tgl}
+              onChange={(e) => setRiwayatForm(f => ({...f, tgl: e.target.value}))}
+              className="input-field text-sm" />
+          </div>
+          <div>
+            <label className="text-xs text-on-surface-variant uppercase tracking-widest font-body mb-1 block">Kondisi</label>
+            <select value={riwayatForm.kondisi}
+              onChange={(e) => setRiwayatForm(f => ({...f, kondisi: e.target.value}))}
+              className="input-field text-sm">
+              {['SEHAT','SAKIT','KRITIS','MATI'].map(k => <option key={k} value={k}>{k}</option>)}
+            </select>
+          </div>
+          <div>
+            <label className="text-xs text-on-surface-variant uppercase tracking-widest font-body mb-1 block">Bobot (kg)</label>
+            <input type="number" step="0.01" min="1" value={riwayatForm.bobot}
+              onChange={(e) => setRiwayatForm(f => ({...f, bobot: e.target.value}))}
+              className="input-field text-sm" placeholder="310.50" />
+          </div>
+          <div>
+            <label className="text-xs text-on-surface-variant uppercase tracking-widest font-body mb-1 block">Catatan</label>
+            <input type="text" value={riwayatForm.catatan}
+              onChange={(e) => setRiwayatForm(f => ({...f, catatan: e.target.value}))}
+              className="input-field text-sm" placeholder="Opsional" />
+          </div>
+          <div className="col-span-2">
+            <Button type="submit" loading={riwayatSaving} className="w-full">Simpan Log Kondisi</Button>
+          </div>
+        </form>
+
+        {riwayatList.length === 0 ? (
+          <p className="text-sm text-on-surface-variant">Belum ada riwayat kesehatan.</p>
+        ) : (
+          <div className="space-y-2">
+            {riwayatList.map(r => {
+              const color = r.kondisi === 'SEHAT'
+                ? 'text-[#15803d]'
+                : (r.kondisi === 'KRITIS' || r.kondisi === 'MATI')
+                  ? 'text-error'
+                  : 'text-[#ca8a04]'
+              return (
+                <div key={r.id} className="flex items-center gap-3 text-sm py-1.5 border-b border-surface-high last:border-0">
+                  <span className="text-on-surface-variant w-24 flex-shrink-0">{r.tgl}</span>
+                  <span className={`font-semibold ${color}`}>{r.kondisi}</span>
+                  {r.bobot && <span className="text-on-surface-variant">{r.bobot} kg</span>}
+                  {r.catatan && <span className="text-on-surface-variant">· {r.catatan}</span>}
+                  {r.petugas && <span className="text-xs text-on-surface-variant ml-auto">{r.petugas.name}</span>}
+                </div>
+              )
+            })}
           </div>
         )}
       </Card>
