@@ -47,9 +47,9 @@
 | [T-15](tasks/T-15-upload-foto-hewan.md) | Upload Foto Hewan untuk Katalog | `✅ DONE` | 1 | T-03, T-14 |
 | [T-16](tasks/T-16-crm-customer.md) | CRM – Database Customer & Order | `✅ DONE` | 2 | T-05, T-14 |
 | [T-17](tasks/T-17-waha-notifikasi.md) | Integrasi WAHA API (Notifikasi WhatsApp) | `✅ DONE` | 1 | T-05, T-07, T-12, T-14 |
-| [T-18](tasks/T-18-upah-harian.md) | Kalkulasi Upah Harian Otomatis | `⬜ TODO` | 1 | T-08, T-02 |
+| [T-18](tasks/T-18-upah-harian.md) | Kalkulasi Upah Harian Otomatis | `✅ DONE` | 1 | T-08, T-02 |
 
-**Progress Phase 2:** 9 / 10 selesai 🔄
+**Progress Phase 2:** 10 / 10 selesai ✅
 
 ---
 
@@ -76,9 +76,9 @@
 | Phase | Total | Selesai | Sisa |
 |-------|-------|---------|------|
 | Phase 1 – Fondasi | 8 | 8 | 0 |
-| Phase 2 – Operasional | 10 | 9 | 1 |
+| Phase 2 – Operasional | 10 | 10 | 0 |
 | Phase 3 – Lengkap | 7 | 0 | 7 |
-| **TOTAL** | **25** | **17** | **8** |
+| **TOTAL** | **25** | **18** | **7** |
 
 ---
 
