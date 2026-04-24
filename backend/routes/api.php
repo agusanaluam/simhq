@@ -19,6 +19,10 @@ Route::prefix('auth')->group(function () {
     Route::post('login', [AuthController::class, 'login']);
 });
 
+// Public Catalog (no auth)
+Route::get('katalog',        [\App\Http\Controllers\KatalogController::class, 'catalog']);
+Route::post('katalog/order', [\App\Http\Controllers\KatalogController::class, 'order']);
+
 // Authenticated
 Route::middleware('auth:sanctum')->group(function () {
     Route::prefix('auth')->group(function () {
@@ -157,5 +161,11 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::put('transaksi/{transaksi}/assign-hewan',    [TransaksiController::class, 'assignHewan']);
         Route::put('transaksi/{transaksi}/konfirmasi',      [TransaksiController::class, 'konfirmasi']);
         Route::put('transaksi/{transaksi}/batal',           [TransaksiController::class, 'batal']);
+    });
+
+    // CS Order Management
+    Route::middleware('role:SUPER_ADMIN,KEPALA_DEPOT,CS_KETUA,CS_ANGGOTA,ADMIN_KETUA')->group(function () {
+        Route::get('cs/order',                     [\App\Http\Controllers\CsOrderController::class, 'index']);
+        Route::put('cs/order/{order}/status',       [\App\Http\Controllers\CsOrderController::class, 'updateStatus']);
     });
 });
