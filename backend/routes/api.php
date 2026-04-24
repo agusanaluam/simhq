@@ -152,6 +152,12 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('laporan/income-statement',         [\App\Http\Controllers\IncomeStatementController::class, 'generate']);
     });
 
+    // Forecast Penjualan
+    Route::middleware('role:SUPER_ADMIN,KEPALA_DEPOT,ADMIN_KETUA')->group(function () {
+        Route::post('laporan/target',  [\App\Http\Controllers\ForecastController::class, 'setTarget']);
+        Route::get('laporan/forecast', [\App\Http\Controllers\ForecastController::class, 'forecast']);
+    });
+
     // Absensi — static routes ordered: export before rekap, checkin/checkout before wildcards
     Route::prefix('absensi')->group(function () {
         Route::get('hari-ini',     [AbsensiController::class, 'hariIni']);
