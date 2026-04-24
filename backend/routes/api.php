@@ -116,6 +116,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('hewan/{hewan}/kematian', [\App\Http\Controllers\KesehatanController::class, 'storeKematian']);
     });
 
+    Route::get('hewan/{hewan}/faktur-ploting', [\App\Http\Controllers\FakturController::class, 'ploting']);
     Route::get('hewan/{hewan}',    [HewanController::class, 'show']);
     Route::middleware('role:SUPER_ADMIN,KEPALA_DEPOT,KANDANG_SAPI_KETUA,KANDANG_DOMBA_KETUA')->group(function () {
         Route::post('hewan',                    [HewanController::class, 'store']);
@@ -177,8 +178,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('customer', [CustomerController::class, 'store']);
 
     // Transaksi — static action routes BEFORE {transaksi} wildcard
-    Route::get('transaksi',             [TransaksiController::class, 'index']);
-    Route::get('transaksi/{transaksi}', [TransaksiController::class, 'show']);
+    Route::get('transaksi',                          [TransaksiController::class, 'index']);
+    Route::get('transaksi/{transaksi}/faktur',        [\App\Http\Controllers\FakturController::class, 'transaksi']);
+    Route::get('transaksi/{transaksi}',              [TransaksiController::class, 'show']);
     Route::middleware('role:SUPER_ADMIN,KEPALA_DEPOT,ADMIN_ANGGOTA')->group(function () {
         Route::post('transaksi',                            [TransaksiController::class, 'store']);
         Route::put('transaksi/{transaksi}/assign-hewan',    [TransaksiController::class, 'assignHewan']);
