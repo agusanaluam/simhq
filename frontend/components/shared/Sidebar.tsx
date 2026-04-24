@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import {
   LayoutDashboard, ShoppingCart, Package, Users,
-  Wallet, Truck, ClipboardList, ClipboardCheck, LogOut, Database, PawPrint, Grid3x3, Receipt, Layers, BarChart2, HandCoins, BookOpen, TrendingUp, Inbox, UserCheck, Target, MessageSquare, Calculator, Activity
+  Wallet, Truck, ClipboardList, ClipboardCheck, LogOut, Database, PawPrint, Grid3x3, Receipt, Layers, BarChart2, HandCoins, BookOpen, TrendingUp, Inbox, UserCheck, Target, MessageSquare, Calculator, Activity, LineChart
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -31,6 +31,7 @@ const navItems: NavItem[] = [
   { href: '/keuangan/rab',             label: 'RAB & Realisasi',  icon: BookOpen,   roles: ['SUPER_ADMIN','KEPALA_DEPOT'] },
   { href: '/laporan/income-statement', label: 'Income Statement',  icon: TrendingUp, roles: ['SUPER_ADMIN','KEPALA_DEPOT'] },
   { href: '/laporan/mortalitas',       label: 'Mortalitas Hewan',  icon: Activity,   roles: ['SUPER_ADMIN','KEPALA_DEPOT','KANDANG_SAPI_KETUA','KANDANG_DOMBA_KETUA'] },
+  { href: '/laporan/forecast',         label: 'Forecast',          icon: LineChart,  roles: ['SUPER_ADMIN','KEPALA_DEPOT'] },
   { href: '/cs/order',                 label: 'Order Katalog',    icon: Inbox,      roles: ['SUPER_ADMIN','KEPALA_DEPOT','CS_KETUA','CS_ANGGOTA','ADMIN_KETUA'] },
   { href: '/cs/customer',     label: 'Database Customer', icon: UserCheck,  roles: ['SUPER_ADMIN','KEPALA_DEPOT','CS_KETUA','CS_ANGGOTA','ADMIN_KETUA'] },
   { href: '/cs/retargeting',  label: 'Retargeting',       icon: Target,     roles: ['SUPER_ADMIN','KEPALA_DEPOT','CS_KETUA','CS_ANGGOTA','ADMIN_KETUA'] },
