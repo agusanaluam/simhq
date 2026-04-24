@@ -119,6 +119,10 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Laporan
     Route::get('laporan/rekap-setoran', [PembayaranController::class, 'rekapSetoran']);
+    Route::middleware('role:SUPER_ADMIN,KEPALA_DEPOT,ADMIN_KETUA')->group(function () {
+        Route::get('laporan/income-statement/export', [\App\Http\Controllers\IncomeStatementController::class, 'export']);
+        Route::get('laporan/income-statement',         [\App\Http\Controllers\IncomeStatementController::class, 'generate']);
+    });
 
     // Absensi — static routes ordered: export before rekap, checkin/checkout before wildcards
     Route::prefix('absensi')->group(function () {
