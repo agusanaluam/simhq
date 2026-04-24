@@ -7,12 +7,14 @@ import { Button } from '@/components/ui/Button'
 import api from '@/lib/api'
 
 interface UpahRow {
-  karyawan_id:  number
-  nama:         string
-  divisi:       string
-  hari_hadir:   number
-  tarif_harian: number
-  total_upah:   number
+  karyawan_id:     number
+  nama:            string
+  divisi:          string
+  hari_hadir:      number
+  tarif_harian:    number
+  total_upah:      number
+  potongan_kasbon: number
+  upah_bersih:     number
 }
 
 function rupiah(n: number): string {
@@ -64,7 +66,7 @@ export default function UpahPage() {
     }
   }
 
-  const totalUpah = rows.reduce((sum, r) => sum + r.total_upah, 0)
+  const totalUpah = rows.reduce((sum, r) => sum + r.upah_bersih, 0)
 
   return (
     <div>
@@ -111,9 +113,9 @@ export default function UpahPage() {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-surface-high">
-                    {['Nama', 'Divisi', 'Hari Hadir', 'Tarif Harian', 'Total Upah'].map((h) => (
+                    {['Nama', 'Divisi', 'Hari Hadir', 'Tarif Harian', 'Total Upah', 'Potongan Kasbon', 'Upah Bersih'].map((h) => (
                       <th key={h} className={`py-3 px-4 font-body font-medium text-on-surface-variant text-xs uppercase tracking-widest ${
-                        ['Hari Hadir', 'Tarif Harian', 'Total Upah'].includes(h) ? 'text-right' : 'text-left'
+                        ['Hari Hadir', 'Tarif Harian', 'Total Upah', 'Potongan Kasbon', 'Upah Bersih'].includes(h) ? 'text-right' : 'text-left'
                       }`}>{h}</th>
                     ))}
                   </tr>
@@ -130,10 +132,16 @@ export default function UpahPage() {
                       <td className="py-3 px-4 font-display font-semibold text-right text-primary whitespace-nowrap">
                         {rupiah(r.total_upah)}
                       </td>
+                      <td className="py-3 px-4 font-display text-right text-error whitespace-nowrap">
+                        {r.potongan_kasbon > 0 ? rupiah(r.potongan_kasbon) : '—'}
+                      </td>
+                      <td className="py-3 px-4 font-display font-semibold text-right text-primary whitespace-nowrap">
+                        {rupiah(r.upah_bersih)}
+                      </td>
                     </tr>
                   ))}
                   <tr className="bg-surface-low border-t-2 border-surface-high">
-                    <td colSpan={4} className="py-3 px-4 font-body font-semibold text-on-surface">Total</td>
+                    <td colSpan={6} className="py-3 px-4 font-body font-semibold text-on-surface">Total</td>
                     <td className="py-3 px-4 font-display font-bold text-right text-primary whitespace-nowrap">{rupiah(totalUpah)}</td>
                   </tr>
                 </tbody>
