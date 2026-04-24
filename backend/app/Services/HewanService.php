@@ -17,8 +17,9 @@ class HewanService
             $last = Hewan::where('depot_id', $depotId)
                 ->where('musim', $musim)
                 ->where('jenis', $jenis)
+                ->orderByDesc('no_hewan')
                 ->lockForUpdate()
-                ->max('no_hewan');
+                ->value('no_hewan');
 
             $next = $last ? ((int) $last) + 1 : $start;
 
