@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import {
   LayoutDashboard, ShoppingCart, Package, Users,
-  Wallet, Truck, ClipboardList, ClipboardCheck, LogOut, Database, PawPrint, Grid3x3, Receipt, Layers, BarChart2, HandCoins, BookOpen, TrendingUp, Inbox, UserCheck, Target, MessageSquare
+  Wallet, Truck, ClipboardList, ClipboardCheck, LogOut, Database, PawPrint, Grid3x3, Receipt, Layers, BarChart2, HandCoins, BookOpen, TrendingUp, Inbox, UserCheck, Target, MessageSquare, Calculator
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -34,6 +34,7 @@ const navItems: NavItem[] = [
   { href: '/cs/customer',     label: 'Database Customer', icon: UserCheck,  roles: ['SUPER_ADMIN','KEPALA_DEPOT','CS_KETUA','CS_ANGGOTA','ADMIN_KETUA'] },
   { href: '/cs/retargeting',  label: 'Retargeting',       icon: Target,     roles: ['SUPER_ADMIN','KEPALA_DEPOT','CS_KETUA','CS_ANGGOTA','ADMIN_KETUA'] },
   { href: '/admin/wa-log',   label: 'Log WA',        icon: MessageSquare, roles: ['SUPER_ADMIN','KEPALA_DEPOT'] },
+  { href: '/admin/sdm/upah', label: 'Upah Harian', icon: Calculator,    roles: ['SUPER_ADMIN','KEPALA_DEPOT','ADMIN_KETUA'] },
   { href: '/pengiriman',    label: 'Pengiriman',    icon: Truck,          roles: ['SUPER_ADMIN','KEPALA_DEPOT','LOGISTIK_KETUA','LOGISTIK_ANGGOTA'] },
   { href: '/admin/users',   label: 'Manaj. User',   icon: Users,          roles: ['SUPER_ADMIN'] },
   { href: '/admin/master-data', label: 'Master Data', icon: Database, roles: ['SUPER_ADMIN', 'KEPALA_DEPOT'] },
