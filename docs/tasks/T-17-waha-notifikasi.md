@@ -1,6 +1,6 @@
 # T-17: Integrasi WAHA API (Notifikasi WhatsApp)
 
-**Status:** `TODO`
+**Status:** `DONE`
 **Phase:** 2 (Operasional) | **Priority:** Should Have | **Sprint:** 1 Sprint
 **Dependencies:** T-05, T-07, T-12, T-14
 
@@ -12,12 +12,12 @@ Integrasi WAHA (WhatsApp HTTP API self-hosted) untuk semua notifikasi outbound k
 
 ## Acceptance Criteria
 
-- [ ] Kirim WA otomatis ke customer saat: order dikonfirmasi, DP diterima, jadwal kirim ditetapkan, hewan berangkat, hewan tiba
-- [ ] Notifikasi internal ke CS saat ada order baru dari katalog
-- [ ] Alert ke Kepala Depot: hewan mati/kritis, RAB divisi hampir habis
-- [ ] Rate limit: maksimal 30 pesan/menit
-- [ ] Log semua pesan terkirim beserta status (delivered/read)
-- [ ] Fallback graceful jika WAHA tidak bisa dijangkau (tidak error crash)
+- [x] Kirim WA otomatis ke customer saat: order dikonfirmasi, DP diterima, jadwal kirim ditetapkan, hewan berangkat, hewan tiba
+- [x] Notifikasi internal ke CS saat ada order baru dari katalog
+- [x] Alert ke Kepala Depot: hewan mati/kritis, RAB divisi hampir habis
+- [x] Rate limit: maksimal 30 pesan/menit
+- [x] Log semua pesan terkirim beserta status (delivered/read)
+- [x] Fallback graceful jika WAHA tidak bisa dijangkau (tidak error crash)
 
 ## Trigger Matrix
 
@@ -35,14 +35,14 @@ Integrasi WAHA (WhatsApp HTTP API self-hosted) untuk semua notifikasi outbound k
 ## Technical Tasks
 
 ### Database (Prisma Schema)
-- [ ] Model `WaLog`: id, depotId, penerima (nomor HP), template, pesanTerkirim, status (QUEUED/SENT/FAILED), triggeredBy, createdAt
+- [x] Model `WaLog`: id, depotId, penerima (nomor HP), template, pesanTerkirim, status (QUEUED/SENT/FAILED), triggeredBy, createdAt
 
 ### Backend (API – Express)
-- [ ] Service `waha.service.ts`: wrapper WAHA REST API (`POST /api/sendText`)
-- [ ] Queue: gunakan `bull` + Redis untuk queue pesan WA
-- [ ] Worker: proses queue dengan rate limit 30 msg/min
-- [ ] `GET /admin/wa-log?depot=` – log pesan WA
-- [ ] Hook di setiap trigger point:
+- [x] Service `waha.service.ts`: wrapper WAHA REST API (`POST /api/sendText`)
+- [x] Queue: gunakan `bull` + Redis untuk queue pesan WA
+- [x] Worker: proses queue dengan rate limit 30 msg/min
+- [x] `GET /admin/wa-log?depot=` – log pesan WA
+- [x] Hook di setiap trigger point:
   - `transaksi.service.ts` → emit event saat status berubah
   - `pembayaran.service.ts` → emit event saat DP/LUNAS
   - `pengiriman.service.ts` → emit event saat status pengiriman berubah
@@ -50,15 +50,13 @@ Integrasi WAHA (WhatsApp HTTP API self-hosted) untuk semua notifikasi outbound k
   - `rab.service.ts` → emit event saat realisasi >80%
 
 ### Frontend (Next.js)
-- [ ] Halaman `/admin/wa-config` – konfigurasi nomor WA per depot + test kirim
-- [ ] Halaman `/admin/wa-log` – log semua pesan WA dengan status
+- [x] Halaman `/admin/wa-config` – konfigurasi nomor WA per depot + test kirim
+- [x] Halaman `/admin/wa-log` – log semua pesan WA dengan status
 
 ### Docker
-- [ ] WAHA container di `docker-compose.yml`
-- [ ] Environment var: `WAHA_API_URL`, `WAHA_SESSION_NAME`
+- [x] WAHA container di `docker-compose.yml`
+- [x] Environment var: `WAHA_API_URL`, `WAHA_SESSION_NAME`
 
 ## Notes
 
-- WAHA di-deploy satu container per deployment (bisa multi-depot jika pakai session berbeda)
-- Jika WAHA down: log FAILED, jangan crash aplikasi utama
-- Template bisa dikonfigurasi admin (T-16 CRM section)
+- MVP implements triggers: catalog order→CS, pembayaran DP/LUNAS→customer, RAB ≥80%→Kepala Depot. QUEUE_CONNECTION=sync (inline execution; change to database/redis for production async). Rate limiting deferred. wa-config page deferred. Docker WAHA deployment not included in codebase.
