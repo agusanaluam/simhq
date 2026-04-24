@@ -3,9 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Enums\DivisiKas;
+use App\Enums\UserRole;
 use App\Models\KasHarian;
 use App\Models\Rab;
 use App\Models\RealisasiPengeluaran;
+use App\Models\User;
+use App\Services\WahaService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -128,6 +131,27 @@ class RabController extends Controller
 
             return $realisasi;
         });
+
+        // Alert Kepala Depot if RAB >= 80%
+        $totalRealisasi = $rab->realisasi()->sum('jumlah');
+        if ($rab->jumlah_anggaran > 0) {
+            $persen = $totalRealisasi / $rab->jumlah_anggaran * 100;
+            if ($persen >= 80) {
+                $sisa      = number_format($rab->jumlah_anggaran - $totalRealisasi, 0, ',', '.');
+                $persenFmt = round($persen, 1);
+                User::where('depot_id', $rab->depot_id)
+                    ->where('role', UserRole::KEPALA_DEPOT)
+                    ->whereNotNull('phone')
+                    ->each(function ($kd) use ($rab, $sisa, $persenFmt): void {
+                        WahaService::send(
+                            $rab->depot_id,
+                            $kd->phone,
+                            "WARNING: RAB divisi {$rab->divisi} tersisa Rp{$sisa} (realisasi {$persenFmt}% dari anggaran).",
+                            'rab_hampir_habis'
+                        );
+                    });
+            }
+        }
 
         return response()->json(['realisasi' => $realisasi->load('inputBy:id,name')], 201);
     }

@@ -2,7 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\UserRole;
 use App\Models\OrderKatalog;
+use App\Models\User;
+use App\Services\WahaService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -81,6 +84,19 @@ class KatalogController extends Controller
         ]);
 
         $order = OrderKatalog::create(array_merge($data, ['status' => 'BARU']));
+
+        // Notify CS Ketua of the depot
+        User::where('depot_id', $data['depot_id'])
+            ->where('role', UserRole::CS_KETUA)
+            ->whereNotNull('phone')
+            ->each(function ($cs) use ($data): void {
+                WahaService::send(
+                    $data['depot_id'],
+                    $cs->phone,
+                    "Ada order baru dari katalog: {$data['nama']} – {$data['kelas']} {$data['jenis']}. Segera follow-up.",
+                    'order_katalog_baru'
+                );
+            });
 
         return response()->json(['order' => $order], 201);
     }

@@ -185,4 +185,9 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::put('crm/customer/{customer}',      [\App\Http\Controllers\CrmController::class, 'update']);
         Route::post('crm/customer/{customer}/log', [\App\Http\Controllers\CrmController::class, 'storeLog']);
     });
+
+    // WA Log
+    Route::middleware('role:SUPER_ADMIN,KEPALA_DEPOT,ADMIN_KETUA')->group(function () {
+        Route::get('admin/wa-log', [\App\Http\Controllers\WaLogController::class, 'index']);
+    });
 });

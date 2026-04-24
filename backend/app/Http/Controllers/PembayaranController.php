@@ -7,6 +7,7 @@ use App\Models\KasHarian;
 use App\Models\Pembayaran;
 use App\Models\Transaksi;
 use App\Services\PembayaranService;
+use App\Services\WahaService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -62,6 +63,20 @@ class PembayaranController extends Controller
 
             return $pembayaran;
         });
+
+        // Notify customer via WA
+        $transaksi->loadMissing('customer');
+        $customer = $transaksi->customer;
+        if ($customer?->hp) {
+            $tipeLabel = $data['tipe'] === 'DP' ? 'DP' : 'Pelunasan';
+            $nominal   = number_format($pembayaran->jumlah, 0, ',', '.');
+            WahaService::send(
+                $transaksi->depot_id,
+                $customer->hp,
+                "{$tipeLabel} Rp{$nominal} untuk faktur {$transaksi->no_faktur} telah diterima. Terima kasih.",
+                'pembayaran_' . strtolower($data['tipe'])
+            );
+        }
 
         return response()->json(['pembayaran' => $pembayaran->load('teller:id,name')], 201);
     }
