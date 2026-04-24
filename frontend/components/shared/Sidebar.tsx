@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import {
   LayoutDashboard, ShoppingCart, Package, Users,
-  Wallet, Truck, ClipboardList, ClipboardCheck, LogOut, Database, PawPrint, Grid3x3, Receipt, Layers, BarChart2, HandCoins
+  Wallet, Truck, ClipboardList, ClipboardCheck, LogOut, Database, PawPrint, Grid3x3, Receipt, Layers, BarChart2, HandCoins, BookOpen
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -27,7 +27,8 @@ const navItems: NavItem[] = [
   { href: '/absensi',       label: 'Absensi',       icon: ClipboardCheck, roles: ['SUPER_ADMIN','KEPALA_DEPOT','ADMIN_ANGGOTA','KANDANG_SAPI_KETUA','KANDANG_SAPI_ANGGOTA','KANDANG_DOMBA_KETUA','KANDANG_DOMBA_ANGGOTA','KEUANGAN'] },
   { href: '/admin/absensi', label: 'Rekap Absensi', icon: ClipboardList,  roles: ['SUPER_ADMIN','KEPALA_DEPOT','KEUANGAN'] },
   { href: '/keuangan',           label: 'Keuangan',      icon: Wallet,     roles: ['SUPER_ADMIN','KEPALA_DEPOT'] },
-  { href: '/keuangan/setoran-gum', label: 'Setoran GUM', icon: HandCoins,  roles: ['SUPER_ADMIN','KEPALA_DEPOT'] },
+  { href: '/keuangan/setoran-gum', label: 'Setoran GUM',    icon: HandCoins, roles: ['SUPER_ADMIN','KEPALA_DEPOT'] },
+  { href: '/keuangan/rab',         label: 'RAB & Realisasi', icon: BookOpen,  roles: ['SUPER_ADMIN','KEPALA_DEPOT'] },
   { href: '/pengiriman',    label: 'Pengiriman',    icon: Truck,          roles: ['SUPER_ADMIN','KEPALA_DEPOT','LOGISTIK_KETUA','LOGISTIK_ANGGOTA'] },
   { href: '/admin/users',   label: 'Manaj. User',   icon: Users,          roles: ['SUPER_ADMIN'] },
   { href: '/admin/master-data', label: 'Master Data', icon: Database, roles: ['SUPER_ADMIN', 'KEPALA_DEPOT'] },
