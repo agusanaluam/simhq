@@ -44,7 +44,27 @@ class KatalogController extends Controller
                 'jumlah_tersedia' => (int) $r->jumlah_tersedia,
             ]);
 
-        return response()->json(['musim' => $musim, 'data' => $items->values()->all()]);
+        // Fetch one foto per kelas/jenis group
+        $fotoRows = DB::table('foto_hewan as fh')
+            ->join('hewan as h', 'h.id', '=', 'fh.hewan_id')
+            ->join('kelas_hewan as kj', 'kj.id', '=', 'h.kelas_jual_id')
+            ->where('h.depot_id', $depotId)
+            ->where('h.musim', $musim)
+            ->where('h.status', 'AVAILABLE')
+            ->orderBy('fh.id')
+            ->select('kj.nama as kelas', 'h.jenis', 'fh.url')
+            ->get()
+            ->unique(fn($r) => "{$r->kelas}_{$r->jenis}")
+            ->keyBy(fn($r) => "{$r->kelas}_{$r->jenis}");
+
+        $appUrl        = config('app.url');
+        $itemsWithFoto = $items->map(fn($item) => array_merge($item, [
+            'foto_url' => isset($fotoRows["{$item['kelas']}_{$item['jenis']}"])
+                ? "{$appUrl}/storage/" . $fotoRows["{$item['kelas']}_{$item['jenis']}"]->url
+                : null,
+        ]));
+
+        return response()->json(['musim' => $musim, 'data' => $itemsWithFoto->values()->all()]);
     }
 
     public function order(Request $request): JsonResponse

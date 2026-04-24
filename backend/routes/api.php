@@ -94,6 +94,13 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::delete('hewan/{hewan}/slot/{noSlot}', [SlotSapiController::class, 'destroy']);
     });
 
+    // Foto Hewan
+    Route::get('hewan/{hewan}/foto', [\App\Http\Controllers\FotoHewanController::class, 'index']);
+    Route::middleware('role:SUPER_ADMIN,KEPALA_DEPOT,KANDANG_SAPI_KETUA,KANDANG_DOMBA_KETUA,KANDANG_SAPI_ANGGOTA,KANDANG_DOMBA_ANGGOTA')->group(function () {
+        Route::post('hewan/{hewan}/foto',          [\App\Http\Controllers\FotoHewanController::class, 'store']);
+        Route::delete('hewan/{hewan}/foto/{foto}', [\App\Http\Controllers\FotoHewanController::class, 'destroy']);
+    });
+
     Route::get('hewan/{hewan}',    [HewanController::class, 'show']);
     Route::middleware('role:SUPER_ADMIN,KEPALA_DEPOT,KANDANG_SAPI_KETUA,KANDANG_DOMBA_KETUA')->group(function () {
         Route::post('hewan',                    [HewanController::class, 'store']);
