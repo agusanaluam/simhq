@@ -121,13 +121,23 @@ export default function PlotingSapiPage() {
         </div>
 
         {selectedSapi && (
-          <SlotPanel
-            sapi={selectedSapi}
-            slots={slots}
-            onAssign={noSlot => setAssignSlot(noSlot)}
-            onDelete={handleDelete}
-            onClose={() => { setSelected(null); setSlots([]) }}
-          />
+          <div className="flex flex-col gap-2">
+            <a
+              href={`/faktur/ploting/${selectedSapi.id}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-xs text-primary hover:underline self-end"
+            >
+              Cetak Faktur Ploting
+            </a>
+            <SlotPanel
+              sapi={selectedSapi}
+              slots={slots}
+              onAssign={noSlot => setAssignSlot(noSlot)}
+              onDelete={handleDelete}
+              onClose={() => { setSelected(null); setSlots([]) }}
+            />
+          </div>
         )}
       </div>
 
