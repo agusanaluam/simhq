@@ -43,13 +43,13 @@
 | [T-11](tasks/T-11-setoran-gum.md) | Manajemen Setoran GUM (Konsinyasi Supplier) | `✅ DONE` | 1 | T-03, T-07 |
 | [T-12](tasks/T-12-rab-realisasi.md) | RAB per Divisi & Realisasi | `✅ DONE` | 1 | T-10 |
 | [T-13](tasks/T-13-income-statement.md) | Income Statement Otomatis | `✅ DONE` | 1 | T-07, T-10, T-12 |
-| [T-14](tasks/T-14-katalog-web.md) | Katalog Web Publik & Form Order Online | `⬜ TODO` | 2 | T-03, T-05 |
+| [T-14](tasks/T-14-katalog-web.md) | Katalog Web Publik & Form Order Online | `✅ DONE` | 2 | T-03, T-05 |
 | [T-15](tasks/T-15-upload-foto-hewan.md) | Upload Foto Hewan untuk Katalog | `⬜ TODO` | 1 | T-03, T-14 |
 | [T-16](tasks/T-16-crm-customer.md) | CRM – Database Customer & Order | `⬜ TODO` | 2 | T-05, T-14 |
 | [T-17](tasks/T-17-waha-notifikasi.md) | Integrasi WAHA API (Notifikasi WhatsApp) | `⬜ TODO` | 1 | T-05, T-07, T-12, T-14 |
 | [T-18](tasks/T-18-upah-harian.md) | Kalkulasi Upah Harian Otomatis | `⬜ TODO` | 1 | T-08, T-02 |
 
-**Progress Phase 2:** 5 / 10 selesai 🔄
+**Progress Phase 2:** 6 / 10 selesai 🔄
 
 ---
 
@@ -76,9 +76,9 @@
 | Phase | Total | Selesai | Sisa |
 |-------|-------|---------|------|
 | Phase 1 – Fondasi | 8 | 8 | 0 |
-| Phase 2 – Operasional | 10 | 5 | 5 |
+| Phase 2 – Operasional | 10 | 6 | 4 |
 | Phase 3 – Lengkap | 7 | 0 | 7 |
-| **TOTAL** | **25** | **13** | **12** |
+| **TOTAL** | **25** | **14** | **11** |
 
 ---
 
