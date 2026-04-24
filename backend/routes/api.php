@@ -40,6 +40,11 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('keuangan/setoran-gum/posisi', [\App\Http\Controllers\SetoranGumController::class, 'posisi']);
         Route::get('keuangan/setoran-gum',        [\App\Http\Controllers\SetoranGumController::class, 'index']);
         Route::post('keuangan/setoran-gum',       [\App\Http\Controllers\SetoranGumController::class, 'store']);
+        // RAB — summary static route MUST come before {rab} wildcard
+        Route::get('keuangan/rab/summary',         [\App\Http\Controllers\RabController::class, 'summary']);
+        Route::post('keuangan/rab',                 [\App\Http\Controllers\RabController::class, 'store']);
+        Route::get('keuangan/rab/{rab}/realisasi',  [\App\Http\Controllers\RabController::class, 'indexRealisasi']);
+        Route::post('keuangan/rab/{rab}/realisasi', [\App\Http\Controllers\RabController::class, 'storeRealisasi']);
     });
 
     // SUPER_ADMIN only
