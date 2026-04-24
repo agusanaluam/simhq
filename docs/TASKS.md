@@ -65,9 +65,9 @@
 | [T-22](tasks/T-22-forecast-penjualan.md) | Forecast Penjualan (Grafik Proyeksi) | `✅ DONE` | 1 | T-05, T-09 |
 | [T-23](tasks/T-23-broadcast-wa.md) | Broadcast WA ke Segmen Customer | `⬜ TODO` | 1 | T-16, T-17 |
 | [T-24](tasks/T-24-laporan-multidepot.md) | Laporan Multi-Depot (Admin Pusat) | `⬜ TODO` | 1 | T-09, T-13 |
-| [T-25](tasks/T-25-kasbon-karyawan.md) | Modul Kasbon Karyawan | `⬜ TODO` | 1 | T-01, T-02, T-18 |
+| [T-25](tasks/T-25-kasbon-karyawan.md) | Modul Kasbon Karyawan | `✅ DONE` | 1 | T-01, T-02, T-18 |
 
-**Progress Phase 3:** 4 / 7 selesai ✅
+**Progress Phase 3:** 5 / 7 selesai ✅
 
 ---
 
@@ -77,8 +77,8 @@
 |-------|-------|---------|------|
 | Phase 1 – Fondasi | 8 | 8 | 0 |
 | Phase 2 – Operasional | 10 | 10 | 0 |
-| Phase 3 – Lengkap | 7 | 4 | 3 |
-| **TOTAL** | **25** | **22** | **3** |
+| Phase 3 – Lengkap | 7 | 5 | 2 |
+| **TOTAL** | **25** | **23** | **2** |
 
 ---
 
