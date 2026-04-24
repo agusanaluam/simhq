@@ -40,7 +40,7 @@
 |----|------|--------|--------|--------------|
 | [T-09](tasks/T-09-dashboard-depot.md) | Dashboard Depot (Stok, Penjualan) | `✅ DONE` | 1 | T-03, T-05, T-07 |
 | [T-10](tasks/T-10-keuangan-biop.md) | Laporan Keuangan – BIOP & Cash Flow | `✅ DONE` | 2 | T-07 |
-| [T-11](tasks/T-11-setoran-gum.md) | Manajemen Setoran GUM (Konsinyasi Supplier) | `⬜ TODO` | 1 | T-03, T-07 |
+| [T-11](tasks/T-11-setoran-gum.md) | Manajemen Setoran GUM (Konsinyasi Supplier) | `✅ DONE` | 1 | T-03, T-07 |
 | [T-12](tasks/T-12-rab-realisasi.md) | RAB per Divisi & Realisasi | `⬜ TODO` | 1 | T-10 |
 | [T-13](tasks/T-13-income-statement.md) | Income Statement Otomatis | `⬜ TODO` | 1 | T-07, T-10, T-12 |
 | [T-14](tasks/T-14-katalog-web.md) | Katalog Web Publik & Form Order Online | `⬜ TODO` | 2 | T-03, T-05 |
@@ -49,7 +49,7 @@
 | [T-17](tasks/T-17-waha-notifikasi.md) | Integrasi WAHA API (Notifikasi WhatsApp) | `⬜ TODO` | 1 | T-05, T-07, T-12, T-14 |
 | [T-18](tasks/T-18-upah-harian.md) | Kalkulasi Upah Harian Otomatis | `⬜ TODO` | 1 | T-08, T-02 |
 
-**Progress Phase 2:** 2 / 10 selesai 🔄
+**Progress Phase 2:** 3 / 10 selesai 🔄
 
 ---
 
@@ -76,9 +76,9 @@
 | Phase | Total | Selesai | Sisa |
 |-------|-------|---------|------|
 | Phase 1 – Fondasi | 8 | 8 | 0 |
-| Phase 2 – Operasional | 10 | 2 | 8 |
+| Phase 2 – Operasional | 10 | 3 | 7 |
 | Phase 3 – Lengkap | 7 | 0 | 7 |
-| **TOTAL** | **25** | **10** | **15** |
+| **TOTAL** | **25** | **11** | **14** |
 
 ---
 
