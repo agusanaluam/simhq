@@ -85,7 +85,7 @@ export default function KeuanganPage() {
       link.href     = url
       link.download = `kas-${bulan}.csv`
       link.click()
-      URL.revokeObjectURL(url)
+      setTimeout(() => URL.revokeObjectURL(url), 100)
     } catch {
       alert('Gagal export.')
     }
