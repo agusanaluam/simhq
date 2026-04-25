@@ -12,8 +12,16 @@ interface Yayasan {
   kontak_pic: string | null; telepon: string | null; is_active: boolean
 }
 
-function TambahYayasanModal({ onDone, onClose }: { onDone: () => void; onClose: () => void }) {
-  const [form, setForm]   = useState({ nama: '', alamat: '', kontak_pic: '', telepon: '' })
+function YayasanModal({ initialData, onDone, onClose }: {
+  initialData?: Yayasan; onDone: () => void; onClose: () => void
+}) {
+  const isEdit = !!initialData
+  const [form, setForm] = useState({
+    nama:       initialData?.nama ?? '',
+    alamat:     initialData?.alamat ?? '',
+    kontak_pic: initialData?.kontak_pic ?? '',
+    telepon:    initialData?.telepon ?? '',
+  })
   const [saving, setSaving] = useState(false)
   const [error, setError]   = useState('')
 
@@ -23,7 +31,11 @@ function TambahYayasanModal({ onDone, onClose }: { onDone: () => void; onClose: 
     if (!form.nama.trim()) { setError('Nama wajib diisi'); return }
     setSaving(true); setError('')
     try {
-      await api.post('/api/master/yayasan', form)
+      if (isEdit) {
+        await api.put(`/api/master/yayasan/${initialData!.id}`, form)
+      } else {
+        await api.post('/api/master/yayasan', form)
+      }
       onDone()
     } catch (e: any) {
       setError(e?.response?.data?.message ?? 'Gagal menyimpan')
@@ -34,7 +46,9 @@ function TambahYayasanModal({ onDone, onClose }: { onDone: () => void; onClose: 
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
       <div className="bg-surface-lowest rounded-2xl w-full max-w-md p-6 shadow-card">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="font-display font-semibold text-on-surface">Tambah Yayasan</h2>
+          <h2 className="font-display font-semibold text-on-surface">
+            {isEdit ? 'Edit Yayasan' : 'Tambah Yayasan'}
+          </h2>
           <button onClick={onClose} className="text-on-surface-variant text-xl leading-none">×</button>
         </div>
         <div className="space-y-3">
@@ -68,7 +82,10 @@ function TambahYayasanModal({ onDone, onClose }: { onDone: () => void; onClose: 
 export function TabYayasan() {
   const [yayasan, setYayasan] = useState<Yayasan[]>([])
   const [loading, setLoading] = useState(true)
-  const [showModal, setShowModal] = useState(false)
+  const [showModal, setShowModal]             = useState(false)
+  const [editingItem, setEditingItem]         = useState<Yayasan | null>(null)
+  const [confirmDeleteId, setConfirmDeleteId] = useState<number | null>(null)
+  const [deletingId, setDeletingId]           = useState<number | null>(null)
 
   function load() {
     setLoading(true)
@@ -79,10 +96,22 @@ export function TabYayasan() {
 
   useEffect(() => { load() }, [])
 
+  async function handleDelete(id: number) {
+    setDeletingId(id)
+    try {
+      await api.delete(`/api/master/yayasan/${id}`)
+      setYayasan(prev => prev.filter(y => y.id !== id))
+      setConfirmDeleteId(null)
+    } catch (e: any) {
+      setConfirmDeleteId(null)
+      alert(e?.response?.data?.message ?? 'Gagal menghapus')
+    } finally { setDeletingId(null) }
+  }
+
   return (
     <div>
       <div className="flex justify-end mb-4">
-        <Button onClick={() => setShowModal(true)}>+ Tambah Yayasan</Button>
+        <Button onClick={() => { setEditingItem(null); setShowModal(true) }}>+ Tambah Yayasan</Button>
       </div>
       <Card>
         {loading ? (
@@ -91,7 +120,7 @@ export function TabYayasan() {
           <table className="w-full text-sm">
             <thead>
               <tr className="text-left">
-                {['Nama Yayasan','Kontak PIC','Telepon','Status'].map(h => (
+                {['Nama Yayasan','Kontak PIC','Telepon','Status','Aksi'].map(h => (
                   <th key={h} className="pb-3 pr-4 text-xs uppercase tracking-widest text-on-surface-variant font-body">{h}</th>
                 ))}
               </tr>
@@ -105,20 +134,48 @@ export function TabYayasan() {
                   </td>
                   <td className="py-2.5 pr-4 text-on-surface-variant">{y.kontak_pic ?? '—'}</td>
                   <td className="py-2.5 pr-4 text-on-surface-variant">{y.telepon ?? '—'}</td>
-                  <td className="py-2.5"><StatusChip status={y.is_active ? 'AKTIF' : 'NONAKTIF'} /></td>
+                  <td className="py-2.5 pr-4"><StatusChip status={y.is_active ? 'AKTIF' : 'NONAKTIF'} /></td>
+                  <td className="py-2.5">
+                    {confirmDeleteId === y.id ? (
+                      <span className="flex items-center gap-2 text-xs">
+                        <span className="text-on-surface-variant">Hapus?</span>
+                        <button
+                          onClick={() => setConfirmDeleteId(null)}
+                          className="text-on-surface-variant hover:text-on-surface"
+                        >Batal</button>
+                        <button
+                          onClick={() => handleDelete(y.id)}
+                          disabled={deletingId === y.id}
+                          className="text-red-600 hover:text-red-700 font-medium disabled:opacity-50"
+                        >{deletingId === y.id ? '...' : 'Hapus'}</button>
+                      </span>
+                    ) : (
+                      <span className="flex items-center gap-2">
+                        <button
+                          onClick={() => { setEditingItem(y); setShowModal(true) }}
+                          className="text-xs text-primary hover:underline"
+                        >Edit</button>
+                        <button
+                          onClick={() => setConfirmDeleteId(y.id)}
+                          className="text-xs text-red-500 hover:underline"
+                        >Hapus</button>
+                      </span>
+                    )}
+                  </td>
                 </tr>
               ))}
               {yayasan.length === 0 && (
-                <tr><td colSpan={4} className="py-8 text-center text-on-surface-variant">Belum ada yayasan.</td></tr>
+                <tr><td colSpan={5} className="py-8 text-center text-on-surface-variant">Belum ada yayasan.</td></tr>
               )}
             </tbody>
           </table>
         )}
       </Card>
       {showModal && (
-        <TambahYayasanModal
-          onDone={() => { setShowModal(false); load() }}
-          onClose={() => setShowModal(false)}
+        <YayasanModal
+          initialData={editingItem ?? undefined}
+          onDone={() => { setShowModal(false); setEditingItem(null); load() }}
+          onClose={() => { setShowModal(false); setEditingItem(null) }}
         />
       )}
     </div>
