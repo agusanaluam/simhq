@@ -127,6 +127,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('hewan/{hewan}/faktur-ploting', [\App\Http\Controllers\FakturController::class, 'ploting']);
     Route::get('hewan/{hewan}',    [HewanController::class, 'show']);
     Route::middleware('role:SUPER_ADMIN,KEPALA_DEPOT,KANDANG_SAPI_KETUA,KANDANG_DOMBA_KETUA')->group(function () {
+        Route::post('hewan/bulk',               [HewanController::class, 'storeBulk']);
         Route::post('hewan',                    [HewanController::class, 'store']);
         Route::put('hewan/{hewan}',             [HewanController::class, 'update']);
         Route::post('hewan/{hewan}/transfer',   [HewanController::class, 'transfer']);

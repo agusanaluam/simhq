@@ -1,6 +1,7 @@
 <?php
 namespace App\Http\Controllers;
 
+use App\Http\Requests\BulkStoreHewanRequest;
 use App\Http\Requests\StoreHewanRequest;
 use App\Http\Requests\TransferHewanRequest;
 use App\Http\Requests\UpdateHewanRequest;
@@ -11,6 +12,8 @@ use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\DB;
 
 class HewanController extends Controller
 {
@@ -38,6 +41,24 @@ class HewanController extends Controller
         $hewan = Hewan::create($data);
 
         return response()->json(['hewan' => $hewan->load(['kelasAsal', 'kelasJual', 'supplier'])], 201);
+    }
+
+    public function storeBulk(BulkStoreHewanRequest $request): JsonResponse
+    {
+        $data   = $request->validated();
+        $shared = Arr::except($data, ['rows']);
+
+        $created = DB::transaction(function () use ($shared, $data) {
+            return collect($data['rows'])->map(function ($row) use ($shared) {
+                $row             = array_merge($shared, $row);
+                $row['no_hewan'] = $this->hewanService->generateNoHewan(
+                    $shared['depot_id'], $shared['musim'], $shared['jenis']
+                );
+                return Hewan::create($row);
+            });
+        });
+
+        return response()->json(['hewan' => $created, 'count' => $created->count()], 201);
     }
 
     public function show(Hewan $hewan): JsonResponse
