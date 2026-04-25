@@ -22,9 +22,10 @@ interface Props {
   selected: boolean
   onClick: () => void
   isDragOver?: boolean
+  showHewan?: boolean
 }
 
-export function PetakCard({ petak, selected, onClick, isDragOver }: Props) {
+export function PetakCard({ petak, selected, onClick, isDragOver, showHewan = true }: Props) {
   const pct  = petak.kapasitas > 0 ? (petak.jumlah_terisi / petak.kapasitas) * 100 : 0
   const full = petak.jumlah_terisi >= petak.kapasitas
 
@@ -52,25 +53,27 @@ export function PetakCard({ petak, selected, onClick, isDragOver }: Props) {
         />
       </div>
 
-      <div className="flex flex-wrap gap-1">
-        {petak.hewan.slice(0, 4).map(h => (
-          <span
-            key={h.id}
-            className={cn(
-              'inline-flex items-center px-1.5 py-0.5 rounded text-xs font-body border',
-              STATUS_COLOR[h.status] ?? 'bg-surface-high border-surface-highest'
-            )}
-          >
-            {h.no_hewan}
-          </span>
-        ))}
-        {petak.hewan.length > 4 && (
-          <span className="text-xs text-on-surface-variant">+{petak.hewan.length - 4}</span>
-        )}
-        {petak.hewan.length === 0 && (
-          <span className="text-xs text-on-surface-variant italic">Kosong</span>
-        )}
-      </div>
+      {showHewan && (
+        <div className="flex flex-wrap gap-1">
+          {petak.hewan.slice(0, 4).map(h => (
+            <span
+              key={h.id}
+              className={cn(
+                'inline-flex items-center px-1.5 py-0.5 rounded text-xs font-body border',
+                STATUS_COLOR[h.status] ?? 'bg-surface-high border-surface-highest'
+              )}
+            >
+              {h.no_hewan}
+            </span>
+          ))}
+          {petak.hewan.length > 4 && (
+            <span className="text-xs text-on-surface-variant">+{petak.hewan.length - 4}</span>
+          )}
+          {petak.hewan.length === 0 && (
+            <span className="text-xs text-on-surface-variant italic">Kosong</span>
+          )}
+        </div>
+      )}
 
       {petak.kelas && (
         <p className="text-xs text-on-surface-variant mt-1.5 font-body">Kelas {petak.kelas.kode}</p>
