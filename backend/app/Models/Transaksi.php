@@ -43,4 +43,5 @@ class Transaksi extends Model
 
     public function pembayaran(): HasMany    { return $this->hasMany(Pembayaran::class, 'transaksi_id'); }
     public function biayaTambahan(): HasMany { return $this->hasMany(BiayaTambahan::class, 'transaksi_id'); }
+    public function items(): HasMany         { return $this->hasMany(TransaksiItem::class); }
 }
