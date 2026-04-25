@@ -31,7 +31,7 @@ class HewanController extends Controller
             ->when($request->musim,  fn($q) => $q->where('musim', $request->musim))
             ->when($request->boolean('unassigned'), fn($q) => $q->whereNull('petak_id'))
             ->orderBy('no_hewan')
-            ->paginate(50);
+            ->paginate($request->integer('per_page', 50));
 
         return response()->json($hewan);
     }
