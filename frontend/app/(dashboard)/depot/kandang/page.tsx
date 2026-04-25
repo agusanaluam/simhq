@@ -18,8 +18,10 @@ interface TambahPetakModalProps {
 
 function TambahPetakModal({ defaultJenis, onClose, onSuccess }: TambahPetakModalProps) {
   const { data: session } = useSession()
-  const depotId = (session?.user as any)?.depotId as number | undefined
+  const sessionDepotId = (session?.user as any)?.depotId as number | undefined
 
+  const [depots,       setDepots]       = useState<{ id: number; nama: string }[]>([])
+  const [selectedDepot,setSelectedDepot]= useState<string>(sessionDepotId ? String(sessionDepotId) : '')
   const [noPetak,      setNoPetak]      = useState('')
   const [jenis,        setJenis]        = useState<'SAPI' | 'DOMBA'>(defaultJenis)
   const [kapasitas,    setKapasitas]    = useState(5)
@@ -28,9 +30,16 @@ function TambahPetakModal({ defaultJenis, onClose, onSuccess }: TambahPetakModal
   const [loading,      setLoading]      = useState(false)
   const [error,        setError]        = useState('')
 
+  useEffect(() => {
+    if (!sessionDepotId) {
+      api.get('/api/depots').then(r => setDepots(r.data.data ?? []))
+    }
+  }, [sessionDepotId])
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    if (!depotId) { setError('depot_id tidak ditemukan di sesi'); return }
+    const depotId = sessionDepotId ?? (selectedDepot ? Number(selectedDepot) : undefined)
+    if (!depotId) { setError('Pilih depot terlebih dahulu'); return }
     if (!noPetak.trim()) { setError('No. petak wajib diisi'); return }
 
     setLoading(true)
@@ -59,6 +68,22 @@ function TambahPetakModal({ defaultJenis, onClose, onSuccess }: TambahPetakModal
         <h2 className="font-display font-bold text-lg text-on-surface mb-4">Tambah Petak Kandang</h2>
 
         <form onSubmit={handleSubmit} className="space-y-4">
+          {/* Depot selector — hanya tampil untuk SUPER_ADMIN (tidak ada depotId di sesi) */}
+          {!sessionDepotId && (
+            <div>
+              <label className="block text-sm font-body font-medium text-on-surface mb-1">Depot</label>
+              <select
+                value={selectedDepot}
+                onChange={e => setSelectedDepot(e.target.value)}
+                className="input-field w-full"
+                required
+              >
+                <option value="">Pilih depot...</option>
+                {depots.map(d => <option key={d.id} value={d.id}>{d.nama}</option>)}
+              </select>
+            </div>
+          )}
+
           {/* No. Petak */}
           <div>
             <label className="block text-sm font-body font-medium text-on-surface mb-1">No. Petak</label>
