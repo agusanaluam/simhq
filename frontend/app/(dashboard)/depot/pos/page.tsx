@@ -3,101 +3,76 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useSession } from 'next-auth/react'
-import { Card } from '@/components/ui/Card'
-import { StepJenisKelas } from './StepJenisKelas'
-import { StepPilihHewan } from './StepPilihHewan'
-import { StepDataPembeli } from './StepDataPembeli'
-import { StepReview } from './StepReview'
+import { HewanBrowser } from './HewanBrowser'
+import { CartPanel } from './CartPanel'
 import api from '@/lib/api'
 
 const MUSIM = new Date().getFullYear()
-const STEP_LABELS = ['Jenis & Kelas', 'Pilih Hewan', 'Data Pembeli', 'Review & Submit']
 
-interface FormState {
+export interface CartItem {
+  tempId: string
+  hewanId: number | null
+  noHewan: string | null
   jenis: string
-  kelasId: number | null
+  kelasId: number
+  kelasKode: string
   tipeQurban: string
   harga: number
-  kelasKode: string
-  hewanId: number | null
-  hewanNo: string | null
-  preorder: boolean
-  customerId: number | null
-  namaPembeli: string
-  hp: string
-  alamat: string
-  kelurahan: string
-  kecamatan: string
-  kode_pos: string
-  kota: string
+  isPreorder: boolean
 }
 
-const INIT: FormState = {
-  jenis: 'SAPI', kelasId: null, tipeQurban: 'SHQ', harga: 0, kelasKode: '',
-  hewanId: null, hewanNo: null, preorder: false,
-  customerId: null, namaPembeli: '', hp: '', alamat: '',
-  kelurahan: '', kecamatan: '', kode_pos: '', kota: '',
+export interface CartSubmitData {
+  customerId: number
+  nama: string; hp: string; alamat: string
+  kelurahan: string; kecamatan: string; kode_pos: string; kota: string
+  csId: number | null
+  tellerId: number | null
+  salesNama: string
+  metodeBayar: string
+  tipeBayar: string
+  nominalBayar: number
+  rencana_pelunasan: string
 }
 
 export default function POSPage() {
-  const router              = useRouter()
-  const { data: session }   = useSession()
-  const [step, setStep]     = useState(0)
-  const [form, setForm]     = useState<FormState>(INIT)
+  const router            = useRouter()
+  const { data: session } = useSession()
+  const depotId           = (session?.user as any)?.depotId as number | undefined
+
+  const [cart,       setCart]       = useState<CartItem[]>([])
   const [submitting, setSubmitting] = useState(false)
+  const [error,      setError]      = useState('')
 
-  const depotId = (session?.user as any)?.depot_id as number | undefined
-
-  function onStep1Done(data: { jenis: string; kelasId: number; tipeQurban: string; harga: number; kelasKode: string }) {
-    setForm(f => ({ ...f, ...data }))
-    setStep(1)
+  function addItem(item: CartItem) {
+    setCart(prev => [...prev, item])
   }
 
-  function onStep2Done(data: { hewanId: number | null; preorder: boolean; hewanNo: string | null }) {
-    setForm(f => ({ ...f, ...data }))
-    setStep(2)
+  function removeItem(tempId: string) {
+    setCart(prev => prev.filter(i => i.tempId !== tempId))
   }
 
-  function onStep3Done(data: { customerId: number; nama: string; hp: string; alamat: string; kelurahan: string; kecamatan: string; kode_pos: string; kota: string }) {
-    setForm(f => ({
-      ...f,
-      customerId:  data.customerId,
-      namaPembeli: data.nama,
-      hp:          data.hp,
-      alamat:      data.alamat,
-      kelurahan:   data.kelurahan,
-      kecamatan:   data.kecamatan,
-      kode_pos:    data.kode_pos,
-      kota:        data.kota,
-    }))
-    setStep(3)
-  }
-
-  async function onStep4Done(data: {
-    csId: number | null
-    tellerId: number | null
-    salesNama: string
-    rencana_pelunasan: string
-    metodeBayar: string
-    tipeBayar: string
-    nominalBayar: number
-  }) {
-    if (!depotId || !form.kelasId || !form.customerId) return
+  async function handleSubmit(data: CartSubmitData) {
+    if (!depotId) { setError('Depot tidak ditemukan di sesi.'); return }
     setSubmitting(true)
+    setError('')
     try {
       const res = await api.post('/api/transaksi', {
         depot_id:           depotId,
-        hewan_id:           form.hewanId,
-        customer_id:        form.customerId,
+        customer_id:        data.customerId,
         cs_id:              data.csId,
         teller_id:          data.tellerId,
         sales_id:           null,
         sales_nama:         data.salesNama || null,
         rencana_pelunasan:  data.rencana_pelunasan || null,
-        tipe_qurban:        form.tipeQurban,
-        jenis:              form.jenis,
-        kelas_id:           form.kelasId,
         musim:              MUSIM,
+        items: cart.map(item => ({
+          hewan_id:    item.hewanId,
+          jenis:       item.jenis,
+          kelas_id:    item.kelasId,
+          tipe_qurban: item.tipeQurban,
+          harga:       item.harga,
+          is_preorder: item.isPreorder,
+        })),
       })
       const transaksiId = res.data.transaksi.id
 
@@ -110,97 +85,41 @@ export default function POSPage() {
       })
 
       router.push('/depot/transaksi')
-    } catch {
+    } catch (err: any) {
+      setError(err.response?.data?.message ?? 'Gagal memproses transaksi.')
       setSubmitting(false)
     }
   }
 
   return (
-    <div className="max-w-2xl mx-auto">
-      <div className="mb-6">
+    <div>
+      <div className="mb-4">
         <h1 className="font-display font-bold text-2xl text-on-surface">POS Penjualan</h1>
-        <p className="text-sm text-on-surface-variant mt-1">Transaksi baru</p>
+        <p className="text-sm text-on-surface-variant mt-1">Pilih hewan → tambah ke cart → proses</p>
       </div>
 
-      {/* Step indicator */}
-      <div className="flex items-center gap-1 mb-6">
-        {STEP_LABELS.map((label, i) => (
-          <div key={i} className="flex items-center gap-1">
-            <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-body font-semibold transition-colors ${
-              i < step
-                ? 'bg-primary text-white'
-                : i === step
-                  ? 'bg-primary text-white ring-2 ring-primary/30'
-                  : 'bg-surface-high text-on-surface-variant'
-            }`}>
-              {i < step ? '✓' : i + 1}
-            </div>
-            <span className={`text-xs font-body hidden sm:inline mr-2 ${
-              i === step ? 'text-on-surface font-medium' : 'text-on-surface-variant'
-            }`}>
-              {label}
-            </span>
-            {i < STEP_LABELS.length - 1 && <div className="w-4 h-px bg-surface-high" />}
-          </div>
-        ))}
-      </div>
+      {error && (
+        <p className="text-sm text-error bg-[#fee2e2] px-3 py-2 rounded-md mb-4">{error}</p>
+      )}
 
-      <Card>
-        <h2 className="font-display font-semibold text-on-surface mb-4">{STEP_LABELS[step]}</h2>
-
-        {step === 0 && (
-          <StepJenisKelas
-            jenis={form.jenis}
-            kelasId={form.kelasId}
-            tipeQurban={form.tipeQurban}
+      <div className="flex gap-4 items-start">
+        <div className="flex-1 min-w-0">
+          <HewanBrowser
             musim={MUSIM}
-            onNext={onStep1Done}
+            depotId={depotId}
+            onAdd={addItem}
           />
-        )}
-        {step === 1 && (
-          <StepPilihHewan
-            jenis={form.jenis}
-            kelasId={form.kelasId}
-            hewanId={form.hewanId}
-            preorder={form.preorder}
-            onNext={onStep2Done}
-            onBack={() => setStep(0)}
-          />
-        )}
-        {step === 2 && (
-          <StepDataPembeli
-            data={{
-              customerId: form.customerId,
-              nama:       form.namaPembeli,
-              hp:         form.hp,
-              alamat:     form.alamat,
-              kelurahan:  form.kelurahan,
-              kecamatan:  form.kecamatan,
-              kode_pos:   form.kode_pos,
-              kota:       form.kota,
-            }}
-            onNext={onStep3Done}
-            onBack={() => setStep(1)}
-          />
-        )}
-        {step === 3 && (
-          <StepReview
-            summary={{
-              jenis: form.jenis,
-              tipeQurban: form.tipeQurban,
-              kelasKode: form.kelasKode,
-              harga: form.harga,
-              hewanNo: form.hewanNo,
-              preorder: form.preorder,
-              namaPembeli: form.namaPembeli,
-              hp: form.hp,
-            }}
-            onSubmit={onStep4Done}
-            onBack={() => setStep(2)}
+        </div>
+
+        <div className="w-80 xl:w-96 flex-shrink-0">
+          <CartPanel
+            items={cart}
+            onRemove={removeItem}
+            onSubmit={handleSubmit}
             submitting={submitting}
           />
-        )}
-      </Card>
+        </div>
+      </div>
     </div>
   )
 }
