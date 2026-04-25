@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreUserRequest;
 use App\Http\Requests\UpdateUserRequest;
+use App\Models\Karyawan;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -29,11 +30,11 @@ class UserController extends Controller
             ]));
 
             if ($request->boolean('buat_karyawan')) {
-                \App\Models\Karyawan::create([
+                Karyawan::create([
                     'user_id'      => $user->id,
                     'depot_id'     => $user->depot_id,
                     'nama'         => $user->name,
-                    'divisi'       => $user->divisi ?? '',
+                    'divisi'       => $user->divisi,
                     'tarif_harian' => (int) $request->tarif_harian,
                     'berlaku_dari' => $request->berlaku_dari,
                     'is_active'    => true,
