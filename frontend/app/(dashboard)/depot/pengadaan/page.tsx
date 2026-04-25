@@ -5,6 +5,7 @@ import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { StatusChip } from '@/components/ui/StatusChip'
 import { TambahHewanModal } from './TambahHewanModal'
+import { BulkTambahHewanModal } from './BulkTambahHewanModal'
 import { StatistikPanel } from './StatistikPanel'
 import api from '@/lib/api'
 import Link from 'next/link'
@@ -152,6 +153,7 @@ export default function PengadaanPage() {
   const [jenisFilter, setJenis]         = useState('')
   const [showModal, setShowModal]       = useState(false)
   const [showSupplier, setShowSupplier] = useState(false)
+  const [showBulk, setShowBulk]         = useState(false)
 
   function loadHewan() {
     setLoading(true)
@@ -174,7 +176,8 @@ export default function PengadaanPage() {
         </div>
         <div className="flex gap-2 items-center">
           <Button variant="secondary" onClick={() => setShowSupplier(true)}>+ Tambah Supplier</Button>
-          <Button onClick={() => setShowModal(true)}>+ Tambah Hewan</Button>
+          <Button variant="secondary" onClick={() => setShowBulk(true)}>+ Tambah Massal</Button>
+          <Button onClick={() => setShowModal(true)}>+ Tambah 1 Ekor</Button>
         </div>
       </div>
 
@@ -235,6 +238,13 @@ export default function PengadaanPage() {
         <TambahHewanModal
           onClose={() => setShowModal(false)}
           onSuccess={() => { setShowModal(false); loadHewan() }}
+        />
+      )}
+
+      {showBulk && (
+        <BulkTambahHewanModal
+          onClose={() => setShowBulk(false)}
+          onSuccess={() => { setShowBulk(false); loadHewan() }}
         />
       )}
 
