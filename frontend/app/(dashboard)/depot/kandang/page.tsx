@@ -189,6 +189,10 @@ export default function KandangPage() {
   const [loading, setLoading]       = useState(true)
   const [showTambah, setShowTambah] = useState(false)
 
+  const { data: session } = useSession()
+  const sessionDepotId = (session?.user as any)?.depotId as number | undefined
+  const musim = new Date().getFullYear()
+
   const loadPetak = useCallback(() => {
     setLoading(true)
     api.get(`/api/petak?jenis=${jenis}`)
@@ -269,7 +273,13 @@ export default function KandangPage() {
           )}
         </div>
 
-        <HewanPanel petak={selectedPetak} onClose={() => setSelectedId(null)} />
+        <HewanPanel
+          petak={selectedPetak}
+          depotId={sessionDepotId}
+          musim={musim}
+          onClose={() => setSelectedId(null)}
+          onRefresh={loadPetak}
+        />
       </div>
 
       {showTambah && (
