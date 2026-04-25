@@ -26,6 +26,9 @@ function TambahUserModal({ onDone, onClose }: { onDone: () => void; onClose: () 
   const [depots, setDepots] = useState<Depot[]>([])
   const [form, setForm] = useState({
     name: '', email: '', password: '', role: 'ADMIN_ANGGOTA', depot_id: '', divisi: '', phone: '',
+    buat_karyawan: false,
+    tarif_harian:  '',
+    berlaku_dari:  '',
   })
   const [saving, setSaving] = useState(false)
   const [error, setError]   = useState('')
@@ -35,21 +38,28 @@ function TambahUserModal({ onDone, onClose }: { onDone: () => void; onClose: () 
   }, [])
 
   function set(k: string, v: string) { setForm(f => ({ ...f, [k]: v })) }
+  function setBool(k: string, v: boolean) { setForm(f => ({ ...f, [k]: v })) }
 
   async function submit() {
     if (!form.name || !form.email || !form.password || !form.role) {
       setError('Nama, email, password, dan role wajib diisi'); return
     }
+    if (form.buat_karyawan && (!form.tarif_harian || !form.berlaku_dari)) {
+      setError('Tarif harian dan berlaku dari wajib diisi jika daftarkan sebagai karyawan'); return
+    }
     setSaving(true); setError('')
     try {
       await api.post('/api/users', {
-        name:     form.name,
-        email:    form.email,
-        password: form.password,
-        role:     form.role,
-        depot_id: form.depot_id ? Number(form.depot_id) : null,
-        divisi:   form.divisi || null,
-        phone:    form.phone || null,
+        name:          form.name,
+        email:         form.email,
+        password:      form.password,
+        role:          form.role,
+        depot_id:      form.depot_id ? Number(form.depot_id) : null,
+        divisi:        form.divisi || null,
+        phone:         form.phone || null,
+        buat_karyawan: form.buat_karyawan,
+        tarif_harian:  form.buat_karyawan ? Number(form.tarif_harian) : undefined,
+        berlaku_dari:  form.buat_karyawan ? form.berlaku_dari : undefined,
       })
       onDone()
     } catch (e: any) {
@@ -99,6 +109,30 @@ function TambahUserModal({ onDone, onClose }: { onDone: () => void; onClose: () 
             <label className="block text-xs font-body font-medium text-on-surface mb-1">No HP</label>
             <Input value={form.phone} onChange={e => set('phone', e.target.value)} placeholder="08..." />
           </div>
+          <div className="pt-1 border-t border-surface-high">
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={form.buat_karyawan}
+                onChange={e => setBool('buat_karyawan', e.target.checked)}
+                className="rounded"
+              />
+              <span className="text-xs font-body font-medium text-on-surface">Daftarkan sebagai karyawan</span>
+            </label>
+            <p className="text-xs text-on-surface-variant mt-0.5 ml-5">Diperlukan agar bisa check-in dan dihitung upah harian</p>
+          </div>
+          {form.buat_karyawan && (
+            <div className="space-y-3 pl-5">
+              <div>
+                <label className="block text-xs font-body font-medium text-on-surface mb-1">Tarif Harian (Rp) *</label>
+                <Input type="number" value={form.tarif_harian} onChange={e => set('tarif_harian', e.target.value)} placeholder="100000" />
+              </div>
+              <div>
+                <label className="block text-xs font-body font-medium text-on-surface mb-1">Berlaku Dari *</label>
+                <Input type="date" value={form.berlaku_dari} onChange={e => set('berlaku_dari', e.target.value)} />
+              </div>
+            </div>
+          )}
           {error && <p className="text-xs text-red-600">{error}</p>}
         </div>
         <div className="flex gap-2 justify-end mt-5">
