@@ -6,12 +6,14 @@ use App\Http\Requests\StoreUserRequest;
 use App\Http\Requests\UpdateUserRequest;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 class UserController extends Controller
 {
-    public function index(): JsonResponse
+    public function index(Request $request): JsonResponse
     {
         $users = User::with('depot:id,nama')
+            ->when($request->role, fn($q) => $q->whereIn('role', explode(',', $request->role)))
             ->orderBy('name')
             ->paginate(50);
 

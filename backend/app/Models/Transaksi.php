@@ -13,7 +13,7 @@ class Transaksi extends Model
 
     protected $fillable = [
         'depot_id', 'no_faktur', 'hewan_id', 'customer_id',
-        'cs_id', 'teller_id', 'sales_id', 'yayasan_id',
+        'cs_id', 'teller_id', 'sales_id', 'sales_nama', 'rencana_pelunasan', 'yayasan_id',
         'tipe_qurban', 'jenis', 'kelas_id',
         'harga', 'total', 'status_bayar', 'status_transaksi', 'musim', 'catatan',
     ];
@@ -26,9 +26,10 @@ class Transaksi extends Model
     protected $casts = [
         'status_transaksi' => StatusTransaksi::class,
         'status_bayar'     => StatusBayar::class,
-        'harga'            => 'integer',
-        'total'            => 'integer',
-        'musim'            => 'integer',
+        'harga'              => 'integer',
+        'total'              => 'integer',
+        'musim'              => 'integer',
+        'rencana_pelunasan'  => 'date',
     ];
 
     public function depot(): BelongsTo    { return $this->belongsTo(Depot::class); }

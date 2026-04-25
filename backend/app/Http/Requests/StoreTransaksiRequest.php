@@ -22,7 +22,9 @@ class StoreTransaksiRequest extends FormRequest
             'jenis'       => ['required', 'in:SAPI,DOMBA'],
             'kelas_id'    => ['required', 'exists:kelas_hewan,id'],
             'musim'       => ['required', 'integer', 'min:2020', 'max:2100'],
-            'catatan'     => ['nullable', 'string', 'max:500'],
+            'catatan'           => ['nullable', 'string', 'max:500'],
+            'sales_nama'        => ['nullable', 'string', 'max:100'],
+            'rencana_pelunasan' => ['nullable', 'date'],
         ];
     }
 }

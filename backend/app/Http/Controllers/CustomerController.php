@@ -30,6 +30,7 @@ class CustomerController extends Controller
             'kelurahan' => ['nullable', 'string', 'max:100'],
             'kecamatan' => ['nullable', 'string', 'max:100'],
             'kota'      => ['nullable', 'string', 'max:100'],
+            'kode_pos'  => ['nullable', 'string', 'max:10'],
         ]);
 
         $customer = Customer::create($data);

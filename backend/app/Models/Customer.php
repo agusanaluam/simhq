@@ -10,7 +10,7 @@ class Customer extends Model
 
     protected $table = 'customers';
 
-    protected $fillable = ['nama', 'hp', 'alamat', 'kelurahan', 'kecamatan', 'kota'];
+    protected $fillable = ['nama', 'hp', 'alamat', 'kelurahan', 'kecamatan', 'kota', 'kode_pos'];
 
     public function transaksi(): HasMany { return $this->hasMany(Transaksi::class); }
     public function logs(): HasMany      { return $this->hasMany(LogInteraksi::class); }
