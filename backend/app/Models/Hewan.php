@@ -12,7 +12,7 @@ class Hewan extends Model
 
     protected $fillable = [
         'depot_id', 'supplier_id', 'kelas_asal_id', 'kelas_jual_id',
-        'no_hewan', 'jenis', 'bobot_masuk', 'bobot_terkini',
+        'no_hewan', 'no_pengadaan', 'jenis', 'bobot_masuk', 'bobot_terkini',
         'tgl_masuk', 'musim', 'status', 'petak_id',
     ];
 

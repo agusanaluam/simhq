@@ -34,6 +34,20 @@ class HewanService
         return str_pad($next, 3, '0', STR_PAD_LEFT);
     }
 
+    public function generateNoPengadaan(int $depotId, int $musim): int
+    {
+        return DB::transaction(fn() => $this->allocateNoPengadaan($depotId, $musim));
+    }
+
+    public function allocateNoPengadaan(int $depotId, int $musim): int
+    {
+        $last = Hewan::where('depot_id', $depotId)
+            ->where('musim', $musim)
+            ->lockForUpdate()
+            ->max('no_pengadaan');
+        return ($last ?? 0) + 1;
+    }
+
     public function generateQrSvg(string $qrString): string
     {
         return QrCode::format('svg')->size(150)->errorCorrection('M')->generate($qrString);
