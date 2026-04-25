@@ -6,7 +6,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import {
   LayoutDashboard, ShoppingCart, Package, Users,
-  Wallet, Truck, ClipboardList, ClipboardCheck, LogOut, Database, PawPrint, Grid3x3, Receipt, Layers, BarChart2, HandCoins, BookOpen, TrendingUp, Inbox, UserCheck, Target, MessageSquare, Calculator, Activity, LineChart, CreditCard, Menu, X,
+  Wallet, Truck, ClipboardList, ClipboardCheck, LogOut, Database, PawPrint, Grid3x3, Receipt, Layers, BarChart2, HandCoins, TrendingUp, Inbox, UserCheck, Target, MessageSquare, Calculator, Activity, LineChart, CreditCard, Menu, X,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -29,7 +29,7 @@ const navItems: NavItem[] = [
   { href: '/admin/absensi', label: 'Rekap Absensi', icon: ClipboardList,  roles: ['SUPER_ADMIN','KEPALA_DEPOT','KEUANGAN'] },
   { href: '/keuangan',           label: 'Keuangan',      icon: Wallet,     roles: ['SUPER_ADMIN','KEPALA_DEPOT'] },
   { href: '/keuangan/setoran-gum', label: 'Setoran GUM',    icon: HandCoins, roles: ['SUPER_ADMIN','KEPALA_DEPOT'] },
-  { href: '/keuangan/rab',             label: 'RAB & Realisasi',  icon: BookOpen,   roles: ['SUPER_ADMIN','KEPALA_DEPOT'] },
+
   { href: '/laporan/income-statement', label: 'Income Statement',  icon: TrendingUp, roles: ['SUPER_ADMIN','KEPALA_DEPOT'] },
   { href: '/laporan/mortalitas',       label: 'Mortalitas Hewan',  icon: Activity,   roles: ['SUPER_ADMIN','KEPALA_DEPOT','KANDANG_SAPI_KETUA','KANDANG_DOMBA_KETUA'] },
   { href: '/laporan/forecast',         label: 'Forecast',          icon: LineChart,  roles: ['SUPER_ADMIN','KEPALA_DEPOT'] },
