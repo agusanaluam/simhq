@@ -275,7 +275,6 @@ export default function KandangPage() {
 
         <HewanPanel
           petak={selectedPetak}
-          depotId={sessionDepotId}
           musim={musim}
           onClose={() => setSelectedId(null)}
           onRefresh={loadPetak}

@@ -14,13 +14,12 @@ interface HewanItem {
 
 interface Props {
   petak: PetakData
-  depotId: number
   musim: number
   onClose: () => void
   onSuccess: () => void
 }
 
-export function IsiPetakModal({ petak, depotId, musim, onClose, onSuccess }: Props) {
+export function IsiPetakModal({ petak, musim, onClose, onSuccess }: Props) {
   const [hewan,    setHewan]    = useState<HewanItem[]>([])
   const [selected, setSelected] = useState<number[]>([])
   const [loading,  setLoading]  = useState(false)
@@ -29,10 +28,10 @@ export function IsiPetakModal({ petak, depotId, musim, onClose, onSuccess }: Pro
   const sisaSlot = petak.kapasitas - petak.jumlah_terisi
 
   useEffect(() => {
-    api.get(`/api/hewan?depot=${depotId}&jenis=${petak.jenis_kandang}&musim=${musim}&unassigned=1&per_page=100`)
+    api.get(`/api/hewan?depot=${petak.depot_id}&jenis=${petak.jenis_kandang}&musim=${musim}&unassigned=1&per_page=100`)
       .then(r => setHewan(r.data.data ?? []))
       .catch(() => setError('Gagal memuat daftar hewan.'))
-  }, [depotId, petak.jenis_kandang, musim])
+  }, [petak.depot_id, petak.jenis_kandang, musim])
 
   function toggle(id: number) {
     setSelected(prev =>

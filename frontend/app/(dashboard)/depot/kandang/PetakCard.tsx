@@ -6,7 +6,7 @@ export type HewanInPetak = {
 }
 
 export type PetakData = {
-  id: number; no_petak: string; jenis_kandang: string
+  id: number; depot_id: number; no_petak: string; jenis_kandang: string
   kapasitas: number; jumlah_terisi: number; posisi_x: number; posisi_y: number
   kelas: { kode: string } | null; hewan: HewanInPetak[]
 }

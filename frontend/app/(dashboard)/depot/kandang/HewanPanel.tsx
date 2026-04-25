@@ -14,13 +14,12 @@ const STATUS_CHIP: Record<string, 'TERSEDIA' | 'DIPESAN' | 'TERJUAL' | 'MATI'> =
 
 interface Props {
   petak: PetakData | null
-  depotId?: number
   musim?: number
   onClose: () => void
   onRefresh: () => void
 }
 
-export function HewanPanel({ petak, depotId, musim, onClose, onRefresh }: Props) {
+export function HewanPanel({ petak, musim, onClose, onRefresh }: Props) {
   const [showIsi, setShowIsi] = useState(false)
 
   if (!petak) return null
@@ -56,7 +55,7 @@ export function HewanPanel({ petak, depotId, musim, onClose, onRefresh }: Props)
         ))}
       </div>
 
-      {petak.jumlah_terisi < petak.kapasitas && depotId && (
+      {petak.jumlah_terisi < petak.kapasitas && (
         <button
           onClick={() => setShowIsi(true)}
           className="mt-3 w-full text-sm font-body font-medium text-primary border border-primary rounded-xl py-1.5 hover:bg-primary/5 transition-colors"
@@ -65,10 +64,9 @@ export function HewanPanel({ petak, depotId, musim, onClose, onRefresh }: Props)
         </button>
       )}
 
-      {showIsi && depotId && (
+      {showIsi && (
         <IsiPetakModal
           petak={petak}
-          depotId={depotId}
           musim={musim ?? new Date().getFullYear()}
           onClose={() => setShowIsi(false)}
           onSuccess={() => { setShowIsi(false); onRefresh() }}
