@@ -55,7 +55,7 @@ export function BulkTambahHewanModal({ onClose, onSuccess }: Props) {
         musim:       Number(shared.musim),
         rows: rows.map(r => ({
           kelas_asal_id: Number(r.kelas_asal_id),
-          kelas_jual_id: Number(r.kelas_jual_id),
+          kelas_jual_id: r.kelas_jual_id ? Number(r.kelas_jual_id) : null,
           bobot_masuk:   parseFloat(r.bobot_masuk),
         })),
       })
@@ -129,8 +129,8 @@ export function BulkTambahHewanModal({ onClose, onSuccess }: Props) {
                       </select>
                     </td>
                     <td className="pr-2 py-1.5">
-                      <select value={row.kelas_jual_id} onChange={e => updateRow(i, 'kelas_jual_id', e.target.value)} className="input-field" required>
-                        <option value="">Pilih...</option>
+                      <select value={row.kelas_jual_id} onChange={e => updateRow(i, 'kelas_jual_id', e.target.value)} className="input-field">
+                        <option value="">Pilih nanti...</option>
                         {kelas.map(k => <option key={k.id} value={k.id}>{k.kode}</option>)}
                       </select>
                     </td>

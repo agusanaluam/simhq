@@ -43,7 +43,7 @@ export function TambahHewanModal({ onClose, onSuccess }: Props) {
         depot_id:      Number(form.depot_id),
         supplier_id:   form.supplier_id ? Number(form.supplier_id) : null,
         kelas_asal_id: Number(form.kelas_asal_id),
-        kelas_jual_id: Number(form.kelas_jual_id),
+        kelas_jual_id: form.kelas_jual_id ? Number(form.kelas_jual_id) : null,
         bobot_masuk:   parseFloat(form.bobot_masuk),
         musim:         Number(form.musim),
       })
@@ -97,8 +97,8 @@ export function TambahHewanModal({ onClose, onSuccess }: Props) {
             </div>
             <div>
               <label className="text-xs uppercase tracking-widest text-on-surface-variant font-body">Kelas Jual</label>
-              <select value={form.kelas_jual_id} onChange={e => set('kelas_jual_id', e.target.value)} className="input-field mt-1.5" required>
-                <option value="">Pilih kelas...</option>
+              <select value={form.kelas_jual_id} onChange={e => set('kelas_jual_id', e.target.value)} className="input-field mt-1.5">
+                <option value="">Pilih nanti...</option>
                 {kelas.map(k => <option key={k.id} value={k.id}>{k.kode}</option>)}
               </select>
             </div>
