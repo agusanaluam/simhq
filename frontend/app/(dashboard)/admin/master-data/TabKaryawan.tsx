@@ -13,28 +13,52 @@ interface Karyawan {
 }
 interface Depot { id: number; nama: string }
 
-function TambahKaryawanModal({ onDone, onClose }: { onDone: () => void; onClose: () => void }) {
+function KaryawanModal({ initialData, onDone, onClose }: {
+  initialData?: Karyawan; onDone: () => void; onClose: () => void
+}) {
+  const isEdit = !!initialData
   const [depots, setDepots] = useState<Depot[]>([])
-  const [form, setForm]     = useState({ depot_id: '', nama: '', divisi: '', tarif_harian: '', berlaku_dari: '' })
+  const [form, setForm] = useState({
+    depot_id:     '',
+    nama:         initialData?.nama ?? '',
+    divisi:       initialData?.divisi ?? '',
+    tarif_harian: initialData ? String(initialData.tarif_harian) : '',
+    berlaku_dari: initialData?.berlaku_dari ?? '',
+  })
   const [saving, setSaving] = useState(false)
   const [error, setError]   = useState('')
 
   useEffect(() => {
-    api.get('/api/depots').then(r => setDepots(r.data.data ?? []))
-  }, [])
+    if (!isEdit) {
+      api.get('/api/depots').then(r => setDepots(r.data.data ?? []))
+    }
+  }, [isEdit])
 
   function set(k: string, v: string) { setForm(f => ({ ...f, [k]: v })) }
 
   async function submit() {
-    if (!form.depot_id || !form.nama || !form.divisi || !form.tarif_harian || !form.berlaku_dari) {
+    if (!isEdit && !form.depot_id) { setError('Depot wajib diisi'); return }
+    if (!form.nama || !form.divisi || !form.tarif_harian || !form.berlaku_dari) {
       setError('Semua field wajib diisi'); return
     }
     setSaving(true); setError('')
     try {
-      await api.post('/api/karyawan', {
-        depot_id: Number(form.depot_id), nama: form.nama, divisi: form.divisi,
-        tarif_harian: Number(form.tarif_harian), berlaku_dari: form.berlaku_dari,
-      })
+      if (isEdit) {
+        await api.put(`/api/karyawan/${initialData!.id}`, {
+          nama:         form.nama,
+          divisi:       form.divisi,
+          tarif_harian: Number(form.tarif_harian),
+          berlaku_dari: form.berlaku_dari,
+        })
+      } else {
+        await api.post('/api/karyawan', {
+          depot_id:     Number(form.depot_id),
+          nama:         form.nama,
+          divisi:       form.divisi,
+          tarif_harian: Number(form.tarif_harian),
+          berlaku_dari: form.berlaku_dari,
+        })
+      }
       onDone()
     } catch (e: any) {
       setError(e?.response?.data?.message ?? 'Gagal menyimpan')
@@ -45,17 +69,21 @@ function TambahKaryawanModal({ onDone, onClose }: { onDone: () => void; onClose:
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
       <div className="bg-surface-lowest rounded-2xl w-full max-w-md p-6 shadow-card">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="font-display font-semibold text-on-surface">Tambah Karyawan</h2>
+          <h2 className="font-display font-semibold text-on-surface">
+            {isEdit ? 'Edit Karyawan' : 'Tambah Karyawan'}
+          </h2>
           <button onClick={onClose} className="text-on-surface-variant text-xl leading-none">×</button>
         </div>
         <div className="space-y-3">
-          <div>
-            <label className="block text-xs font-body font-medium text-on-surface mb-1">Depot *</label>
-            <select value={form.depot_id} onChange={e => set('depot_id', e.target.value)} className="input-field w-full">
-              <option value="">— Pilih depot —</option>
-              {depots.map(d => <option key={d.id} value={d.id}>{d.nama}</option>)}
-            </select>
-          </div>
+          {!isEdit && (
+            <div>
+              <label className="block text-xs font-body font-medium text-on-surface mb-1">Depot *</label>
+              <select value={form.depot_id} onChange={e => set('depot_id', e.target.value)} className="input-field w-full">
+                <option value="">— Pilih depot —</option>
+                {depots.map(d => <option key={d.id} value={d.id}>{d.nama}</option>)}
+              </select>
+            </div>
+          )}
           <div>
             <label className="block text-xs font-body font-medium text-on-surface mb-1">Nama *</label>
             <Input value={form.nama} onChange={e => set('nama', e.target.value)} placeholder="Nama karyawan..." />
@@ -86,7 +114,10 @@ function TambahKaryawanModal({ onDone, onClose }: { onDone: () => void; onClose:
 export function TabKaryawan() {
   const [karyawan, setKaryawan] = useState<Karyawan[]>([])
   const [loading, setLoading]   = useState(true)
-  const [showModal, setShowModal] = useState(false)
+  const [showModal, setShowModal]             = useState(false)
+  const [editingItem, setEditingItem]         = useState<Karyawan | null>(null)
+  const [confirmDeleteId, setConfirmDeleteId] = useState<number | null>(null)
+  const [deletingId, setDeletingId]           = useState<number | null>(null)
 
   function load() {
     setLoading(true)
@@ -97,6 +128,17 @@ export function TabKaryawan() {
 
   useEffect(() => { load() }, [])
 
+  async function handleDelete(id: number) {
+    setDeletingId(id)
+    try {
+      await api.delete(`/api/karyawan/${id}`)
+      setKaryawan(prev => prev.filter(k => k.id !== id))
+      setConfirmDeleteId(null)
+    } catch (e: any) {
+      alert(e?.response?.data?.message ?? 'Gagal menghapus')
+    } finally { setDeletingId(null) }
+  }
+
   function fmt(n: number) {
     return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(n)
   }
@@ -104,7 +146,7 @@ export function TabKaryawan() {
   return (
     <div>
       <div className="flex justify-end mb-4">
-        <Button onClick={() => setShowModal(true)}>+ Tambah Karyawan</Button>
+        <Button onClick={() => { setEditingItem(null); setShowModal(true) }}>+ Tambah Karyawan</Button>
       </div>
       <Card>
         {loading ? (
@@ -113,7 +155,7 @@ export function TabKaryawan() {
           <table className="w-full text-sm">
             <thead>
               <tr className="text-left">
-                {['Nama','Divisi','Tarif Harian','Berlaku Dari','Status'].map(h => (
+                {['Nama','Divisi','Tarif Harian','Berlaku Dari','Status','Aksi'].map(h => (
                   <th key={h} className="pb-3 pr-4 text-xs uppercase tracking-widest text-on-surface-variant font-body">{h}</th>
                 ))}
               </tr>
@@ -125,20 +167,48 @@ export function TabKaryawan() {
                   <td className="py-2.5 pr-4 text-on-surface-variant">{k.divisi}</td>
                   <td className="py-2.5 pr-4 font-body text-on-surface">{fmt(k.tarif_harian)}</td>
                   <td className="py-2.5 pr-4 text-on-surface-variant">{k.berlaku_dari}</td>
-                  <td className="py-2.5"><StatusChip status={k.is_active ? 'AKTIF' : 'NONAKTIF'} /></td>
+                  <td className="py-2.5 pr-4"><StatusChip status={k.is_active ? 'AKTIF' : 'NONAKTIF'} /></td>
+                  <td className="py-2.5">
+                    {confirmDeleteId === k.id ? (
+                      <span className="flex items-center gap-2 text-xs">
+                        <span className="text-on-surface-variant">Hapus?</span>
+                        <button
+                          onClick={() => setConfirmDeleteId(null)}
+                          className="text-on-surface-variant hover:text-on-surface"
+                        >Batal</button>
+                        <button
+                          onClick={() => handleDelete(k.id)}
+                          disabled={deletingId === k.id}
+                          className="text-red-600 hover:text-red-700 font-medium disabled:opacity-50"
+                        >{deletingId === k.id ? '...' : 'Hapus'}</button>
+                      </span>
+                    ) : (
+                      <span className="flex items-center gap-2">
+                        <button
+                          onClick={() => { setEditingItem(k); setShowModal(true) }}
+                          className="text-xs text-primary hover:underline"
+                        >Edit</button>
+                        <button
+                          onClick={() => setConfirmDeleteId(k.id)}
+                          className="text-xs text-red-500 hover:underline"
+                        >Hapus</button>
+                      </span>
+                    )}
+                  </td>
                 </tr>
               ))}
               {karyawan.length === 0 && (
-                <tr><td colSpan={5} className="py-8 text-center text-on-surface-variant">Belum ada karyawan.</td></tr>
+                <tr><td colSpan={6} className="py-8 text-center text-on-surface-variant">Belum ada karyawan.</td></tr>
               )}
             </tbody>
           </table>
         )}
       </Card>
       {showModal && (
-        <TambahKaryawanModal
-          onDone={() => { setShowModal(false); load() }}
-          onClose={() => setShowModal(false)}
+        <KaryawanModal
+          initialData={editingItem ?? undefined}
+          onDone={() => { setShowModal(false); setEditingItem(null); load() }}
+          onClose={() => { setShowModal(false); setEditingItem(null) }}
         />
       )}
     </div>
