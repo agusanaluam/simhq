@@ -111,7 +111,7 @@ export default function POSPage() {
           />
         </div>
 
-        <div className="w-80 xl:w-96 flex-shrink-0">
+        <div className="w-80 xl:w-96 flex-shrink-0 sticky top-4 max-h-[calc(100vh-120px)] overflow-y-auto">
           <CartPanel
             items={cart}
             onRemove={removeItem}
