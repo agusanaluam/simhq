@@ -51,7 +51,7 @@ class HewanController extends Controller
         $created = DB::transaction(function () use ($shared, $data) {
             return collect($data['rows'])->map(function ($row) use ($shared) {
                 $row             = array_merge($shared, $row);
-                $row['no_hewan'] = $this->hewanService->generateNoHewan(
+                $row['no_hewan'] = $this->hewanService->allocateNoHewan(
                     $shared['depot_id'], $shared['musim'], $shared['jenis']
                 );
                 return Hewan::create($row);

@@ -9,26 +9,29 @@ class HewanService
 {
     public function generateNoHewan(int $depotId, int $musim, string $jenis = 'SAPI'): string
     {
+        return DB::transaction(fn() => $this->allocateNoHewan($depotId, $musim, $jenis));
+    }
+
+    public function allocateNoHewan(int $depotId, int $musim, string $jenis = 'SAPI'): string
+    {
         // SAPI: 600–999, DOMBA: 001–599
         $start = $jenis === 'SAPI' ? 600 : 1;
         $max   = $jenis === 'SAPI' ? 999 : 599;
 
-        return DB::transaction(function () use ($depotId, $musim, $jenis, $start, $max) {
-            $last = Hewan::where('depot_id', $depotId)
-                ->where('musim', $musim)
-                ->where('jenis', $jenis)
-                ->orderByDesc('no_hewan')
-                ->lockForUpdate()
-                ->value('no_hewan');
+        $last = Hewan::where('depot_id', $depotId)
+            ->where('musim', $musim)
+            ->where('jenis', $jenis)
+            ->orderByDesc('no_hewan')
+            ->lockForUpdate()
+            ->value('no_hewan');
 
-            $next = $last ? ((int) $last) + 1 : $start;
+        $next = $last ? ((int) $last) + 1 : $start;
 
-            if ($next > $max) {
-                throw new \RuntimeException("Nomor hewan {$jenis} depot ini sudah mencapai maksimum {$max}.");
-            }
+        if ($next > $max) {
+            throw new \RuntimeException("Nomor hewan {$jenis} depot ini sudah mencapai maksimum {$max}.");
+        }
 
-            return str_pad($next, 3, '0', STR_PAD_LEFT);
-        });
+        return str_pad($next, 3, '0', STR_PAD_LEFT);
     }
 
     public function generateQrSvg(string $qrString): string
