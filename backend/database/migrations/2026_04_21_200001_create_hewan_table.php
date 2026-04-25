@@ -10,7 +10,7 @@ return new class extends Migration {
             $table->foreignId('depot_id')->constrained('depots')->cascadeOnDelete();
             $table->foreignId('supplier_id')->nullable()->constrained('supplier')->nullOnDelete();
             $table->foreignId('kelas_asal_id')->constrained('kelas_hewan')->restrictOnDelete();
-            $table->foreignId('kelas_jual_id')->constrained('kelas_hewan')->restrictOnDelete();
+            $table->foreignId('kelas_jual_id')->nullable()->constrained('kelas_hewan')->nullOnDelete();
             $table->string('no_hewan', 3);
             $table->enum('jenis', ['SAPI', 'DOMBA']);
             $table->decimal('bobot_masuk', 6, 2);

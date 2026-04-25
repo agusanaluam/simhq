@@ -11,7 +11,7 @@ class StoreHewanRequest extends FormRequest
             'depot_id'      => ['required', 'exists:depots,id'],
             'supplier_id'   => ['nullable', 'exists:supplier,id'],
             'kelas_asal_id' => ['required', 'exists:kelas_hewan,id'],
-            'kelas_jual_id' => ['required', 'exists:kelas_hewan,id'],
+            'kelas_jual_id' => ['nullable', 'exists:kelas_hewan,id'],
             'jenis'         => ['required', 'in:SAPI,DOMBA'],
             'bobot_masuk'   => ['required', 'numeric', 'min:0'],
             'tgl_masuk'     => ['required', 'date'],

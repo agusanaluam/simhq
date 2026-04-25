@@ -17,7 +17,7 @@ class BulkStoreHewanRequest extends FormRequest
             'musim'                => ['required', 'integer', 'min:2020', 'max:2100'],
             'rows'                 => ['required', 'array', 'min:1', 'max:50'],
             'rows.*.kelas_asal_id' => ['required', 'exists:kelas_hewan,id'],
-            'rows.*.kelas_jual_id' => ['required', 'exists:kelas_hewan,id'],
+            'rows.*.kelas_jual_id' => ['nullable', 'exists:kelas_hewan,id'],
             'rows.*.bobot_masuk'   => ['required', 'numeric', 'min:1'],
         ];
     }

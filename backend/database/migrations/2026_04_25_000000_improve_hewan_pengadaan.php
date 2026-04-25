@@ -11,7 +11,15 @@ return new class extends Migration {
             $table->unsignedSmallInteger('no_pengadaan')->default(0)->after('musim');
         });
 
-        DB::statement('ALTER TABLE hewan ALTER COLUMN kelas_jual_id DROP NOT NULL');
+        // kelas_jual_id was made nullable in the original create_hewan_table migration.
+        // For existing production databases (pgsql/mysql) we still need to ALTER the column.
+        $driver = DB::getDriverName();
+        if ($driver === 'pgsql') {
+            DB::statement('ALTER TABLE hewan ALTER COLUMN kelas_jual_id DROP NOT NULL');
+        } elseif ($driver === 'mysql' || $driver === 'mariadb') {
+            DB::statement('ALTER TABLE hewan MODIFY kelas_jual_id BIGINT UNSIGNED NULL');
+        }
+        // SQLite (tests): column is already nullable via the updated create migration.
     }
 
     public function down(): void
@@ -20,6 +28,11 @@ return new class extends Migration {
             $table->dropColumn('no_pengadaan');
         });
 
-        DB::statement('ALTER TABLE hewan ALTER COLUMN kelas_jual_id SET NOT NULL');
+        $driver = DB::getDriverName();
+        if ($driver === 'pgsql') {
+            DB::statement('ALTER TABLE hewan ALTER COLUMN kelas_jual_id SET NOT NULL');
+        } elseif ($driver === 'mysql' || $driver === 'mariadb') {
+            DB::statement('ALTER TABLE hewan MODIFY kelas_jual_id BIGINT UNSIGNED NOT NULL');
+        }
     }
 };

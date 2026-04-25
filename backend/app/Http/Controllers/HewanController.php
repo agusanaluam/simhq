@@ -25,7 +25,9 @@ class HewanController extends Controller
             ->when($request->depot,  fn($q) => $q->where('depot_id', $request->depot))
             ->when($request->status, fn($q) => $q->where('status', $request->status))
             ->when($request->jenis,  fn($q) => $q->where('jenis', $request->jenis))
-            ->when($request->kelas,  fn($q) => $q->where('kelas_jual_id', $request->kelas))
+            ->when($request->kelas,  fn($q) => $request->kelas === 'UNCLASSED'
+                ? $q->whereNull('kelas_jual_id')
+                : $q->where('kelas_jual_id', $request->kelas))
             ->when($request->musim,  fn($q) => $q->where('musim', $request->musim))
             ->orderBy('no_hewan')
             ->paginate(50);
@@ -35,8 +37,16 @@ class HewanController extends Controller
 
     public function store(StoreHewanRequest $request): JsonResponse
     {
-        $data             = $request->validated();
-        $data['no_hewan'] = $this->hewanService->generateNoHewan($data['depot_id'], $data['musim'], $data['jenis']);
+        $data = $request->validated();
+
+        [$noHewan, $noPengadaan] = DB::transaction(function () use ($data) {
+            return [
+                $this->hewanService->allocateNoHewan($data['depot_id'], $data['musim'], $data['jenis']),
+                $this->hewanService->allocateNoPengadaan($data['depot_id'], $data['musim']),
+            ];
+        });
+        $data['no_hewan']     = $noHewan;
+        $data['no_pengadaan'] = $noPengadaan;
 
         $hewan = Hewan::create($data);
 
@@ -49,11 +59,11 @@ class HewanController extends Controller
         $shared = Arr::except($data, ['rows']);
 
         $created = DB::transaction(function () use ($shared, $data) {
-            return collect($data['rows'])->map(function ($row) use ($shared) {
-                $row             = array_merge($shared, $row);
-                $row['no_hewan'] = $this->hewanService->allocateNoHewan(
-                    $shared['depot_id'], $shared['musim'], $shared['jenis']
-                );
+            $noPengadaan = $this->hewanService->allocateNoPengadaan($shared['depot_id'], $shared['musim']);
+            return collect($data['rows'])->map(function ($row) use ($shared, $noPengadaan) {
+                $row                 = array_merge($shared, $row);
+                $row['no_hewan']     = $this->hewanService->allocateNoHewan($shared['depot_id'], $shared['musim'], $shared['jenis']);
+                $row['no_pengadaan'] = $noPengadaan;
                 return Hewan::create($row);
             });
         });
