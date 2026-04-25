@@ -81,17 +81,20 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('yayasan', [\App\Http\Controllers\Master\YayasanController::class, 'index']);
 
         Route::middleware('role:SUPER_ADMIN,KEPALA_DEPOT')->group(function () {
-            Route::post('harga',              [\App\Http\Controllers\Master\HargaController::class,   'store']);
-            Route::put('harga/{harga}',       [\App\Http\Controllers\Master\HargaController::class,   'update']);
-            Route::post('yayasan',            [\App\Http\Controllers\Master\YayasanController::class, 'store']);
-            Route::put('yayasan/{yayasan}',   [\App\Http\Controllers\Master\YayasanController::class, 'update']);
+            Route::post('harga',               [\App\Http\Controllers\Master\HargaController::class,   'store']);
+            Route::put('harga/{harga}',        [\App\Http\Controllers\Master\HargaController::class,   'update']);
+            Route::delete('harga/{harga}',     [\App\Http\Controllers\Master\HargaController::class,   'destroy']);
+            Route::post('yayasan',             [\App\Http\Controllers\Master\YayasanController::class, 'store']);
+            Route::put('yayasan/{yayasan}',    [\App\Http\Controllers\Master\YayasanController::class, 'update']);
+            Route::delete('yayasan/{yayasan}', [\App\Http\Controllers\Master\YayasanController::class, 'destroy']);
         });
     });
 
     Route::middleware('role:SUPER_ADMIN,KEPALA_DEPOT')->group(function () {
-        Route::get('karyawan',              [\App\Http\Controllers\Master\KaryawanController::class, 'index']);
-        Route::post('karyawan',             [\App\Http\Controllers\Master\KaryawanController::class, 'store']);
-        Route::put('karyawan/{karyawan}',   [\App\Http\Controllers\Master\KaryawanController::class, 'update']);
+        Route::get('karyawan',                [\App\Http\Controllers\Master\KaryawanController::class, 'index']);
+        Route::post('karyawan',               [\App\Http\Controllers\Master\KaryawanController::class, 'store']);
+        Route::put('karyawan/{karyawan}',     [\App\Http\Controllers\Master\KaryawanController::class, 'update']);
+        Route::delete('karyawan/{karyawan}',  [\App\Http\Controllers\Master\KaryawanController::class, 'destroy']);
     });
 
     // Hewan — static routes MUST come before {hewan} wildcard

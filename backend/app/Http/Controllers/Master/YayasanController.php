@@ -35,4 +35,10 @@ class YayasanController extends Controller
 
         return response()->json(['yayasan' => $yayasan->fresh()]);
     }
+
+    public function destroy(Yayasan $yayasan): JsonResponse
+    {
+        $yayasan->delete();
+        return response()->json(null, 204);
+    }
 }

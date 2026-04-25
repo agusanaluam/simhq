@@ -40,4 +40,11 @@ class KaryawanController extends Controller
 
         return response()->json(['karyawan' => $karyawan->fresh()]);
     }
+
+    public function destroy(Karyawan $karyawan): JsonResponse
+    {
+        $karyawan->absensi()->delete();
+        $karyawan->delete();
+        return response()->json(null, 204);
+    }
 }

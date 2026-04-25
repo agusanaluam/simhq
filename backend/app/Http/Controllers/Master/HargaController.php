@@ -48,4 +48,10 @@ class HargaController extends Controller
 
         return response()->json(['harga' => $harga->fresh()->load('kelas')]);
     }
+
+    public function destroy(HargaKelas $harga): JsonResponse
+    {
+        $harga->delete();
+        return response()->json(null, 204);
+    }
 }
