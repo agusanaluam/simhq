@@ -43,8 +43,9 @@ class HewanService
     {
         $last = Hewan::where('depot_id', $depotId)
             ->where('musim', $musim)
+            ->orderByDesc('no_pengadaan')
             ->lockForUpdate()
-            ->max('no_pengadaan');
+            ->value('no_pengadaan');
         return ($last ?? 0) + 1;
     }
 
