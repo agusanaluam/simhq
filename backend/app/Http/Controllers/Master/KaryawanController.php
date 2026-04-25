@@ -26,6 +26,13 @@ class KaryawanController extends Controller
         return response()->json(['karyawan' => $karyawan], 201);
     }
 
+    public function users(): JsonResponse
+    {
+        return response()->json([
+            'data' => \App\Models\User::select('id', 'name', 'email')->orderBy('name')->get(),
+        ]);
+    }
+
     public function update(Request $request, Karyawan $karyawan): JsonResponse
     {
         $data = $request->validate([
@@ -34,6 +41,7 @@ class KaryawanController extends Controller
             'tarif_harian' => ['sometimes', 'integer', 'min:0'],
             'berlaku_dari' => ['sometimes', 'date'],
             'is_active'    => ['sometimes', 'boolean'],
+            'user_id'      => ['sometimes', 'nullable', 'exists:users,id'],
         ]);
 
         $karyawan->update($data);

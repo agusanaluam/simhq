@@ -91,6 +91,7 @@ Route::middleware('auth:sanctum')->group(function () {
     });
 
     Route::middleware('role:SUPER_ADMIN,KEPALA_DEPOT')->group(function () {
+        Route::get('karyawan/users',          [\App\Http\Controllers\Master\KaryawanController::class, 'users']);
         Route::get('karyawan',                [\App\Http\Controllers\Master\KaryawanController::class, 'index']);
         Route::post('karyawan',               [\App\Http\Controllers\Master\KaryawanController::class, 'store']);
         Route::put('karyawan/{karyawan}',     [\App\Http\Controllers\Master\KaryawanController::class, 'update']);

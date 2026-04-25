@@ -7,9 +7,11 @@ import { Input } from '@/components/ui/Input'
 import { StatusChip } from '@/components/ui/StatusChip'
 import api from '@/lib/api'
 
+interface UserOption { id: number; name: string; email: string }
 interface Karyawan {
   id: number; nama: string; divisi: string
   tarif_harian: number; berlaku_dari: string; is_active: boolean
+  user_id: number | null; user?: UserOption | null
 }
 interface Depot { id: number; nama: string }
 
@@ -18,17 +20,20 @@ function KaryawanModal({ initialData, onDone, onClose }: {
 }) {
   const isEdit = !!initialData
   const [depots, setDepots] = useState<Depot[]>([])
+  const [users, setUsers]   = useState<UserOption[]>([])
   const [form, setForm] = useState({
     depot_id:     '',
     nama:         initialData?.nama ?? '',
     divisi:       initialData?.divisi ?? '',
     tarif_harian: initialData ? String(initialData.tarif_harian) : '',
     berlaku_dari: initialData?.berlaku_dari ?? '',
+    user_id:      initialData?.user_id ? String(initialData.user_id) : '',
   })
   const [saving, setSaving] = useState(false)
   const [error, setError]   = useState('')
 
   useEffect(() => {
+    api.get('/api/karyawan/users').then(r => setUsers(r.data.data ?? []))
     if (!isEdit) {
       api.get('/api/depots').then(r => setDepots(r.data.data ?? []))
     }
@@ -43,12 +48,14 @@ function KaryawanModal({ initialData, onDone, onClose }: {
     }
     setSaving(true); setError('')
     try {
+      const userId = form.user_id ? Number(form.user_id) : null
       if (isEdit) {
         await api.put(`/api/karyawan/${initialData!.id}`, {
           nama:         form.nama,
           divisi:       form.divisi,
           tarif_harian: Number(form.tarif_harian),
           berlaku_dari: form.berlaku_dari,
+          user_id:      userId,
         })
       } else {
         await api.post('/api/karyawan', {
@@ -57,6 +64,7 @@ function KaryawanModal({ initialData, onDone, onClose }: {
           divisi:       form.divisi,
           tarif_harian: Number(form.tarif_harian),
           berlaku_dari: form.berlaku_dari,
+          user_id:      userId,
         })
       }
       onDone()
@@ -99,6 +107,16 @@ function KaryawanModal({ initialData, onDone, onClose }: {
           <div>
             <label className="block text-xs font-body font-medium text-on-surface mb-1">Berlaku Dari *</label>
             <Input type="date" value={form.berlaku_dari} onChange={e => set('berlaku_dari', e.target.value)} />
+          </div>
+          <div>
+            <label className="block text-xs font-body font-medium text-on-surface mb-1">Link Akun User</label>
+            <select value={form.user_id} onChange={e => set('user_id', e.target.value)} className="input-field w-full">
+              <option value="">— Tidak dilink —</option>
+              {users.map(u => (
+                <option key={u.id} value={u.id}>{u.name} ({u.email})</option>
+              ))}
+            </select>
+            <p className="text-xs text-on-surface-variant mt-1">Diperlukan agar karyawan bisa check-in via app</p>
           </div>
           {error && <p className="text-xs text-red-600">{error}</p>}
         </div>
@@ -164,7 +182,12 @@ export function TabKaryawan() {
             <tbody>
               {karyawan.map((k, i) => (
                 <tr key={k.id} className={i % 2 === 0 ? 'bg-surface-lowest' : 'bg-surface-low'}>
-                  <td className="py-2.5 pr-4 font-body font-medium text-on-surface">{k.nama}</td>
+                  <td className="py-2.5 pr-4">
+                    <p className="font-body font-medium text-on-surface">{k.nama}</p>
+                    {k.user && (
+                      <p className="text-xs text-on-surface-variant">{k.user.name}</p>
+                    )}
+                  </td>
                   <td className="py-2.5 pr-4 text-on-surface-variant">{k.divisi}</td>
                   <td className="py-2.5 pr-4 font-body text-on-surface">{fmt(k.tarif_harian)}</td>
                   <td className="py-2.5 pr-4 text-on-surface-variant">{k.berlaku_dari}</td>
