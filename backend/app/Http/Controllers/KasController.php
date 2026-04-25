@@ -23,7 +23,7 @@ class KasController extends Controller
         if ($request->divisi)     { $base->where('divisi', $request->divisi); }
 
         $entries = (clone $base)
-            ->with('inputBy:id,name')
+            ->with('inputBy:id,name', 'rab:id,divisi,musim')
             ->orderBy('tgl_transaksi', 'desc')
             ->orderBy('id', 'desc')
             ->paginate(50);
@@ -49,7 +49,16 @@ class KasController extends Controller
             'jumlah'        => ['required', 'integer', 'min:1'],
             'metode'        => ['required', 'in:CASH,TRANSFER_BCA,TRANSFER_LAIN'],
             'tgl_transaksi' => ['required', 'date'],
+            'rab_id'        => ['sometimes', 'nullable', 'exists:rab,id'],
         ]);
+
+        if (! empty($data['rab_id'])) {
+            abort_unless(
+                \App\Models\Rab::where('id', $data['rab_id'])->where('depot_id', $depotId)->exists(),
+                403,
+                'RAB tidak ditemukan di depot ini.'
+            );
+        }
 
         $kas = KasHarian::create(array_merge($data, [
             'depot_id' => $depotId,
