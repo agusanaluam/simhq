@@ -20,7 +20,7 @@ interface KasEntry {
   metode: string
   tgl_transaksi: string
   input_by: { id: number; name: string } | null
-  rab: { id: number; divisi: string; musim: number } | null
+  rab: { id: number; kategori_id: number; musim: number; kategori: { id: number; nama: string } | null } | null
 }
 
 interface KasSummary {

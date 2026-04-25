@@ -10,7 +10,7 @@ interface KasEntry {
   metode: string
   tgl_transaksi: string
   input_by: { id: number; name: string } | null
-  rab: { id: number; divisi: string; musim: number } | null
+  rab: { id: number; kategori_id: number; musim: number; kategori: { id: number; nama: string } | null } | null
 }
 
 interface KasTableProps {
@@ -70,9 +70,9 @@ export function KasTable({ entries }: KasTableProps) {
                   {e.sumber ?? e.divisi ?? '—'}
                 </td>
                 <td className="py-2.5 pr-4 font-body text-on-surface-variant">
-                  {e.rab ? (
+                  {e.rab?.kategori ? (
                     <span className="text-xs bg-surface-high px-1.5 py-0.5 rounded font-medium">
-                      {e.rab.divisi}
+                      {e.rab.kategori.nama}
                     </span>
                   ) : '—'}
                 </td>

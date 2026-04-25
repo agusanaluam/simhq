@@ -23,7 +23,7 @@ class KasController extends Controller
         if ($request->divisi)     { $base->where('divisi', $request->divisi); }
 
         $entries = (clone $base)
-            ->with('inputBy:id,name', 'rab:id,divisi,musim')
+            ->with(['inputBy:id,name', 'rab' => fn($q) => $q->with('kategori:id,nama')->select('id', 'kategori_id', 'musim')])
             ->orderBy('tgl_transaksi', 'desc')
             ->orderBy('id', 'desc')
             ->paginate(50);
