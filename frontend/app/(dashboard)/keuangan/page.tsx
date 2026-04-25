@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { Download, Plus } from 'lucide-react'
+import Link from 'next/link'
 import { Button } from '@/components/ui/Button'
 import { SaldoCards }     from './components/SaldoCards'
 import { CashFlowChart }  from './components/CashFlowChart'
@@ -100,6 +101,9 @@ export default function KeuanganPage() {
           <p className="text-sm text-on-surface-variant mt-1">Buku kas harian depot</p>
         </div>
         <div className="flex gap-2">
+          <Link href="/keuangan/rab">
+            <Button variant="secondary">RAB &amp; Realisasi</Button>
+          </Link>
           <Button variant="secondary" onClick={handleExport}>
             <Download className="w-4 h-4" />
             Export CSV

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { Button } from '@/components/ui/Button'
 import { Input }  from '@/components/ui/Input'
 import api from '@/lib/api'
@@ -13,21 +13,9 @@ const METODE_OPTIONS = [
   { value: 'TRANSFER_LAIN', label: 'Transfer Lain' },
 ]
 
-interface RabOption {
-  rab_id: number
-  divisi: string
-  jumlah_anggaran: number
-  total_realisasi: number
-  selisih: number
-}
-
 interface TambahKasModalProps {
   onDone:  () => void
   onClose: () => void
-}
-
-function rupiah(n: number): string {
-  return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(n)
 }
 
 export function TambahKasModal({ onDone, onClose }: TambahKasModalProps) {
@@ -39,18 +27,9 @@ export function TambahKasModal({ onDone, onClose }: TambahKasModalProps) {
     jumlah:        '',
     metode:        'CASH',
     tgl_transaksi: new Date().toISOString().slice(0, 10),
-    rab_id:        '',
   })
-  const [rabOptions, setRabOptions] = useState<RabOption[]>([])
   const [saving, setSaving] = useState(false)
   const [error, setError]   = useState('')
-
-  useEffect(() => {
-    const musim = new Date().getFullYear()
-    api.get(`/api/keuangan/rab/summary?musim=${musim}`)
-      .then(r => setRabOptions(r.data.data ?? []))
-      .catch(() => {})
-  }, [])
 
   function set(k: string, v: string) {
     setForm((f) => ({ ...f, [k]: v }))
@@ -72,7 +51,6 @@ export function TambahKasModal({ onDone, onClose }: TambahKasModalProps) {
         jumlah:        Number(form.jumlah),
         metode:        form.metode,
         tgl_transaksi: form.tgl_transaksi,
-        rab_id:        form.tipe === 'KELUAR' && form.rab_id ? Number(form.rab_id) : null,
       })
       onDone()
     } catch (e: unknown) {
@@ -121,25 +99,12 @@ export function TambahKasModal({ onDone, onClose }: TambahKasModalProps) {
             </select>
           </div>
         ) : (
-          <>
-            <div>
-              <label className={labelClass}>Divisi</label>
-              <select value={form.divisi} onChange={(e) => set('divisi', e.target.value)} className="input-field">
-                {DIVISI_OPTIONS.map((d) => <option key={d} value={d}>{d}</option>)}
-              </select>
-            </div>
-            <div>
-              <label className={labelClass}>Bebankan ke RAB <span className="normal-case text-on-surface-variant">(opsional)</span></label>
-              <select value={form.rab_id} onChange={(e) => set('rab_id', e.target.value)} className="input-field">
-                <option value="">— Tidak dibebankan ke RAB —</option>
-                {rabOptions.map((r) => (
-                  <option key={r.rab_id} value={r.rab_id}>
-                    {r.divisi} — Sisa {rupiah(r.selisih)}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </>
+          <div>
+            <label className={labelClass}>Divisi</label>
+            <select value={form.divisi} onChange={(e) => set('divisi', e.target.value)} className="input-field">
+              {DIVISI_OPTIONS.map((d) => <option key={d} value={d}>{d}</option>)}
+            </select>
+          </div>
         )}
 
         <Input
