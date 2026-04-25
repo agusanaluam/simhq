@@ -7,6 +7,7 @@ use App\Http\Requests\UpdateUserRequest;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class UserController extends Controller
 {
@@ -22,9 +23,25 @@ class UserController extends Controller
 
     public function store(StoreUserRequest $request): JsonResponse
     {
-        $user = User::create($request->validated());
+        return DB::transaction(function () use ($request) {
+            $user = User::create($request->only([
+                'depot_id', 'name', 'email', 'password', 'role', 'divisi', 'phone',
+            ]));
 
-        return response()->json(['user' => $user], 201);
+            if ($request->boolean('buat_karyawan')) {
+                \App\Models\Karyawan::create([
+                    'user_id'      => $user->id,
+                    'depot_id'     => $user->depot_id,
+                    'nama'         => $user->name,
+                    'divisi'       => $user->divisi ?? '',
+                    'tarif_harian' => (int) $request->tarif_harian,
+                    'berlaku_dari' => $request->berlaku_dari,
+                    'is_active'    => true,
+                ]);
+            }
+
+            return response()->json(['user' => $user], 201);
+        });
     }
 
     public function show(User $user): JsonResponse
