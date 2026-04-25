@@ -16,37 +16,55 @@ interface Harga {
 
 interface Kelas { id: number; kode: string; nama: string }
 
-function TambahHargaModal({ depotId, musim, onDone, onClose }: {
-  depotId: string; musim: string; onDone: () => void; onClose: () => void
+function HargaModal({ depotId, musim, initialData, onDone, onClose }: {
+  depotId: string; musim: string; initialData?: Harga; onDone: () => void; onClose: () => void
 }) {
+  const isEdit = !!initialData
   const [kelasList, setKelasList] = useState<Kelas[]>([])
   const [form, setForm] = useState({
-    kelas_id: '', jenis: 'SAPI', harga_beli: '', harga_jual: '', fee_sales: '0',
+    kelas_id:   initialData ? String(initialData.kelas.id) : '',
+    jenis:      initialData?.jenis ?? 'SAPI',
+    harga_beli: initialData ? String(initialData.harga_beli) : '',
+    harga_jual: initialData ? String(initialData.harga_jual) : '',
+    fee_sales:  initialData ? String(initialData.fee_sales) : '0',
   })
   const [saving, setSaving] = useState(false)
   const [error, setError]   = useState('')
 
   useEffect(() => {
-    api.get('/api/master/kelas').then(r => setKelasList(r.data.data ?? []))
-  }, [])
+    if (!isEdit) {
+      api.get('/api/master/kelas').then(r => setKelasList(r.data.data ?? []))
+    }
+  }, [isEdit])
 
   function set(k: string, v: string) { setForm(f => ({ ...f, [k]: v })) }
 
   async function submit() {
-    if (!form.kelas_id || !form.harga_beli || !form.harga_jual) {
-      setError('Kelas, harga beli, dan harga jual wajib diisi'); return
+    if (!form.harga_beli || !form.harga_jual) {
+      setError('Harga beli dan harga jual wajib diisi'); return
+    }
+    if (!isEdit && !form.kelas_id) {
+      setError('Kelas wajib diisi'); return
     }
     setSaving(true); setError('')
     try {
-      await api.post('/api/master/harga', {
-        depot_id:   Number(depotId),
-        kelas_id:   Number(form.kelas_id),
-        jenis:      form.jenis,
-        musim:      Number(musim),
-        harga_beli: Number(form.harga_beli),
-        harga_jual: Number(form.harga_jual),
-        fee_sales:  Number(form.fee_sales),
-      })
+      if (isEdit) {
+        await api.put(`/api/master/harga/${initialData!.id}`, {
+          harga_beli: Number(form.harga_beli),
+          harga_jual: Number(form.harga_jual),
+          fee_sales:  Number(form.fee_sales),
+        })
+      } else {
+        await api.post('/api/master/harga', {
+          depot_id:   Number(depotId),
+          kelas_id:   Number(form.kelas_id),
+          jenis:      form.jenis,
+          musim:      Number(musim),
+          harga_beli: Number(form.harga_beli),
+          harga_jual: Number(form.harga_jual),
+          fee_sales:  Number(form.fee_sales),
+        })
+      }
       onDone()
     } catch (e: any) {
       setError(e?.response?.data?.message ?? 'Gagal menyimpan')
@@ -57,29 +75,43 @@ function TambahHargaModal({ depotId, musim, onDone, onClose }: {
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
       <div className="bg-surface-lowest rounded-2xl w-full max-w-md p-6 shadow-card">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="font-display font-semibold text-on-surface">Tambah Harga</h2>
+          <h2 className="font-display font-semibold text-on-surface">
+            {isEdit ? 'Edit Harga' : 'Tambah Harga'}
+          </h2>
           <button onClick={onClose} className="text-on-surface-variant text-xl leading-none">×</button>
         </div>
         <p className="text-xs text-on-surface-variant mb-4 font-body">Depot terpilih · Musim {musim}</p>
         <div className="space-y-3">
-          <div>
-            <label className="block text-xs font-body font-medium text-on-surface mb-1">Kelas *</label>
-            <select value={form.kelas_id} onChange={e => set('kelas_id', e.target.value)} className="input-field w-full">
-              <option value="">— Pilih kelas —</option>
-              {kelasList.map(k => <option key={k.id} value={k.id}>{k.kode} — {k.nama}</option>)}
-            </select>
-          </div>
-          <div>
-            <label className="block text-xs font-body font-medium text-on-surface mb-1">Jenis</label>
-            <div className="flex gap-2">
-              {['SAPI', 'DOMBA'].map(j => (
-                <button key={j} onClick={() => set('jenis', j)}
-                  className={`px-4 py-1.5 rounded-lg border-2 text-xs font-body transition-colors ${form.jenis === j ? 'border-primary bg-primary text-white' : 'border-surface-high text-on-surface'}`}>
-                  {j}
-                </button>
-              ))}
+          {isEdit ? (
+            <div>
+              <label className="block text-xs font-body font-medium text-on-surface mb-1">Kelas</label>
+              <p className="text-sm text-on-surface font-body">
+                {initialData!.kelas.kode} — {initialData!.kelas.nama}
+                <span className="ml-2 text-on-surface-variant">({initialData!.jenis})</span>
+              </p>
             </div>
-          </div>
+          ) : (
+            <>
+              <div>
+                <label className="block text-xs font-body font-medium text-on-surface mb-1">Kelas *</label>
+                <select value={form.kelas_id} onChange={e => set('kelas_id', e.target.value)} className="input-field w-full">
+                  <option value="">— Pilih kelas —</option>
+                  {kelasList.map(k => <option key={k.id} value={k.id}>{k.kode} — {k.nama}</option>)}
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs font-body font-medium text-on-surface mb-1">Jenis</label>
+                <div className="flex gap-2">
+                  {['SAPI', 'DOMBA'].map(j => (
+                    <button key={j} onClick={() => set('jenis', j)}
+                      className={`px-4 py-1.5 rounded-lg border-2 text-xs font-body transition-colors ${form.jenis === j ? 'border-primary bg-primary text-white' : 'border-surface-high text-on-surface'}`}>
+                      {j}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </>
+          )}
           <div>
             <label className="block text-xs font-body font-medium text-on-surface mb-1">Harga Beli (Rp) *</label>
             <Input type="number" value={form.harga_beli} onChange={e => set('harga_beli', e.target.value)} placeholder="5000000" />
@@ -104,16 +136,17 @@ function TambahHargaModal({ depotId, musim, onDone, onClose }: {
 }
 
 export function TabHarga() {
-  const [kelas, setKelas]     = useState<KelasHewan[]>([])
   const [depots, setDepots]   = useState<Depot[]>([])
   const [harga, setHarga]     = useState<Harga[]>([])
   const [depotId, setDepotId] = useState<string>('')
   const [musim, setMusim]     = useState<string>(String(new Date().getFullYear()))
   const [loading, setLoading] = useState(false)
-  const [showModal, setShowModal] = useState(false)
+  const [showModal, setShowModal]             = useState(false)
+  const [editingItem, setEditingItem]         = useState<Harga | null>(null)
+  const [confirmDeleteId, setConfirmDeleteId] = useState<number | null>(null)
+  const [deletingId, setDeletingId]           = useState<number | null>(null)
 
   useEffect(() => {
-    api.get('/api/master/kelas').then(r => setKelas(r.data.data))
     api.get('/api/depots').then(r => setDepots(r.data.data ?? []))
   }, [])
 
@@ -123,6 +156,17 @@ export function TabHarga() {
     api.get(`/api/master/harga?depot=${depotId}&musim=${musim}`)
       .then(r => setHarga(r.data.data))
       .finally(() => setLoading(false))
+  }
+
+  async function handleDelete(id: number) {
+    setDeletingId(id)
+    try {
+      await api.delete(`/api/master/harga/${id}`)
+      setHarga(prev => prev.filter(h => h.id !== id))
+      setConfirmDeleteId(null)
+    } catch (e: any) {
+      alert(e?.response?.data?.message ?? 'Gagal menghapus')
+    } finally { setDeletingId(null) }
   }
 
   function fmt(n: number) {
@@ -149,7 +193,7 @@ export function TabHarga() {
         </div>
         <div className="flex gap-2">
           <Button onClick={loadHarga} disabled={!depotId}>Tampilkan</Button>
-          {depotId && <Button onClick={() => setShowModal(true)}>+ Tambah Harga</Button>}
+          {depotId && <Button onClick={() => { setEditingItem(null); setShowModal(true) }}>+ Tambah Harga</Button>}
         </div>
       </div>
 
@@ -160,7 +204,7 @@ export function TabHarga() {
           <table className="w-full text-sm">
             <thead>
               <tr className="text-left">
-                {['Kelas','Jenis','Harga Beli','Harga Jual','Fee Sales'].map(h => (
+                {['Kelas','Jenis','Harga Beli','Harga Jual','Fee Sales','Aksi'].map(h => (
                   <th key={h} className="pb-3 pr-4 text-xs uppercase tracking-widest text-on-surface-variant font-body">{h}</th>
                 ))}
               </tr>
@@ -172,7 +216,34 @@ export function TabHarga() {
                   <td className="py-2.5 pr-4 text-on-surface-variant">{h.jenis}</td>
                   <td className="py-2.5 pr-4 font-body text-on-surface">{fmt(h.harga_beli)}</td>
                   <td className="py-2.5 pr-4 font-body text-on-surface">{fmt(h.harga_jual)}</td>
-                  <td className="py-2.5 font-body text-on-surface-variant">{fmt(h.fee_sales)}</td>
+                  <td className="py-2.5 pr-4 font-body text-on-surface-variant">{fmt(h.fee_sales)}</td>
+                  <td className="py-2.5">
+                    {confirmDeleteId === h.id ? (
+                      <span className="flex items-center gap-2 text-xs">
+                        <span className="text-on-surface-variant">Hapus?</span>
+                        <button
+                          onClick={() => setConfirmDeleteId(null)}
+                          className="text-on-surface-variant hover:text-on-surface"
+                        >Batal</button>
+                        <button
+                          onClick={() => handleDelete(h.id)}
+                          disabled={deletingId === h.id}
+                          className="text-red-600 hover:text-red-700 font-medium disabled:opacity-50"
+                        >{deletingId === h.id ? '...' : 'Hapus'}</button>
+                      </span>
+                    ) : (
+                      <span className="flex items-center gap-2">
+                        <button
+                          onClick={() => { setEditingItem(h); setShowModal(true) }}
+                          className="text-xs text-primary hover:underline"
+                        >Edit</button>
+                        <button
+                          onClick={() => setConfirmDeleteId(h.id)}
+                          className="text-xs text-red-500 hover:underline"
+                        >Hapus</button>
+                      </span>
+                    )}
+                  </td>
                 </tr>
               ))}
             </tbody>
@@ -185,11 +256,12 @@ export function TabHarga() {
       )}
 
       {showModal && (
-        <TambahHargaModal
+        <HargaModal
           depotId={depotId}
           musim={musim}
-          onDone={() => { setShowModal(false); loadHarga() }}
-          onClose={() => setShowModal(false)}
+          initialData={editingItem ?? undefined}
+          onDone={() => { setShowModal(false); setEditingItem(null); loadHarga() }}
+          onClose={() => { setShowModal(false); setEditingItem(null) }}
         />
       )}
     </div>
