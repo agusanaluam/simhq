@@ -10,6 +10,7 @@ interface KasEntry {
   metode: string
   tgl_transaksi: string
   input_by: { id: number; name: string } | null
+  rab: { id: number; divisi: string; musim: number } | null
 }
 
 interface KasTableProps {
@@ -49,7 +50,7 @@ export function KasTable({ entries }: KasTableProps) {
         <table className="w-full text-sm">
           <thead>
             <tr>
-              {['Tanggal', 'Keterangan', 'Sumber/Divisi', 'Metode', 'Jumlah'].map((h) => (
+              {['Tanggal', 'Keterangan', 'Sumber/Divisi', 'RAB', 'Metode', 'Jumlah'].map((h) => (
                 <th key={h} className="text-left pb-3 pr-4 text-xs uppercase tracking-widest text-on-surface-variant font-body">
                   {h}
                 </th>
@@ -67,6 +68,13 @@ export function KasTable({ entries }: KasTableProps) {
                 </td>
                 <td className="py-2.5 pr-4 font-body text-on-surface-variant">
                   {e.sumber ?? e.divisi ?? '—'}
+                </td>
+                <td className="py-2.5 pr-4 font-body text-on-surface-variant">
+                  {e.rab ? (
+                    <span className="text-xs bg-surface-high px-1.5 py-0.5 rounded font-medium">
+                      {e.rab.divisi}
+                    </span>
+                  ) : '—'}
                 </td>
                 <td className="py-2.5 pr-4 font-body text-on-surface-variant">
                   {METODE_SHORT[e.metode] ?? e.metode}
