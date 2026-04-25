@@ -8,6 +8,7 @@ use App\Http\Controllers\HewanController;
 use App\Http\Controllers\JamKerjaDefaultController;
 use App\Http\Controllers\PembayaranController;
 use App\Http\Controllers\PetakController;
+use App\Http\Controllers\RabKategoriController;
 use App\Http\Controllers\SlotSapiController;
 use App\Http\Controllers\SupplierController;
 use App\Http\Controllers\TransaksiController;
@@ -87,6 +88,10 @@ Route::middleware('auth:sanctum')->group(function () {
             Route::post('yayasan',             [\App\Http\Controllers\Master\YayasanController::class, 'store']);
             Route::put('yayasan/{yayasan}',    [\App\Http\Controllers\Master\YayasanController::class, 'update']);
             Route::delete('yayasan/{yayasan}', [\App\Http\Controllers\Master\YayasanController::class, 'destroy']);
+            Route::get('rab-kategori',                  [RabKategoriController::class, 'index']);
+            Route::post('rab-kategori',                 [RabKategoriController::class, 'store']);
+            Route::put('rab-kategori/{rabKategori}',    [RabKategoriController::class, 'update']);
+            Route::delete('rab-kategori/{rabKategori}', [RabKategoriController::class, 'destroy']);
         });
     });
 
