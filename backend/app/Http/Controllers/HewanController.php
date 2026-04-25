@@ -39,16 +39,11 @@ class HewanController extends Controller
     {
         $data = $request->validated();
 
-        [$noHewan, $noPengadaan] = DB::transaction(function () use ($data) {
-            return [
-                $this->hewanService->allocateNoHewan($data['depot_id'], $data['musim'], $data['jenis']),
-                $this->hewanService->allocateNoPengadaan($data['depot_id'], $data['musim']),
-            ];
+        $hewan = DB::transaction(function () use ($data) {
+            $data['no_hewan']     = $this->hewanService->allocateNoHewan($data['depot_id'], $data['musim'], $data['jenis']);
+            $data['no_pengadaan'] = $this->hewanService->allocateNoPengadaan($data['depot_id'], $data['musim']);
+            return Hewan::create($data);
         });
-        $data['no_hewan']     = $noHewan;
-        $data['no_pengadaan'] = $noPengadaan;
-
-        $hewan = Hewan::create($data);
 
         return response()->json(['hewan' => $hewan->load(['kelasAsal', 'kelasJual', 'supplier'])], 201);
     }
