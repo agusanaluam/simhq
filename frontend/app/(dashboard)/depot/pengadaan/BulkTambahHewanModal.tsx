@@ -62,6 +62,7 @@ export function BulkTambahHewanModal({ onClose, onSuccess }: Props) {
       onSuccess()
     } catch (err: any) {
       setError(err.response?.data?.message ?? 'Gagal menyimpan hewan.')
+    } finally {
       setLoading(false)
     }
   }
