@@ -1,9 +1,11 @@
 'use client'
 
+import { useState } from 'react'
 import { Card } from '@/components/ui/Card'
 import { StatusChip } from '@/components/ui/StatusChip'
 import Link from 'next/link'
 import type { PetakData } from './PetakCard'
+import { IsiPetakModal } from './IsiPetakModal'
 
 const STATUS_CHIP: Record<string, 'TERSEDIA' | 'DIPESAN' | 'TERJUAL' | 'MATI'> = {
   AVAILABLE: 'TERSEDIA', BOOKED: 'DIPESAN',
@@ -12,10 +14,15 @@ const STATUS_CHIP: Record<string, 'TERSEDIA' | 'DIPESAN' | 'TERJUAL' | 'MATI'> =
 
 interface Props {
   petak: PetakData | null
+  depotId?: number
+  musim?: number
   onClose: () => void
+  onRefresh: () => void
 }
 
-export function HewanPanel({ petak, onClose }: Props) {
+export function HewanPanel({ petak, depotId, musim, onClose, onRefresh }: Props) {
+  const [showIsi, setShowIsi] = useState(false)
+
   if (!petak) return null
 
   return (
@@ -48,6 +55,25 @@ export function HewanPanel({ petak, onClose }: Props) {
           </div>
         ))}
       </div>
+
+      {petak.jumlah_terisi < petak.kapasitas && depotId && (
+        <button
+          onClick={() => setShowIsi(true)}
+          className="mt-3 w-full text-sm font-body font-medium text-primary border border-primary rounded-xl py-1.5 hover:bg-primary/5 transition-colors"
+        >
+          + Isi Petak
+        </button>
+      )}
+
+      {showIsi && depotId && (
+        <IsiPetakModal
+          petak={petak}
+          depotId={depotId}
+          musim={musim ?? new Date().getFullYear()}
+          onClose={() => setShowIsi(false)}
+          onSuccess={() => { setShowIsi(false); onRefresh() }}
+        />
+      )}
     </Card>
   )
 }
