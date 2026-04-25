@@ -26,13 +26,17 @@ interface FormState {
   namaPembeli: string
   hp: string
   alamat: string
+  kelurahan: string
+  kecamatan: string
+  kode_pos: string
   kota: string
 }
 
 const INIT: FormState = {
   jenis: 'SAPI', kelasId: null, tipeQurban: 'SHQ', harga: 0, kelasKode: '',
   hewanId: null, hewanNo: null, preorder: false,
-  customerId: null, namaPembeli: '', hp: '', alamat: '', kota: '',
+  customerId: null, namaPembeli: '', hp: '', alamat: '',
+  kelurahan: '', kecamatan: '', kode_pos: '', kota: '',
 }
 
 export default function POSPage() {
@@ -54,34 +58,57 @@ export default function POSPage() {
     setStep(2)
   }
 
-  function onStep3Done(data: { customerId: number; nama: string; hp: string; alamat: string; kota: string }) {
+  function onStep3Done(data: { customerId: number; nama: string; hp: string; alamat: string; kelurahan: string; kecamatan: string; kode_pos: string; kota: string }) {
     setForm(f => ({
       ...f,
-      customerId: data.customerId,
+      customerId:  data.customerId,
       namaPembeli: data.nama,
-      hp: data.hp,
-      alamat: data.alamat,
-      kota: data.kota,
+      hp:          data.hp,
+      alamat:      data.alamat,
+      kelurahan:   data.kelurahan,
+      kecamatan:   data.kecamatan,
+      kode_pos:    data.kode_pos,
+      kota:        data.kota,
     }))
     setStep(3)
   }
 
-  async function onStep4Done(data: { csId: number | null; tellerId: number | null; salesId: number | null }) {
+  async function onStep4Done(data: {
+    csId: number | null
+    tellerId: number | null
+    salesNama: string
+    rencana_pelunasan: string
+    metodeBayar: string
+    tipeBayar: string
+    nominalBayar: number
+  }) {
     if (!depotId || !form.kelasId || !form.customerId) return
     setSubmitting(true)
     try {
-      await api.post('/api/transaksi', {
-        depot_id:    depotId,
-        hewan_id:    form.hewanId,
-        customer_id: form.customerId,
-        cs_id:       data.csId,
-        teller_id:   data.tellerId,
-        sales_id:    data.salesId,
-        tipe_qurban: form.tipeQurban,
-        jenis:       form.jenis,
-        kelas_id:    form.kelasId,
-        musim:       MUSIM,
+      const res = await api.post('/api/transaksi', {
+        depot_id:           depotId,
+        hewan_id:           form.hewanId,
+        customer_id:        form.customerId,
+        cs_id:              data.csId,
+        teller_id:          data.tellerId,
+        sales_id:           null,
+        sales_nama:         data.salesNama || null,
+        rencana_pelunasan:  data.rencana_pelunasan || null,
+        tipe_qurban:        form.tipeQurban,
+        jenis:              form.jenis,
+        kelas_id:           form.kelasId,
+        musim:              MUSIM,
       })
+      const transaksiId = res.data.transaksi.id
+
+      await api.post(`/api/transaksi/${transaksiId}/bayar`, {
+        jumlah:    data.nominalBayar,
+        tipe:      data.tipeBayar,
+        metode:    data.metodeBayar,
+        teller_id: data.tellerId,
+        tgl_bayar: new Date().toISOString().split('T')[0],
+      })
+
       router.push('/depot/transaksi')
     } catch {
       setSubmitting(false)
@@ -133,6 +160,7 @@ export default function POSPage() {
         {step === 1 && (
           <StepPilihHewan
             jenis={form.jenis}
+            kelasId={form.kelasId}
             hewanId={form.hewanId}
             preorder={form.preorder}
             onNext={onStep2Done}
@@ -143,10 +171,13 @@ export default function POSPage() {
           <StepDataPembeli
             data={{
               customerId: form.customerId,
-              nama: form.namaPembeli,
-              hp: form.hp,
-              alamat: form.alamat,
-              kota: form.kota,
+              nama:       form.namaPembeli,
+              hp:         form.hp,
+              alamat:     form.alamat,
+              kelurahan:  form.kelurahan,
+              kecamatan:  form.kecamatan,
+              kode_pos:   form.kode_pos,
+              kota:       form.kota,
             }}
             onNext={onStep3Done}
             onBack={() => setStep(1)}
