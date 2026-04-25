@@ -135,6 +135,7 @@ export function TabKaryawan() {
       setKaryawan(prev => prev.filter(k => k.id !== id))
       setConfirmDeleteId(null)
     } catch (e: any) {
+      setConfirmDeleteId(null)
       alert(e?.response?.data?.message ?? 'Gagal menghapus')
     } finally { setDeletingId(null) }
   }

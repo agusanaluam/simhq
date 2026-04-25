@@ -165,6 +165,7 @@ export function TabHarga() {
       setHarga(prev => prev.filter(h => h.id !== id))
       setConfirmDeleteId(null)
     } catch (e: any) {
+      setConfirmDeleteId(null)
       alert(e?.response?.data?.message ?? 'Gagal menghapus')
     } finally { setDeletingId(null) }
   }
