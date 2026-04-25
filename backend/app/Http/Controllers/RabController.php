@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Enums\DivisiKas;
 use App\Enums\UserRole;
 use App\Models\KasHarian;
 use App\Models\Rab;
@@ -12,7 +11,6 @@ use App\Services\WahaService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Validation\Rule;
 
 class RabController extends Controller
 {
@@ -22,32 +20,40 @@ class RabController extends Controller
         $depotId = $user->isSuperAdmin() ? ($request->depot_id ?? $user->depot_id) : $user->depot_id;
         $musim   = (int) $request->input('musim', date('Y'));
 
-        $rabByDivisi = Rab::where('depot_id', $depotId)
+        $rabs = Rab::where('depot_id', $depotId)
             ->where('musim', $musim)
+            ->with('kategori:id,nama')
             ->withSum('realisasi', 'jumlah')
-            ->get()
-            ->keyBy('divisi');
+            ->get();
 
-        $divisiList = array_column(DivisiKas::cases(), 'value');
+        // Kas KELUAR with rab_id (from BIOP) — counted separately to avoid double-count
+        $rabIds = $rabs->pluck('id');
+        $kasHarianSums = KasHarian::whereIn('rab_id', $rabIds)
+            ->where('tipe', 'KELUAR')
+            ->groupBy('rab_id')
+            ->selectRaw('rab_id, SUM(jumlah) as total')
+            ->pluck('total', 'rab_id');
 
-        $result = array_map(function (string $divisi) use ($rabByDivisi): array {
-            $rab            = $rabByDivisi->get($divisi);
-            $anggaran       = $rab ? $rab->jumlah_anggaran : 0;
-            $totalRealisasi = $rab ? (int) ($rab->realisasi_sum_jumlah ?? 0) : 0;
+        $result = $rabs->map(function (Rab $rab) use ($kasHarianSums): array {
+            $anggaran       = $rab->jumlah_anggaran;
+            $fromRealisasi  = (int) ($rab->realisasi_sum_jumlah ?? 0);
+            $fromKasHarian  = (int) ($kasHarianSums->get($rab->id, 0));
+            $totalRealisasi = $fromRealisasi + $fromKasHarian;
             $selisih        = $anggaran - $totalRealisasi;
             $persen         = $anggaran > 0 ? round($totalRealisasi / $anggaran * 100, 1) : 0.0;
 
             return [
-                'divisi'          => $divisi,
-                'rab_id'          => $rab?->id,
+                'rab_id'          => $rab->id,
+                'kategori_id'     => $rab->kategori_id,
+                'kategori'        => $rab->kategori?->nama ?? '—',
                 'jumlah_anggaran' => $anggaran,
                 'total_realisasi' => $totalRealisasi,
                 'selisih'         => $selisih,
                 'persen_terpakai' => $persen,
             ];
-        }, $divisiList);
+        })->values();
 
-        return response()->json(['musim' => $musim, 'divisi' => $result]);
+        return response()->json(['musim' => $musim, 'data' => $result]);
     }
 
     public function store(Request $request): JsonResponse
@@ -58,13 +64,13 @@ class RabController extends Controller
             : $user->depot_id;
 
         $data = $request->validate([
-            'divisi'          => ['required', Rule::in(array_column(DivisiKas::cases(), 'value'))],
+            'kategori_id'     => ['required', 'exists:rab_kategori,id'],
             'musim'           => ['required', 'integer', 'min:2020', 'max:2099'],
             'jumlah_anggaran' => ['required', 'integer', 'min:0'],
         ]);
 
         $rab = Rab::updateOrCreate(
-            ['depot_id' => $depotId, 'divisi' => $data['divisi'], 'musim' => $data['musim']],
+            ['depot_id' => $depotId, 'kategori_id' => $data['kategori_id'], 'musim' => $data['musim']],
             ['jumlah_anggaran' => $data['jumlah_anggaran']]
         );
 
@@ -74,7 +80,7 @@ class RabController extends Controller
 
         $status = $rab->wasRecentlyCreated ? 201 : 200;
 
-        return response()->json(['rab' => $rab], $status);
+        return response()->json(['rab' => $rab->load('kategori:id,nama')], $status);
     }
 
     public function indexRealisasi(Request $request, Rab $rab): JsonResponse
@@ -91,7 +97,7 @@ class RabController extends Controller
             ->orderBy('id', 'desc')
             ->get();
 
-        return response()->json(['data' => $items, 'rab' => $rab]);
+        return response()->json(['data' => $items, 'rab' => $rab->load('kategori:id,nama')]);
     }
 
     public function storeRealisasi(Request $request, Rab $rab): JsonResponse
@@ -108,32 +114,38 @@ class RabController extends Controller
             'tgl_pengeluaran' => ['required', 'date'],
         ]);
 
-        $user = $request->user();
+        $user         = $request->user();
+        $kategoriNama = $rab->kategori?->nama ?? 'RAB';
 
-        $realisasi = DB::transaction(function () use ($rab, $data, $user): RealisasiPengeluaran {
+        $realisasi = DB::transaction(function () use ($rab, $data, $user, $kategoriNama): RealisasiPengeluaran {
             $realisasi = RealisasiPengeluaran::create(array_merge($data, [
                 'rab_id'   => $rab->id,
                 'input_by' => $user->id,
             ]));
 
+            // KasHarian WITHOUT rab_id — counted via realisasi_pengeluaran in summary, not double-counted
             KasHarian::create([
                 'depot_id'      => $rab->depot_id,
                 'tipe'          => 'KELUAR',
                 'sumber'        => null,
-                'divisi'        => $rab->divisi,
-                'keterangan'    => "RAB {$rab->divisi}: {$data['keterangan']}",
+                'divisi'        => $kategoriNama,
+                'keterangan'    => "RAB {$kategoriNama}: {$data['keterangan']}",
                 'jumlah'        => $data['jumlah'],
                 'metode'        => 'CASH',
                 'tgl_transaksi' => $data['tgl_pengeluaran'],
                 'input_by'      => $user->id,
                 'transaksi_id'  => null,
+                'rab_id'        => null,
             ]);
 
             return $realisasi;
         });
 
         // Alert Kepala Depot if RAB >= 80%
-        $totalRealisasi = $rab->realisasi()->sum('jumlah');
+        $fromRealisasi  = $rab->realisasi()->sum('jumlah');
+        $fromKasHarian  = KasHarian::where('rab_id', $rab->id)->where('tipe', 'KELUAR')->sum('jumlah');
+        $totalRealisasi = $fromRealisasi + $fromKasHarian;
+
         if ($rab->jumlah_anggaran > 0) {
             $persen = $totalRealisasi / $rab->jumlah_anggaran * 100;
             if ($persen >= 80) {
@@ -142,11 +154,11 @@ class RabController extends Controller
                 User::where('depot_id', $rab->depot_id)
                     ->where('role', UserRole::KEPALA_DEPOT)
                     ->whereNotNull('phone')
-                    ->each(function ($kd) use ($rab, $sisa, $persenFmt): void {
+                    ->each(function ($kd) use ($rab, $kategoriNama, $sisa, $persenFmt): void {
                         WahaService::send(
                             $rab->depot_id,
                             $kd->phone,
-                            "WARNING: RAB divisi {$rab->divisi} tersisa Rp{$sisa} (realisasi {$persenFmt}% dari anggaran).",
+                            "WARNING: RAB {$kategoriNama} tersisa Rp{$sisa} (realisasi {$persenFmt}% dari anggaran).",
                             'rab_hampir_habis'
                         );
                     });

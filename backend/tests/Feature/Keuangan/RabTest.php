@@ -5,6 +5,7 @@ namespace Tests\Feature\Keuangan;
 use App\Enums\UserRole;
 use App\Models\Depot;
 use App\Models\Rab;
+use App\Models\RabKategori;
 use App\Models\RealisasiPengeluaran;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -14,25 +15,28 @@ class RabTest extends TestCase
 {
     use RefreshDatabase;
 
-    private User  $kepala;
-    private Depot $depot;
-    private int   $musim = 2026;
+    private User        $kepala;
+    private Depot       $depot;
+    private RabKategori $kategori;
+    private int         $musim = 2026;
 
     protected function setUp(): void
     {
         parent::setUp();
-        $this->depot  = Depot::factory()->create();
-        $this->kepala = User::factory()->create([
+        $this->depot    = Depot::factory()->create();
+        $this->kepala   = User::factory()->create([
             'depot_id' => $this->depot->id,
             'role'     => UserRole::KEPALA_DEPOT,
         ]);
+        $this->kategori = RabKategori::create(['nama' => 'LOGISTIK', 'is_active' => true]);
     }
 
-    private function makeRab(string $divisi = 'LOGISTIK', int $anggaran = 10_000_000): Rab
+    private function makeRab(RabKategori $kategori = null, int $anggaran = 10_000_000): Rab
     {
+        $kategori ??= $this->kategori;
         return Rab::create([
             'depot_id'        => $this->depot->id,
-            'divisi'          => $divisi,
+            'kategori_id'     => $kategori->id,
             'musim'           => $this->musim,
             'jumlah_anggaran' => $anggaran,
             'created_by'      => $this->kepala->id,
@@ -52,9 +56,9 @@ class RabTest extends TestCase
 
     // ─── summary ─────────────────────────────────────────────────────────────
 
-    public function test_summary_returns_all_9_divisi(): void
+    public function test_summary_returns_rab_list_with_kategori(): void
     {
-        $this->makeRab('LOGISTIK', 10_000_000);
+        $this->makeRab($this->kategori, 10_000_000);
 
         $res = $this->actingAs($this->kepala)
             ->getJson("/api/keuangan/rab/summary?musim={$this->musim}");
@@ -62,57 +66,57 @@ class RabTest extends TestCase
         $res->assertOk()
             ->assertJsonStructure([
                 'musim',
-                'divisi' => [['divisi', 'rab_id', 'jumlah_anggaran', 'total_realisasi', 'selisih', 'persen_terpakai']],
+                'data' => [['rab_id', 'kategori_id', 'kategori', 'jumlah_anggaran', 'total_realisasi', 'selisih', 'persen_terpakai']],
             ]);
 
-        $this->assertCount(9, $res->json('divisi'));
+        $this->assertCount(1, $res->json('data'));
         $this->assertEquals($this->musim, $res->json('musim'));
     }
 
     public function test_summary_shows_correct_totals(): void
     {
-        $rab = $this->makeRab('LOGISTIK', 10_000_000);
+        $rab = $this->makeRab($this->kategori, 10_000_000);
         $this->makeRealisasi($rab, 3_000_000);
         $this->makeRealisasi($rab, 2_000_000);
 
         $res = $this->actingAs($this->kepala)
             ->getJson("/api/keuangan/rab/summary?musim={$this->musim}");
 
-        $logistik = collect($res->json('divisi'))->firstWhere('divisi', 'LOGISTIK');
+        $row = collect($res->json('data'))->firstWhere('kategori', 'LOGISTIK');
 
-        $this->assertEquals(10_000_000, $logistik['jumlah_anggaran']);
-        $this->assertEquals(5_000_000,  $logistik['total_realisasi']);
-        $this->assertEquals(5_000_000,  $logistik['selisih']);
-        $this->assertEquals(50.0,       $logistik['persen_terpakai']);
+        $this->assertEquals(10_000_000, $row['jumlah_anggaran']);
+        $this->assertEquals(5_000_000,  $row['total_realisasi']);
+        $this->assertEquals(5_000_000,  $row['selisih']);
+        $this->assertEquals(50.0,       $row['persen_terpakai']);
     }
 
-    public function test_summary_divisi_without_rab_shows_zeros(): void
+    public function test_summary_empty_when_no_rabs(): void
     {
         $res = $this->actingAs($this->kepala)
             ->getJson("/api/keuangan/rab/summary?musim={$this->musim}");
 
-        $admin = collect($res->json('divisi'))->firstWhere('divisi', 'ADMIN');
-
-        $this->assertNull($admin['rab_id']);
-        $this->assertEquals(0,   $admin['jumlah_anggaran']);
-        $this->assertEquals(0,   $admin['total_realisasi']);
-        $this->assertEquals(0.0, $admin['persen_terpakai']);
+        $res->assertOk();
+        $this->assertCount(0, $res->json('data'));
     }
 
     public function test_summary_scoped_to_own_depot(): void
     {
-        $otherDepot = Depot::factory()->create();
+        $otherDepot    = Depot::factory()->create();
+        $adminKategori = RabKategori::create(['nama' => 'ADMIN', 'is_active' => true]);
         Rab::create([
-            'depot_id' => $otherDepot->id, 'divisi' => 'ADMIN',
-            'musim' => $this->musim, 'jumlah_anggaran' => 99_000_000,
+            'depot_id'        => $otherDepot->id,
+            'kategori_id'     => $adminKategori->id,
+            'musim'           => $this->musim,
+            'jumlah_anggaran' => 99_000_000,
         ]);
-        $this->makeRab('LOGISTIK', 10_000_000);
+        $this->makeRab($this->kategori, 10_000_000);
 
         $res = $this->actingAs($this->kepala)
             ->getJson("/api/keuangan/rab/summary?musim={$this->musim}");
 
-        $admin = collect($res->json('divisi'))->firstWhere('divisi', 'ADMIN');
-        $this->assertEquals(0, $admin['jumlah_anggaran']);
+        // Only own depot's RAB returned
+        $this->assertCount(1, $res->json('data'));
+        $this->assertEquals(10_000_000, $res->json('data.0.jumlah_anggaran'));
     }
 
     // ─── store RAB ────────────────────────────────────────────────────────────
@@ -120,21 +124,21 @@ class RabTest extends TestCase
     public function test_kepala_can_create_rab(): void
     {
         $res = $this->actingAs($this->kepala)->postJson('/api/keuangan/rab', [
-            'divisi'          => 'LOGISTIK',
+            'kategori_id'     => $this->kategori->id,
             'musim'           => $this->musim,
             'jumlah_anggaran' => 15_000_000,
         ]);
 
-        $res->assertCreated()->assertJsonPath('rab.divisi', 'LOGISTIK');
-        $this->assertDatabaseHas('rab', ['divisi' => 'LOGISTIK', 'jumlah_anggaran' => 15_000_000]);
+        $res->assertCreated()->assertJsonPath('rab.kategori_id', $this->kategori->id);
+        $this->assertDatabaseHas('rab', ['kategori_id' => $this->kategori->id, 'jumlah_anggaran' => 15_000_000]);
     }
 
-    public function test_store_rab_updates_existing_same_divisi_musim(): void
+    public function test_store_rab_updates_existing_same_kategori_musim(): void
     {
-        $this->makeRab('LOGISTIK', 10_000_000);
+        $this->makeRab($this->kategori, 10_000_000);
 
         $res = $this->actingAs($this->kepala)->postJson('/api/keuangan/rab', [
-            'divisi'          => 'LOGISTIK',
+            'kategori_id'     => $this->kategori->id,
             'musim'           => $this->musim,
             'jumlah_anggaran' => 20_000_000,
         ]);
@@ -147,14 +151,14 @@ class RabTest extends TestCase
     {
         $this->actingAs($this->kepala)->postJson('/api/keuangan/rab', [])
             ->assertUnprocessable()
-            ->assertJsonValidationErrors(['divisi', 'musim', 'jumlah_anggaran']);
+            ->assertJsonValidationErrors(['kategori_id', 'musim', 'jumlah_anggaran']);
     }
 
-    public function test_store_rab_rejects_invalid_divisi(): void
+    public function test_store_rab_rejects_nonexistent_kategori(): void
     {
         $this->actingAs($this->kepala)->postJson('/api/keuangan/rab', [
-            'divisi' => 'MARKETING', 'musim' => $this->musim, 'jumlah_anggaran' => 1_000_000,
-        ])->assertUnprocessable()->assertJsonValidationErrors(['divisi']);
+            'kategori_id' => 99999, 'musim' => $this->musim, 'jumlah_anggaran' => 1_000_000,
+        ])->assertUnprocessable()->assertJsonValidationErrors(['kategori_id']);
     }
 
     // ─── realisasi ───────────────────────────────────────────────────────────
@@ -178,7 +182,7 @@ class RabTest extends TestCase
 
     public function test_realisasi_auto_creates_kas_harian_keluar(): void
     {
-        $rab = $this->makeRab('LOGISTIK', 10_000_000);
+        $rab = $this->makeRab($this->kategori, 10_000_000);
 
         $this->actingAs($this->kepala)
             ->postJson("/api/keuangan/rab/{$rab->id}/realisasi", [
@@ -209,8 +213,10 @@ class RabTest extends TestCase
     {
         $otherDepot = Depot::factory()->create();
         $otherRab   = Rab::create([
-            'depot_id' => $otherDepot->id, 'divisi' => 'ADMIN',
-            'musim' => $this->musim, 'jumlah_anggaran' => 5_000_000,
+            'depot_id'    => $otherDepot->id,
+            'kategori_id' => $this->kategori->id,
+            'musim'       => $this->musim,
+            'jumlah_anggaran' => 5_000_000,
         ]);
 
         $this->actingAs($this->kepala)

@@ -92,11 +92,12 @@ class IncomeStatementController extends Controller
 
         $biayaDivisi = DB::table('realisasi_pengeluaran as rp')
             ->join('rab as r', 'r.id', '=', 'rp.rab_id')
+            ->join('rab_kategori as rk', 'rk.id', '=', 'r.kategori_id')
             ->where('r.depot_id', $depotId)
             ->where('r.musim', $musim)
-            ->groupBy('r.divisi')
-            ->orderBy('r.divisi')
-            ->select('r.divisi', DB::raw('SUM(rp.jumlah) as total_biaya'))
+            ->groupBy('rk.nama')
+            ->orderBy('rk.nama')
+            ->select('rk.nama as divisi', DB::raw('SUM(rp.jumlah) as total_biaya'))
             ->get()
             ->map(fn($r) => [
                 'divisi'      => $r->divisi,

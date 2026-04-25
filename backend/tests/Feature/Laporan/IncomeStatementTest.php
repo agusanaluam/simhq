@@ -8,6 +8,7 @@ use App\Models\Depot;
 use App\Models\HargaKelas;
 use App\Models\KelasHewan;
 use App\Models\Rab;
+use App\Models\RabKategori;
 use App\Models\RealisasiPengeluaran;
 use App\Models\Transaksi;
 use App\Models\User;
@@ -66,9 +67,13 @@ class IncomeStatementTest extends TestCase
 
     private function makeRealisasi(string $divisi = 'LOGISTIK', int $jumlah = 2_000_000): void
     {
+        $kategori = RabKategori::firstOrCreate(
+            ['nama' => $divisi],
+            ['is_active' => true],
+        );
         $rab = Rab::create([
             'depot_id'        => $this->depot->id,
-            'divisi'          => $divisi,
+            'kategori_id'     => $kategori->id,
             'musim'           => $this->musim,
             'jumlah_anggaran' => 5_000_000,
             'created_by'      => $this->kepala->id,
