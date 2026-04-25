@@ -42,9 +42,15 @@ class HargaController extends Controller
         return response()->json(['harga' => $harga->load('kelas')], 201);
     }
 
-    public function update(StoreHargaRequest $request, HargaKelas $harga): JsonResponse
+    public function update(Request $request, HargaKelas $harga): JsonResponse
     {
-        $harga->update($request->only(['harga_beli', 'harga_jual', 'fee_sales']));
+        $data = $request->validate([
+            'harga_beli' => ['required', 'integer', 'min:0'],
+            'harga_jual' => ['required', 'integer', 'gt:harga_beli'],
+            'fee_sales'  => ['sometimes', 'integer', 'min:0'],
+        ]);
+
+        $harga->update($data);
 
         return response()->json(['harga' => $harga->fresh()->load('kelas')]);
     }
