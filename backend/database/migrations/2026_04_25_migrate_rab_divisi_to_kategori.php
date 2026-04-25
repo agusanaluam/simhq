@@ -33,6 +33,12 @@ return new class extends Migration
             DB::table('rab')->where('divisi', $nama)->update(['kategori_id' => $id]);
         }
 
+        // Guard: ensure all rows were matched before dropping the column
+        $unmatched = DB::table('rab')->whereNull('kategori_id')->count();
+        if ($unmatched > 0) {
+            throw new \RuntimeException("Migration aborted: {$unmatched} rab rows could not be matched to rab_kategori. Run manually to inspect.");
+        }
+
         // 4. Drop old unique index and divisi column, add new unique
         Schema::table('rab', function (Blueprint $table) {
             try {

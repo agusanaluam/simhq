@@ -196,6 +196,7 @@ class RabTest extends TestCase
             'tipe'     => 'KELUAR',
             'divisi'   => 'LOGISTIK',
             'jumlah'   => 3_000_000,
+            'rab_id'   => null,
         ]);
     }
 
