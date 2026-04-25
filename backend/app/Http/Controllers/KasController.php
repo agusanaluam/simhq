@@ -44,20 +44,19 @@ class KasController extends Controller
         $data = $request->validate([
             'tipe'          => ['required', 'in:MASUK,KELUAR'],
             'sumber'        => [Rule::requiredIf($request->tipe === 'MASUK'), 'nullable', Rule::in(array_column(SumberKas::cases(), 'value'))],
-            'divisi'        => [Rule::requiredIf($request->tipe === 'KELUAR'), 'nullable', 'string', 'max:30'],
             'keterangan'    => ['required', 'string', 'max:300'],
             'jumlah'        => ['required', 'integer', 'min:1'],
             'metode'        => ['required', 'in:CASH,TRANSFER_BCA,TRANSFER_LAIN'],
             'tgl_transaksi' => ['required', 'date'],
-            'rab_id'        => ['sometimes', 'nullable', 'exists:rab,id'],
+            'rab_id'        => [Rule::requiredIf($request->tipe === 'KELUAR'), 'nullable', 'exists:rab,id'],
         ]);
 
-        if (! empty($data['rab_id'])) {
-            abort_unless(
-                \App\Models\Rab::where('id', $data['rab_id'])->where('depot_id', $depotId)->exists(),
-                403,
-                'RAB tidak ditemukan di depot ini.'
-            );
+        if (($data['tipe'] ?? '') === 'KELUAR' && ! empty($data['rab_id'])) {
+            $rab = \App\Models\Rab::with('kategori:id,nama')
+                ->where('id', $data['rab_id'])
+                ->where('depot_id', $depotId)
+                ->firstOrFail();
+            $data['divisi'] = $rab->kategori?->nama ?? '';
         }
 
         $kas = KasHarian::create(array_merge($data, [

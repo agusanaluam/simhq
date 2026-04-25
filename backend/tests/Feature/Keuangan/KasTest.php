@@ -5,6 +5,8 @@ use App\Enums\TipeKas;
 use App\Enums\UserRole;
 use App\Models\Depot;
 use App\Models\KasHarian;
+use App\Models\Rab;
+use App\Models\RabKategori;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -15,6 +17,7 @@ class KasTest extends TestCase
 
     private User $kepala;
     private Depot $depot;
+    private Rab $rab;
     private int $seq = 0;
 
     protected function setUp(): void
@@ -24,6 +27,12 @@ class KasTest extends TestCase
         $this->kepala = User::factory()->create([
             'depot_id' => $this->depot->id,
             'role'     => UserRole::KEPALA_DEPOT,
+        ]);
+
+        $kategori = RabKategori::factory()->create(['nama' => 'LOGISTIK']);
+        $this->rab = Rab::factory()->create([
+            'depot_id' => $this->depot->id,
+            'kategori_id' => $kategori->id,
         ]);
     }
 
@@ -120,7 +129,7 @@ class KasTest extends TestCase
     {
         $res = $this->actingAs($this->kepala)->postJson('/api/keuangan/kas', [
             'tipe'          => 'KELUAR',
-            'divisi'        => 'LOGISTIK',
+            'rab_id'        => $this->rab->id,
             'keterangan'    => 'Bensin truk',
             'jumlah'        => 200_000,
             'metode'        => 'CASH',
@@ -128,7 +137,7 @@ class KasTest extends TestCase
         ]);
 
         $res->assertCreated()->assertJsonPath('kas.tipe', 'KELUAR');
-        $this->assertDatabaseHas('kas_harian', ['divisi' => 'LOGISTIK', 'jumlah' => 200_000]);
+        $this->assertDatabaseHas('kas_harian', ['divisi' => 'LOGISTIK', 'jumlah' => 200_000, 'rab_id' => $this->rab->id]);
     }
 
     public function test_create_validates_required_fields(): void
@@ -146,12 +155,12 @@ class KasTest extends TestCase
         ])->assertUnprocessable()->assertJsonValidationErrors(['sumber']);
     }
 
-    public function test_keluar_requires_divisi(): void
+    public function test_keluar_requires_rab_id(): void
     {
         $this->actingAs($this->kepala)->postJson('/api/keuangan/kas', [
             'tipe' => 'KELUAR', 'keterangan' => 'Test', 'jumlah' => 100_000,
             'metode' => 'CASH', 'tgl_transaksi' => today()->toDateString(),
-        ])->assertUnprocessable()->assertJsonValidationErrors(['divisi']);
+        ])->assertUnprocessable()->assertJsonValidationErrors(['rab_id']);
     }
 
     public function test_saldo_is_masuk_minus_keluar_up_to_date(): void
