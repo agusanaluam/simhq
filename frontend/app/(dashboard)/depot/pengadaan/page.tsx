@@ -235,7 +235,7 @@ export default function PengadaanPage() {
                       : <span className="text-xs bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full font-body">Belum Dikelas</span>}
                   </td>
                   <td className="py-2.5 pr-3 text-on-surface-variant">{h.bobot_masuk} kg</td>
-                  <td className="py-2.5 pr-3 text-on-surface-variant">{h.tgl_masuk}</td>
+                  <td className="py-2.5 pr-3 text-on-surface-variant">{h.tgl_masuk.slice(0, 10).split('-').reverse().join('/')}</td>
                   <td className="py-2.5 pr-3 text-on-surface-variant">{h.supplier?.nama ?? '—'}</td>
                   <td className="py-2.5 pr-3">
                     <StatusChip status={STATUS_CHIP[h.status] ?? 'TERSEDIA'} />
