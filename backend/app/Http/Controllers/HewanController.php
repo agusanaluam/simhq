@@ -29,6 +29,7 @@ class HewanController extends Controller
                 ? $q->whereNull('kelas_jual_id')
                 : $q->where('kelas_jual_id', $request->kelas))
             ->when($request->musim,  fn($q) => $q->where('musim', $request->musim))
+            ->when($request->boolean('unassigned'), fn($q) => $q->whereNull('petak_id'))
             ->orderBy('no_hewan')
             ->paginate(50);
 
