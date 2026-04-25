@@ -12,6 +12,7 @@ import Link from 'next/link'
 
 interface Hewan {
   id: number; no_hewan: string; jenis: string; status: string
+  no_pengadaan: number
   bobot_masuk: string; tgl_masuk: string
   kelas_asal: { kode: string } | null
   kelas_jual: { kode: string } | null
@@ -153,6 +154,8 @@ export default function PengadaanPage() {
   const [jenisFilter, setJenis]         = useState('')
   const [showModal, setShowModal]       = useState(false)
   const [showSupplier, setShowSupplier] = useState(false)
+  const [kelasFilter, setKelas]   = useState('')
+  const [kelasList, setKelasList] = useState<{ id: number; kode: string }[]>([])
   const [showBulk, setShowBulk]         = useState(false)
 
   function loadHewan() {
@@ -160,12 +163,17 @@ export default function PengadaanPage() {
     const p = new URLSearchParams()
     if (statusFilter) p.set('status', statusFilter)
     if (jenisFilter)  p.set('jenis', jenisFilter)
+    if (kelasFilter) p.set('kelas', kelasFilter)
     api.get(`/api/hewan?${p}`)
       .then(r => setHewan(r.data.data ?? []))
       .finally(() => setLoading(false))
   }
 
-  useEffect(() => { loadHewan() }, [statusFilter, jenisFilter])
+  useEffect(() => {
+    api.get('/api/master/kelas').then(r => setKelasList(r.data.data ?? []))
+  }, [])
+
+  useEffect(() => { loadHewan() }, [statusFilter, jenisFilter, kelasFilter])
 
   return (
     <div>
@@ -195,6 +203,11 @@ export default function PengadaanPage() {
           <option value="SAPI">Sapi</option>
           <option value="DOMBA">Domba</option>
         </select>
+        <select value={kelasFilter} onChange={e => setKelas(e.target.value)} className="input-field w-44">
+          <option value="">Semua Kelas</option>
+          <option value="UNCLASSED">Belum Dikelas</option>
+          {kelasList.map(k => <option key={k.id} value={String(k.id)}>{k.kode}</option>)}
+        </select>
       </div>
 
       <Card>
@@ -204,7 +217,7 @@ export default function PengadaanPage() {
           <table className="w-full text-sm">
             <thead>
               <tr className="text-left">
-                {['No','Jenis','Kelas Jual','Bobot','Tgl Masuk','Supplier','Status',''].map(h => (
+                {['No','Pengadaan','Jenis','Kelas Beli','Kelas Jual','Bobot','Tgl Masuk','Supplier','Status',''].map(h => (
                   <th key={h} className="pb-3 pr-3 text-xs uppercase tracking-widest text-on-surface-variant font-body">{h}</th>
                 ))}
               </tr>
@@ -213,8 +226,14 @@ export default function PengadaanPage() {
               {hewan.map((h, i) => (
                 <tr key={h.id} className={i % 2 === 0 ? 'bg-surface-lowest' : 'bg-surface-low'}>
                   <td className="py-2.5 pr-3 font-display font-bold text-primary">{h.no_hewan}</td>
+                  <td className="py-2.5 pr-3 text-on-surface-variant">{h.no_pengadaan > 0 ? `ke-${h.no_pengadaan}` : '—'}</td>
                   <td className="py-2.5 pr-3 text-on-surface-variant">{h.jenis}</td>
-                  <td className="py-2.5 pr-3 font-body font-medium">{h.kelas_jual?.kode ?? '—'}</td>
+                  <td className="py-2.5 pr-3 text-on-surface-variant">{h.kelas_asal?.kode ?? '—'}</td>
+                  <td className="py-2.5 pr-3">
+                    {h.kelas_jual
+                      ? <span className="font-body font-medium">{h.kelas_jual.kode}</span>
+                      : <span className="text-xs bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full font-body">Belum Dikelas</span>}
+                  </td>
                   <td className="py-2.5 pr-3 text-on-surface-variant">{h.bobot_masuk} kg</td>
                   <td className="py-2.5 pr-3 text-on-surface-variant">{h.tgl_masuk}</td>
                   <td className="py-2.5 pr-3 text-on-surface-variant">{h.supplier?.nama ?? '—'}</td>
@@ -227,7 +246,7 @@ export default function PengadaanPage() {
                 </tr>
               ))}
               {hewan.length === 0 && (
-                <tr><td colSpan={8} className="py-8 text-center text-on-surface-variant">Belum ada hewan.</td></tr>
+                <tr><td colSpan={10} className="py-8 text-center text-on-surface-variant">Belum ada hewan.</td></tr>
               )}
             </tbody>
           </table>
