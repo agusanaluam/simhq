@@ -28,7 +28,7 @@ class RabKategoriController extends Controller
     public function update(Request $request, RabKategori $rabKategori): JsonResponse
     {
         $data = $request->validate([
-            'nama'      => ['sometimes', 'string', 'max:100', 'unique:rab_kategori,nama,' . $rabKategori->id],
+            'nama'      => ['sometimes', 'filled', 'string', 'max:100', 'unique:rab_kategori,nama,' . $rabKategori->id],
             'is_active' => ['sometimes', 'boolean'],
         ]);
         $rabKategori->update($data);

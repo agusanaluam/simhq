@@ -80,6 +80,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('kelas',   [\App\Http\Controllers\Master\KelasController::class,   'index']);
         Route::get('harga',   [\App\Http\Controllers\Master\HargaController::class,   'index']);
         Route::get('yayasan', [\App\Http\Controllers\Master\YayasanController::class, 'index']);
+        Route::get('rab-kategori', [RabKategoriController::class, 'index']);
 
         Route::middleware('role:SUPER_ADMIN,KEPALA_DEPOT')->group(function () {
             Route::post('harga',               [\App\Http\Controllers\Master\HargaController::class,   'store']);
@@ -88,7 +89,6 @@ Route::middleware('auth:sanctum')->group(function () {
             Route::post('yayasan',             [\App\Http\Controllers\Master\YayasanController::class, 'store']);
             Route::put('yayasan/{yayasan}',    [\App\Http\Controllers\Master\YayasanController::class, 'update']);
             Route::delete('yayasan/{yayasan}', [\App\Http\Controllers\Master\YayasanController::class, 'destroy']);
-            Route::get('rab-kategori',                  [RabKategoriController::class, 'index']);
             Route::post('rab-kategori',                 [RabKategoriController::class, 'store']);
             Route::put('rab-kategori/{rabKategori}',    [RabKategoriController::class, 'update']);
             Route::delete('rab-kategori/{rabKategori}', [RabKategoriController::class, 'destroy']);
