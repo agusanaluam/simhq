@@ -1,35 +1,52 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/Button'
 import { Input }  from '@/components/ui/Input'
 import api from '@/lib/api'
 
 const SUMBER_OPTIONS = ['PENJUALAN', 'DEPOSIT', 'LAIN']
-const DIVISI_OPTIONS = ['KONSTRUKSI', 'LOGISTIK', 'ADMIN', 'CS', 'KANDANG', 'DISTRIBUSI', 'PAKAN', 'LISTRIK', 'LAIN']
 const METODE_OPTIONS = [
   { value: 'CASH',          label: 'Tunai' },
   { value: 'TRANSFER_BCA',  label: 'Transfer BCA' },
   { value: 'TRANSFER_LAIN', label: 'Transfer Lain' },
 ]
 
+interface RabOption {
+  rab_id: number
+  kategori: string
+  selisih: number
+}
+
 interface TambahKasModalProps {
   onDone:  () => void
   onClose: () => void
+}
+
+function rupiah(n: number): string {
+  return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(n)
 }
 
 export function TambahKasModal({ onDone, onClose }: TambahKasModalProps) {
   const [form, setForm] = useState({
     tipe:          'MASUK',
     sumber:        'DEPOSIT',
-    divisi:        'ADMIN',
     keterangan:    '',
     jumlah:        '',
     metode:        'CASH',
     tgl_transaksi: new Date().toISOString().slice(0, 10),
+    rab_id:        '',
   })
+  const [rabOptions, setRabOptions] = useState<RabOption[]>([])
   const [saving, setSaving] = useState(false)
   const [error, setError]   = useState('')
+
+  useEffect(() => {
+    const musim = new Date().getFullYear()
+    api.get(`/api/keuangan/rab/summary?musim=${musim}`)
+      .then(r => setRabOptions(r.data.data ?? []))
+      .catch(() => {})
+  }, [])
 
   function set(k: string, v: string) {
     setForm((f) => ({ ...f, [k]: v }))
@@ -40,17 +57,21 @@ export function TambahKasModal({ onDone, onClose }: TambahKasModalProps) {
       setError('Keterangan, jumlah, dan tanggal wajib diisi.')
       return
     }
+    if (form.tipe === 'KELUAR' && !form.rab_id) {
+      setError('Pilih pos RAB untuk kas keluar.')
+      return
+    }
     setSaving(true)
     setError('')
     try {
       await api.post('/api/keuangan/kas', {
         tipe:          form.tipe,
-        sumber:        form.tipe === 'MASUK'  ? form.sumber : undefined,
-        divisi:        form.tipe === 'KELUAR' ? form.divisi : undefined,
+        sumber:        form.tipe === 'MASUK' ? form.sumber : undefined,
         keterangan:    form.keterangan,
         jumlah:        Number(form.jumlah),
         metode:        form.metode,
         tgl_transaksi: form.tgl_transaksi,
+        rab_id:        form.tipe === 'KELUAR' ? Number(form.rab_id) : undefined,
       })
       onDone()
     } catch (e: unknown) {
@@ -100,10 +121,24 @@ export function TambahKasModal({ onDone, onClose }: TambahKasModalProps) {
           </div>
         ) : (
           <div>
-            <label className={labelClass}>Divisi</label>
-            <select value={form.divisi} onChange={(e) => set('divisi', e.target.value)} className="input-field">
-              {DIVISI_OPTIONS.map((d) => <option key={d} value={d}>{d}</option>)}
+            <label className={labelClass}>Pos RAB *</label>
+            <select
+              value={form.rab_id}
+              onChange={(e) => set('rab_id', e.target.value)}
+              className="input-field"
+            >
+              <option value="">— Pilih pos RAB —</option>
+              {rabOptions.map((r) => (
+                <option key={r.rab_id} value={r.rab_id}>
+                  {r.kategori} — Sisa {rupiah(r.selisih)}
+                </option>
+              ))}
             </select>
+            {rabOptions.length === 0 && (
+              <p className="text-xs text-on-surface-variant mt-1">
+                Belum ada pos RAB untuk musim ini. Buat dulu di halaman RAB.
+              </p>
+            )}
           </div>
         )}
 
@@ -111,7 +146,7 @@ export function TambahKasModal({ onDone, onClose }: TambahKasModalProps) {
           label="Keterangan"
           value={form.keterangan}
           onChange={(e) => set('keterangan', e.target.value)}
-          placeholder="Mis. Setoran tunai penjualan sore"
+          placeholder="Mis. Beli pakan ternak"
         />
         <Input
           label="Jumlah (Rp)"
