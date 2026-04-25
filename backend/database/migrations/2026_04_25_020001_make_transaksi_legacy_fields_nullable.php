@@ -1,19 +1,24 @@
 <?php
 use Illuminate\Database\Migrations\Migration;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration {
     public function up(): void
     {
-        DB::statement('ALTER TABLE transaksi ALTER COLUMN tipe_qurban DROP NOT NULL');
-        DB::statement('ALTER TABLE transaksi ALTER COLUMN jenis DROP NOT NULL');
-        DB::statement('ALTER TABLE transaksi ALTER COLUMN kelas_id DROP NOT NULL');
+        Schema::table('transaksi', function (Blueprint $table) {
+            $table->string('tipe_qurban')->nullable()->change();
+            $table->string('jenis')->nullable()->change();
+            $table->foreignId('kelas_id')->nullable()->change();
+        });
     }
 
     public function down(): void
     {
-        DB::statement('ALTER TABLE transaksi ALTER COLUMN tipe_qurban SET NOT NULL');
-        DB::statement('ALTER TABLE transaksi ALTER COLUMN jenis SET NOT NULL');
-        DB::statement('ALTER TABLE transaksi ALTER COLUMN kelas_id SET NOT NULL');
+        Schema::table('transaksi', function (Blueprint $table) {
+            $table->string('tipe_qurban')->nullable(false)->change();
+            $table->string('jenis')->nullable(false)->change();
+            $table->foreignId('kelas_id')->nullable(false)->change();
+        });
     }
 };

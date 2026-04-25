@@ -4,9 +4,12 @@ namespace App\Http\Controllers;
 use App\Enums\StatusHewan;
 use App\Enums\StatusTransaksi;
 use App\Http\Requests\StoreTransaksiRequest;
+use App\Models\Hewan;
 use App\Models\HargaKelas;
 use App\Models\Transaksi;
+use App\Models\TransaksiItem;
 use App\Services\TransaksiService;
+use Illuminate\Support\Arr;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -47,30 +50,41 @@ class TransaksiController extends Controller
 
     public function store(StoreTransaksiRequest $request): JsonResponse
     {
-        $data = $request->validated();
+        $data       = $request->validated();
+        $items      = $data['items'] ?? [];
+        $totalHarga = collect($items)->sum('harga');
 
-        $harga = HargaKelas::where('depot_id', $data['depot_id'])
-            ->where('kelas_id', $data['kelas_id'])
-            ->where('jenis', $data['jenis'])
-            ->where('musim', $data['musim'])
-            ->value('harga_jual') ?? 0;
+        $hasPreorder = collect($items)->contains('is_preorder', true);
+        $status      = $hasPreorder
+            ? StatusTransaksi::MENUNGGU_HEWAN->value
+            : StatusTransaksi::HEWAN_TERALOKASI->value;
 
-        $status = ($data['hewan_id'] ?? null)
-            ? StatusTransaksi::HEWAN_TERALOKASI->value
-            : StatusTransaksi::MENUNGGU_HEWAN->value;
-
-        $transaksi = DB::transaction(function () use ($data, $harga, $status) {
+        $transaksi = DB::transaction(function () use ($data, $items, $totalHarga, $status) {
             $noFaktur = $this->svc->generateNoFaktur($data['depot_id'], $data['musim']);
 
-            return Transaksi::create(array_merge($data, [
-                'no_faktur'        => $noFaktur,
-                'harga'            => $harga,
-                'total'            => $harga,
-                'status_transaksi' => $status,
-            ]));
+            $transaksi = Transaksi::create(array_merge(
+                Arr::except($data, ['items']),
+                [
+                    'no_faktur'        => $noFaktur,
+                    'harga'            => $totalHarga,
+                    'total'            => $totalHarga,
+                    'status_transaksi' => $status,
+                ]
+            ));
+
+            foreach ($items as $item) {
+                TransaksiItem::create(array_merge($item, ['transaksi_id' => $transaksi->id]));
+                if (!$item['is_preorder'] && !empty($item['hewan_id'])) {
+                    Hewan::where('id', $item['hewan_id'])->update(['status' => StatusHewan::BOOKED->value]);
+                }
+            }
+
+            return $transaksi;
         });
 
-        return response()->json(['transaksi' => $transaksi->load(['customer', 'hewan', 'kelas'])], 201);
+        return response()->json([
+            'transaksi' => $transaksi->load(['items.kelas', 'customer']),
+        ], 201);
     }
 
     public function assignHewan(Request $request, Transaksi $transaksi): JsonResponse

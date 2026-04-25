@@ -59,14 +59,26 @@ class TransaksiTest extends TestCase
 
     private function payload(array $overrides = []): array
     {
-        return array_merge([
+        $hewanId = $overrides['hewan_id'] ?? null;
+        unset($overrides['hewan_id']);
+
+        $base = [
             'depot_id'    => $this->depot->id,
             'customer_id' => $this->customer->id,
-            'tipe_qurban' => 'SHQ',
-            'jenis'       => 'SAPI',
-            'kelas_id'    => $this->kelas->id,
             'musim'       => 2026,
-        ], $overrides);
+            'items'       => [
+                [
+                    'jenis'       => 'SAPI',
+                    'kelas_id'    => $this->kelas->id,
+                    'tipe_qurban' => 'SHQ',
+                    'harga'       => 6000000,
+                    'is_preorder' => $hewanId === null,
+                    'hewan_id'    => $hewanId,
+                ],
+            ],
+        ];
+
+        return array_merge($base, $overrides);
     }
 
     public function test_buat_transaksi_dengan_hewan(): void
@@ -81,7 +93,6 @@ class TransaksiTest extends TestCase
             ->assertJsonStructure(['transaksi' => ['id', 'no_faktur', 'harga', 'total']]);
 
         $this->assertDatabaseHas('transaksi', [
-            'hewan_id'        => $hewan->id,
             'status_transaksi' => 'HEWAN_TERALOKASI',
         ]);
     }

@@ -58,12 +58,19 @@ class POSImprovementsTest extends TestCase
             ->postJson('/api/transaksi', [
                 'depot_id'           => $this->depot->id,
                 'customer_id'        => $customer->id,
-                'tipe_qurban'        => 'SHQ',
-                'jenis'              => 'SAPI',
-                'kelas_id'           => $this->kelas->id,
                 'musim'              => 2026,
                 'sales_nama'         => 'Andi Sales',
                 'rencana_pelunasan'  => '2026-06-01',
+                'items'              => [
+                    [
+                        'jenis'       => 'SAPI',
+                        'kelas_id'    => $this->kelas->id,
+                        'tipe_qurban' => 'SHQ',
+                        'harga'       => 1_000_000,
+                        'is_preorder' => true,
+                        'hewan_id'    => null,
+                    ],
+                ],
             ])
             ->assertCreated()
             ->assertJsonPath('transaksi.sales_nama', 'Andi Sales');
