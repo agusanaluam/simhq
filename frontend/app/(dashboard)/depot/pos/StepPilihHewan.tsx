@@ -13,23 +13,26 @@ interface Hewan {
 
 interface Props {
   jenis: string
+  kelasId: number | null
   hewanId: number | null
   preorder: boolean
   onNext: (data: { hewanId: number | null; preorder: boolean; hewanNo: string | null }) => void
   onBack: () => void
 }
 
-export function StepPilihHewan({ jenis, hewanId: initHewanId, preorder: initPreorder, onNext, onBack }: Props) {
+export function StepPilihHewan({ jenis, kelasId, hewanId: initHewanId, preorder: initPreorder, onNext, onBack }: Props) {
   const [hewan, setHewan]       = useState<Hewan[]>([])
   const [selected, setSelected] = useState<number | null>(initHewanId)
   const [preorder, setPreorder] = useState(initPreorder)
   const [loading, setLoading]   = useState(true)
 
   useEffect(() => {
-    api.get(`/api/hewan?status=AVAILABLE&jenis=${jenis}`)
+    const params = new URLSearchParams({ status: 'AVAILABLE', jenis })
+    if (kelasId) params.set('kelas', String(kelasId))
+    api.get(`/api/hewan?${params}`)
       .then(r => setHewan(r.data.data ?? []))
       .finally(() => setLoading(false))
-  }, [jenis])
+  }, [jenis, kelasId])
 
   function handleNext() {
     const hewanNo = selected ? hewan.find(h => h.id === selected)?.no_hewan ?? null : null
