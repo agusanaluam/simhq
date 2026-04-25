@@ -5,13 +5,16 @@ import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import api from '@/lib/api'
 
-interface Customer { id: number; nama: string; hp: string; alamat: string | null; kota: string | null }
+interface Customer { id: number; nama: string; hp: string; alamat: string | null; kelurahan: string | null; kecamatan: string | null; kode_pos: string | null; kota: string | null }
 
 interface PembeliData {
   customerId: number | null
   nama: string
   hp: string
   alamat: string
+  kelurahan: string
+  kecamatan: string
+  kode_pos: string
   kota: string
 }
 
@@ -25,6 +28,9 @@ export function StepDataPembeli({ data: initData, onNext, onBack }: Props) {
   const [nama, setNama]     = useState(initData.nama)
   const [hp, setHp]         = useState(initData.hp)
   const [alamat, setAlamat] = useState(initData.alamat)
+  const [kelurahan, setKelurahan] = useState(initData.kelurahan ?? '')
+  const [kecamatan, setKecamatan] = useState(initData.kecamatan ?? '')
+  const [kode_pos,  setKodePOS]   = useState(initData.kode_pos ?? '')
   const [kota, setKota]     = useState(initData.kota)
   const [suggestions, setSuggestions] = useState<Customer[]>([])
   const [showSug, setShowSug]         = useState(false)
@@ -47,6 +53,9 @@ export function StepDataPembeli({ data: initData, onNext, onBack }: Props) {
     setNama(c.nama)
     setHp(c.hp ?? '')
     setAlamat(c.alamat ?? '')
+    setKelurahan(c.kelurahan ?? '')
+    setKecamatan(c.kecamatan ?? '')
+    setKodePOS(c.kode_pos ?? '')
     setKota(c.kota ?? '')
     setSuggestions([])
     setShowSug(false)
@@ -58,10 +67,10 @@ export function StepDataPembeli({ data: initData, onNext, onBack }: Props) {
     try {
       let customerId = selectedCustomerId.current
       if (!customerId) {
-        const res = await api.post('/api/customer', { nama, hp, alamat, kota })
+        const res = await api.post('/api/customer', { nama, hp, alamat, kelurahan, kecamatan, kode_pos, kota })
         customerId = res.data.customer.id as number
       }
-      onNext({ customerId, nama, hp, alamat, kota })
+      onNext({ customerId, nama, hp, alamat, kelurahan, kecamatan, kode_pos, kota })
     } finally {
       setSaving(false)
     }
@@ -104,9 +113,26 @@ export function StepDataPembeli({ data: initData, onNext, onBack }: Props) {
         <Input value={alamat} onChange={e => setAlamat(e.target.value)} placeholder="Jalan, RT/RW..." />
       </div>
 
-      <div>
-        <label className="block text-sm font-body font-medium text-on-surface mb-1">Kota</label>
-        <Input value={kota} onChange={e => setKota(e.target.value)} placeholder="Nama kota..." />
+      <div className="grid grid-cols-2 gap-3">
+        <div>
+          <label className="block text-sm font-body font-medium text-on-surface mb-1">Kelurahan</label>
+          <Input value={kelurahan} onChange={e => setKelurahan(e.target.value)} placeholder="Kelurahan..." />
+        </div>
+        <div>
+          <label className="block text-sm font-body font-medium text-on-surface mb-1">Kecamatan</label>
+          <Input value={kecamatan} onChange={e => setKecamatan(e.target.value)} placeholder="Kecamatan..." />
+        </div>
+      </div>
+
+      <div className="grid grid-cols-2 gap-3">
+        <div>
+          <label className="block text-sm font-body font-medium text-on-surface mb-1">Kode Pos</label>
+          <Input value={kode_pos} onChange={e => setKodePOS(e.target.value)} placeholder="12345" />
+        </div>
+        <div>
+          <label className="block text-sm font-body font-medium text-on-surface mb-1">Kota</label>
+          <Input value={kota} onChange={e => setKota(e.target.value)} placeholder="Nama kota..." />
+        </div>
       </div>
 
       <div className="flex gap-2 pt-2">
