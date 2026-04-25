@@ -38,6 +38,9 @@ class YayasanController extends Controller
 
     public function destroy(Yayasan $yayasan): JsonResponse
     {
+        if ($yayasan->transaksi()->exists()) {
+            return response()->json(['message' => 'Yayasan sudah memiliki transaksi, tidak dapat dihapus.'], 422);
+        }
         $yayasan->delete();
         return response()->json(null, 204);
     }

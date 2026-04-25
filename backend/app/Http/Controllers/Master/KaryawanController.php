@@ -43,7 +43,9 @@ class KaryawanController extends Controller
 
     public function destroy(Karyawan $karyawan): JsonResponse
     {
-        $karyawan->absensi()->delete();
+        if ($karyawan->kasbon()->exists()) {
+            return response()->json(['message' => 'Karyawan memiliki kasbon, tidak dapat dihapus.'], 422);
+        }
         $karyawan->delete();
         return response()->json(null, 204);
     }

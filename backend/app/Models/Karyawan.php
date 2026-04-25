@@ -22,4 +22,5 @@ class Karyawan extends Model
     public function depot(): BelongsTo { return $this->belongsTo(Depot::class); }
     public function user(): BelongsTo  { return $this->belongsTo(User::class); }
     public function absensi(): HasMany { return $this->hasMany(Absensi::class); }
+    public function kasbon(): HasMany  { return $this->hasMany(Kasbon::class); }
 }
