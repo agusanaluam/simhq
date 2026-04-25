@@ -188,6 +188,9 @@ export default function KandangPage() {
   const [jenis, setJenis]           = useState<'SAPI' | 'DOMBA'>('SAPI')
   const [loading, setLoading]       = useState(true)
   const [showTambah, setShowTambah] = useState(false)
+  const [layoutMode, setLayoutMode]     = useState(false)
+  const [localPetak, setLocalPetak]     = useState<PetakData[]>([])
+  const [savingLayout, setSavingLayout] = useState(false)
 
   const { data: session } = useSession()
   const sessionDepotId = (session?.user as any)?.depotId as number | undefined
@@ -208,6 +211,29 @@ export default function KandangPage() {
   }, [loadPetak])
 
   const selectedPetak = petak.find(p => p.id === selectedId) ?? null
+
+  function startLayout() {
+    setLocalPetak(petak)
+    setLayoutMode(true)
+    setSelectedId(null)
+  }
+
+  function cancelLayout() {
+    setLayoutMode(false)
+  }
+
+  async function saveLayout() {
+    setSavingLayout(true)
+    try {
+      await api.post('/api/petak/layout', {
+        layout: localPetak.map(p => ({ id: p.id, posisi_x: p.posisi_x, posisi_y: p.posisi_y }))
+      })
+      setLayoutMode(false)
+      loadPetak()
+    } finally {
+      setSavingLayout(false)
+    }
+  }
 
   return (
     <div>
@@ -234,12 +260,38 @@ export default function KandangPage() {
             ))}
           </div>
 
-          <button
-            onClick={() => setShowTambah(true)}
-            className="px-4 py-2 rounded-xl text-sm font-body font-medium bg-primary text-white hover:bg-primary/90 transition-colors"
-          >
-            + Tambah Petak
-          </button>
+          {layoutMode ? (
+            <>
+              <button
+                onClick={cancelLayout}
+                className="px-4 py-2 rounded-xl text-sm font-body font-medium text-on-surface-variant border border-surface-high hover:bg-surface-high transition-colors"
+              >
+                Batal
+              </button>
+              <button
+                onClick={saveLayout}
+                disabled={savingLayout}
+                className="px-4 py-2 rounded-xl text-sm font-body font-medium bg-primary text-white hover:bg-primary/90 disabled:opacity-60 transition-colors"
+              >
+                {savingLayout ? 'Menyimpan...' : 'Simpan Layout'}
+              </button>
+            </>
+          ) : (
+            <>
+              <button
+                onClick={startLayout}
+                className="px-4 py-2 rounded-xl text-sm font-body font-medium text-on-surface border border-surface-high hover:bg-surface-high transition-colors"
+              >
+                Edit Layout
+              </button>
+              <button
+                onClick={() => setShowTambah(true)}
+                className="px-4 py-2 rounded-xl text-sm font-body font-medium bg-primary text-white hover:bg-primary/90 transition-colors"
+              >
+                + Tambah Petak
+              </button>
+            </>
+          )}
         </div>
       </div>
 
@@ -266,6 +318,9 @@ export default function KandangPage() {
           ) : (
             <KandangGrid
               petak={petak}
+              layoutMode={layoutMode}
+              localPetak={localPetak}
+              onLayoutChange={setLocalPetak}
               selectedId={selectedId}
               onSelect={id => setSelectedId(prev => prev === id ? null : id)}
               onRefresh={loadPetak}
@@ -273,12 +328,14 @@ export default function KandangPage() {
           )}
         </div>
 
-        <HewanPanel
-          petak={selectedPetak}
-          musim={musim}
-          onClose={() => setSelectedId(null)}
-          onRefresh={loadPetak}
-        />
+        {!layoutMode && (
+          <HewanPanel
+            petak={selectedPetak}
+            musim={musim}
+            onClose={() => setSelectedId(null)}
+            onRefresh={loadPetak}
+          />
+        )}
       </div>
 
       {showTambah && (
