@@ -18,6 +18,7 @@ export function formatIDR(n: number): string {
   })
 }
 
+// Strips formatting to raw integer. Negative values and decimal separators are not supported.
 export function parseCurrency(s: string): number {
   return parseInt(s.replace(/\D/g, ''), 10) || 0
 }

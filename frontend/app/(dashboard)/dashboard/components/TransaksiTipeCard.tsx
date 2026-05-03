@@ -6,9 +6,9 @@ interface TransaksiTipeCardProps {
 }
 
 const TIPE_LABEL: Record<string, string> = {
-  SHQ: 'Satu Hewan Qurban',
-  THQ: 'Tujuh Hewan Qurban',
-  PHQ: 'Per Hewan Qurban',
+  SHQ: 'Kirim Hidup',
+  THQ: 'Titip ke Yayasan',
+  PHQ: 'Potong di Depot, Kirim Daging',
 }
 
 export function TransaksiTipeCard({ transaksiHariIni }: TransaksiTipeCardProps) {
