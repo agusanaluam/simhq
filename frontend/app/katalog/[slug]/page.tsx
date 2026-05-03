@@ -318,8 +318,11 @@ export default function KatalogSlugPage() {
   )
 
   const filtered   = catalog.data.filter(h => filterJenis === 'ALL' || h.jenis === filterJenis)
-  const available  = filtered.filter(h => h.status === 'AVAILABLE')
-  const nonAvail   = filtered.filter(h => h.status === 'BOOKED' || (showSold && h.status === 'SOLD'))
+  const isAvailable = (h: HewanItem) =>
+    h.status === 'AVAILABLE' ||
+    (h.status === 'BOOKED' && h.jenis === 'SAPI' && (h.slot_tersedia ?? 0) > 0)
+  const available  = filtered.filter(h => isAvailable(h))
+  const nonAvail   = filtered.filter(h => !isAvailable(h) && (h.status === 'BOOKED' || (showSold && h.status === 'SOLD')))
   const hasSold    = catalog.data.some(h => h.status === 'SOLD')
   const hasBooked  = catalog.data.some(h => h.status === 'BOOKED')
 
