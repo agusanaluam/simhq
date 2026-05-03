@@ -33,7 +33,7 @@ export function PreorderModal({ kelasList, hargaList, onConfirm, onClose }: Prop
   function handleConfirm() {
     if (!kelasId) return
     const kelas        = kelasList.find(k => k.id === kelasId)!
-    const h            = hargaList.find(h => h.kelas_id === kelasId && h.jenis === jenis) as any
+    const h            = hargaList.find(h => h.kelas_id === kelasId && h.jenis === jenis)
     const hargaEfektif = satuan === 'SLOT' ? (h?.harga_slot ?? 0) : getHarga()
     onConfirm({ jenis, kelasId, kelasKode: kelas.kode, tipeQurban: tipe, satuan, namaQurban, harga: hargaEfektif })
   }
@@ -134,11 +134,16 @@ export function PreorderModal({ kelasList, hargaList, onConfirm, onClose }: Prop
             </div>
           )}
 
-          {kelasId && harga > 0 && (
-            <p className="text-sm font-body text-primary font-medium">
-              Harga: {harga.toLocaleString('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 })}
-            </p>
-          )}
+          {(() => {
+            const displayHarga = satuan === 'SLOT'
+              ? (hargaList.find(h => h.kelas_id === kelasId && h.jenis === jenis)?.harga_slot ?? 0)
+              : harga
+            return kelasId && displayHarga > 0 ? (
+              <p className="text-sm font-body text-primary font-medium">
+                Harga: {displayHarga.toLocaleString('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 })}
+              </p>
+            ) : null
+          })()}
         </div>
 
         <div className="flex gap-3 justify-end mt-6">
