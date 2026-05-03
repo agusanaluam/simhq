@@ -17,6 +17,8 @@ export interface CartItem {
   kelasId: number
   kelasKode: string
   tipeQurban: string
+  satuan: 'EKOR' | 'SLOT'
+  namaQurban: string
   harga: number
   isPreorder: boolean
 }

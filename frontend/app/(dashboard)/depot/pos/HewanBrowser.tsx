@@ -7,7 +7,7 @@ import type { CartItem } from './page'
 import api from '@/lib/api'
 
 interface KelasHewan { id: number; kode: string; nama: string }
-interface HargaEntry  { kelas_id: number; jenis: string; harga_jual: number }
+interface HargaEntry  { kelas_id: number; jenis: string; harga_jual: number; harga_slot: number | null }
 
 interface Props {
   musim: number
@@ -45,7 +45,11 @@ export function HewanBrowser({ musim, depotId, onAdd }: Props) {
     return hargaList.find(h => h.kelas_id === kelasId && h.jenis === j)?.harga_jual ?? 0
   }
 
-  function handleHewanConfirm(tipeQurban: string) {
+  function getHargaSlot(kelasId: number, j: string): number | null {
+    return hargaList.find(h => h.kelas_id === kelasId && h.jenis === j)?.harga_slot ?? null
+  }
+
+  function handleHewanConfirm(data: { tipeQurban: string; satuan: 'EKOR' | 'SLOT'; namaQurban: string; harga: number }) {
     if (!selected || !selected.kelas_jual) return
     onAdd({
       tempId:     crypto.randomUUID(),
@@ -54,8 +58,10 @@ export function HewanBrowser({ musim, depotId, onAdd }: Props) {
       jenis:      selected.jenis,
       kelasId:    selected.kelas_jual.id,
       kelasKode:  selected.kelas_jual.kode,
-      tipeQurban,
-      harga:      getHarga(selected.kelas_jual.id, selected.jenis),
+      tipeQurban: data.tipeQurban,
+      satuan:     data.satuan,
+      namaQurban: data.namaQurban,
+      harga:      data.harga,
       isPreorder: false,
     })
     setSelected(null)
@@ -70,6 +76,8 @@ export function HewanBrowser({ musim, depotId, onAdd }: Props) {
       kelasId:    item.kelasId,
       kelasKode:  item.kelasKode,
       tipeQurban: item.tipeQurban,
+      satuan:     'EKOR',
+      namaQurban: '',
       harga:      item.harga,
       isPreorder: true,
     })
@@ -133,6 +141,11 @@ export function HewanBrowser({ musim, depotId, onAdd }: Props) {
                     {harga.toLocaleString('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 })}
                   </p>
                 )}
+                {h.jenis === 'SAPI' && (
+                  <p className={`text-xs mt-0.5 font-body ${(h.slot_sapi_count ?? 0) >= 7 ? 'text-red-500' : 'text-on-surface-variant'}`}>
+                    {h.slot_sapi_count ?? 0}/7 slot
+                  </p>
+                )}
               </button>
             )
           })}
@@ -143,6 +156,8 @@ export function HewanBrowser({ musim, depotId, onAdd }: Props) {
         <TipeQurbanModal
           hewan={selected}
           harga={selected.kelas_jual ? getHarga(selected.kelas_jual.id, selected.jenis) : 0}
+          hargaSlot={selected.kelas_jual ? getHargaSlot(selected.kelas_jual.id, selected.jenis) : null}
+          slotTerisi={selected.slot_sapi_count ?? 0}
           onConfirm={handleHewanConfirm}
           onClose={() => setSelected(null)}
         />
