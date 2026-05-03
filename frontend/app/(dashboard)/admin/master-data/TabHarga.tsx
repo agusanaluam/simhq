@@ -10,7 +10,7 @@ interface KelasHewan { id: number; kode: string; nama: string; urutan: number }
 interface Depot      { id: number; nama: string }
 interface Harga {
   id: number; jenis: string; musim: number
-  harga_beli: number; harga_jual: number; fee_sales: number
+  harga_beli: number; harga_jual: number; harga_slot: number | null; fee_sales: number
   kelas: KelasHewan
 }
 
@@ -26,6 +26,7 @@ function HargaModal({ depotId, musim, initialData, onDone, onClose }: {
     jenis:      initialData?.jenis ?? 'SAPI',
     harga_beli: initialData ? String(initialData.harga_beli) : '',
     harga_jual: initialData ? String(initialData.harga_jual) : '',
+    harga_slot: initialData?.harga_slot != null ? String(initialData.harga_slot) : '',
     fee_sales:  initialData ? String(initialData.fee_sales) : '0',
   })
   const [saving, setSaving] = useState(false)
@@ -52,6 +53,7 @@ function HargaModal({ depotId, musim, initialData, onDone, onClose }: {
         await api.put(`/api/master/harga/${initialData!.id}`, {
           harga_beli: Number(form.harga_beli),
           harga_jual: Number(form.harga_jual),
+          harga_slot: form.harga_slot !== '' ? Number(form.harga_slot) : null,
           fee_sales:  Number(form.fee_sales),
         })
       } else {
@@ -62,6 +64,7 @@ function HargaModal({ depotId, musim, initialData, onDone, onClose }: {
           musim:      Number(musim),
           harga_beli: Number(form.harga_beli),
           harga_jual: Number(form.harga_jual),
+          harga_slot: form.harga_slot !== '' ? Number(form.harga_slot) : null,
           fee_sales:  Number(form.fee_sales),
         })
       }
@@ -119,6 +122,12 @@ function HargaModal({ depotId, musim, initialData, onDone, onClose }: {
           <div>
             <label className="block text-xs font-body font-medium text-on-surface mb-1">Harga Jual (Rp) *</label>
             <Input type="number" value={form.harga_jual} onChange={e => set('harga_jual', e.target.value)} placeholder="6000000" />
+          </div>
+          <div>
+            <label className="block text-xs font-body font-medium text-on-surface mb-1">
+              Harga Slot 1/7 (Rp) <span className="text-on-surface-variant font-normal">— opsional, hanya SAPI</span>
+            </label>
+            <Input type="number" value={form.harga_slot} onChange={e => set('harga_slot', e.target.value)} placeholder="900000" />
           </div>
           <div>
             <label className="block text-xs font-body font-medium text-on-surface mb-1">Fee Sales (Rp)</label>
@@ -205,7 +214,7 @@ export function TabHarga() {
           <table className="w-full text-sm">
             <thead>
               <tr className="text-left">
-                {['Kelas','Jenis','Harga Beli','Harga Jual','Fee Sales','Aksi'].map(h => (
+                {['Kelas','Jenis','Harga Beli','Harga Jual','Harga Slot','Fee Sales','Aksi'].map(h => (
                   <th key={h} className="pb-3 pr-4 text-xs uppercase tracking-widest text-on-surface-variant font-body">{h}</th>
                 ))}
               </tr>
@@ -217,6 +226,9 @@ export function TabHarga() {
                   <td className="py-2.5 pr-4 text-on-surface-variant">{h.jenis}</td>
                   <td className="py-2.5 pr-4 font-body text-on-surface">{fmt(h.harga_beli)}</td>
                   <td className="py-2.5 pr-4 font-body text-on-surface">{fmt(h.harga_jual)}</td>
+                  <td className="py-2.5 pr-4 font-body text-on-surface">
+                    {h.harga_slot != null ? fmt(h.harga_slot) : <span className="text-on-surface-variant text-xs italic">—</span>}
+                  </td>
                   <td className="py-2.5 pr-4 font-body text-on-surface-variant">{fmt(h.fee_sales)}</td>
                   <td className="py-2.5">
                     {confirmDeleteId === h.id ? (
