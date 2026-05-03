@@ -22,6 +22,7 @@ class HewanController extends Controller
     public function index(Request $request): JsonResponse
     {
         $hewan = Hewan::with(['kelasAsal:id,kode', 'kelasJual:id,kode', 'supplier:id,nama'])
+            ->withCount('slotSapi')
             ->when($request->depot,  fn($q) => $q->where('depot_id', $request->depot))
             ->when($request->status, fn($q) => $q->where('status', $request->status))
             ->when($request->jenis,  fn($q) => $q->where('jenis', $request->jenis))
