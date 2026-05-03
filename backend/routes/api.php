@@ -21,6 +21,7 @@ Route::prefix('auth')->group(function () {
 });
 
 // Public Catalog (no auth)
+Route::get('katalog/{slug}', [\App\Http\Controllers\KatalogController::class, 'catalogBySlug']);
 Route::get('katalog',        [\App\Http\Controllers\KatalogController::class, 'catalog']);
 Route::post('katalog/order', [\App\Http\Controllers\KatalogController::class, 'order'])
      ->middleware('throttle:10,1');

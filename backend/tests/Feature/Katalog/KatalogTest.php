@@ -58,7 +58,7 @@ class KatalogTest extends TestCase
 
     // ─── catalog ─────────────────────────────────────────────────────────────
 
-    public function test_catalog_returns_available_hewan_grouped(): void
+    public function test_catalog_returns_per_animal_data(): void
     {
         $this->makeHewan('AVAILABLE');
         $this->makeHewan('AVAILABLE');
@@ -67,16 +67,18 @@ class KatalogTest extends TestCase
 
         $res->assertOk()
             ->assertJsonStructure([
+                'depot' => ['id', 'nama', 'slug'],
                 'musim',
-                'data' => [['kelas', 'jenis', 'harga_jual', 'jumlah_tersedia']],
+                'data' => [['id', 'no_hewan', 'jenis', 'kelas', 'status', 'harga_jual', 'fotos', 'slot_tersedia']],
             ]);
 
-        $row = collect($res->json('data'))->firstWhere('jenis', 'SAPI');
-        $this->assertEquals(2,          $row['jumlah_tersedia']);
+        $this->assertCount(2, $res->json('data'));
+        $row = $res->json('data.0');
         $this->assertEquals(10_000_000, $row['harga_jual']);
+        $this->assertEquals('AVAILABLE', $row['status']);
     }
 
-    public function test_catalog_excludes_non_available_hewan(): void
+    public function test_catalog_includes_sold_and_booked_animals(): void
     {
         $this->makeHewan('AVAILABLE');
         $this->makeHewan('SOLD');
@@ -84,8 +86,24 @@ class KatalogTest extends TestCase
 
         $res = $this->getJson("/api/katalog?depot={$this->depot->id}");
 
-        $row = collect($res->json('data'))->firstWhere('jenis', 'SAPI');
-        $this->assertEquals(1, $row['jumlah_tersedia']);
+        // All 3 shown (MATI/DELIVERED excluded, others included)
+        $this->assertCount(3, $res->json('data'));
+        $statuses = collect($res->json('data'))->pluck('status')->toArray();
+        $this->assertContains('SOLD',      $statuses);
+        $this->assertContains('BOOKED',    $statuses);
+        $this->assertContains('AVAILABLE', $statuses);
+    }
+
+    public function test_catalog_excludes_mati_and_delivered(): void
+    {
+        $this->makeHewan('AVAILABLE');
+        $this->makeHewan('MATI');
+        $this->makeHewan('DELIVERED');
+
+        $res = $this->getJson("/api/katalog?depot={$this->depot->id}");
+
+        $this->assertCount(1, $res->json('data'));
+        $this->assertEquals('AVAILABLE', $res->json('data.0.status'));
     }
 
     public function test_catalog_scoped_to_depot(): void
@@ -101,8 +119,19 @@ class KatalogTest extends TestCase
 
         $res = $this->getJson("/api/katalog?depot={$this->depot->id}");
 
-        $row = collect($res->json('data'))->firstWhere('jenis', 'SAPI');
-        $this->assertEquals(1, $row['jumlah_tersedia']);
+        $this->assertCount(1, $res->json('data'));
+    }
+
+    public function test_catalog_by_slug(): void
+    {
+        $this->makeHewan('AVAILABLE');
+        $slug = $this->depot->fresh()->slug;
+        $this->assertNotNull($slug);
+
+        $res = $this->getJson("/api/katalog/{$slug}");
+
+        $res->assertOk();
+        $this->assertCount(1, $res->json('data'));
     }
 
     public function test_catalog_requires_depot_param(): void
