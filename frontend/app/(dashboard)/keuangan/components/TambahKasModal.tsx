@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/Button'
 import { Input }  from '@/components/ui/Input'
 import api from '@/lib/api'
 
-const SUMBER_OPTIONS = ['PENJUALAN', 'DEPOSIT', 'LAIN']
+const SUMBER_OPTIONS = ['DEPOSIT', 'LAIN']
 const METODE_OPTIONS = [
   { value: 'CASH',          label: 'Tunai' },
   { value: 'TRANSFER_BCA',  label: 'Transfer BCA' },

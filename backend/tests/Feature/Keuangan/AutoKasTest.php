@@ -1,12 +1,12 @@
 <?php
 namespace Tests\Feature\Keuangan;
 
-use App\Enums\UserRole;
 use App\Models\Customer;
 use App\Models\Depot;
 use App\Models\Hewan;
 use App\Models\KasHarian;
 use App\Models\KelasHewan;
+use App\Models\Pembayaran;
 use App\Models\Transaksi;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -55,7 +55,7 @@ class AutoKasTest extends TestCase
         ]);
     }
 
-    public function test_kas_harian_created_when_payment_stored(): void
+    public function test_payment_does_not_create_kas_harian(): void
     {
         $this->actingAs($this->admin)
             ->postJson("/api/transaksi/{$this->transaksi->id}/bayar", [
@@ -65,17 +65,11 @@ class AutoKasTest extends TestCase
                 'tgl_bayar'=> today()->toDateString(),
             ])->assertCreated();
 
-        $this->assertDatabaseHas('kas_harian', [
-            'depot_id'     => $this->depot->id,
-            'tipe'         => 'MASUK',
-            'sumber'       => 'PENJUALAN',
-            'jumlah'       => 6_000_000,
-            'metode'       => 'CASH',
-            'transaksi_id' => $this->transaksi->id,
-        ]);
+        // Pendapatan penjualan tidak masuk ke kas BIOP
+        $this->assertDatabaseCount('kas_harian', 0);
     }
 
-    public function test_kas_harian_uses_payment_metode(): void
+    public function test_payment_recorded_in_pembayaran(): void
     {
         $this->actingAs($this->admin)
             ->postJson("/api/transaksi/{$this->transaksi->id}/bayar", [
@@ -85,24 +79,11 @@ class AutoKasTest extends TestCase
                 'tgl_bayar'=> today()->toDateString(),
             ])->assertCreated();
 
-        $this->assertDatabaseHas('kas_harian', [
-            'metode' => 'TRANSFER_BCA',
-            'jumlah' => 3_000_000,
+        $this->assertDatabaseHas('pembayaran', [
+            'transaksi_id' => $this->transaksi->id,
+            'jumlah'       => 3_000_000,
+            'metode'       => 'TRANSFER_BCA',
+            'tipe'         => 'DP',
         ]);
-    }
-
-    public function test_kas_harian_keterangan_includes_no_faktur(): void
-    {
-        $this->actingAs($this->admin)
-            ->postJson("/api/transaksi/{$this->transaksi->id}/bayar", [
-                'jumlah'   => 6_000_000,
-                'tipe'     => 'PELUNASAN',
-                'metode'   => 'CASH',
-                'tgl_bayar'=> today()->toDateString(),
-            ]);
-
-        $kas = KasHarian::where('transaksi_id', $this->transaksi->id)->first();
-        $this->assertNotNull($kas);
-        $this->assertStringContainsString('INV-001', $kas->keterangan);
     }
 }

@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\BiayaTambahan;
-use App\Models\KasHarian;
 use App\Models\Pembayaran;
 use App\Models\Transaksi;
 use App\Services\PembayaranService;
@@ -41,26 +40,9 @@ class PembayaranController extends Controller
             'catatan'  => ['nullable', 'string', 'max:500'],
         ]);
 
-        $userId = $request->user()?->id;
-
-        $pembayaran = DB::transaction(function () use ($data, $transaksi, $userId) {
+        $pembayaran = DB::transaction(function () use ($data, $transaksi) {
             $pembayaran = Pembayaran::create(array_merge($data, ['transaksi_id' => $transaksi->id]));
-
             $this->svc->syncStatusBayar($transaksi);
-
-            KasHarian::create([
-                'depot_id'      => $transaksi->depot_id,
-                'tipe'          => 'MASUK',
-                'sumber'        => 'PENJUALAN',
-                'divisi'        => null,
-                'keterangan'    => "Pembayaran {$transaksi->no_faktur} ({$data['tipe']})",
-                'jumlah'        => $pembayaran->jumlah,
-                'metode'        => $data['metode'],
-                'tgl_transaksi' => $data['tgl_bayar'],
-                'input_by'      => $userId,
-                'transaksi_id'  => $transaksi->id,
-            ]);
-
             return $pembayaran;
         });
 
