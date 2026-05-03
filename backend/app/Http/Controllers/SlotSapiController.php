@@ -28,6 +28,36 @@ class SlotSapiController extends Controller
         return response()->json(['data' => $sapi]);
     }
 
+    public function kandidatSlot(Hewan $hewan): JsonResponse
+    {
+        $alreadyLinked = SlotSapi::where('hewan_id', $hewan->id)
+            ->whereNotNull('transaksi_id')
+            ->pluck('transaksi_id');
+
+        $candidates = \App\Models\Transaksi::with([
+                'customer:id,nama,hp',
+                'items' => fn($q) => $q->where('jenis', 'SAPI'),
+            ])
+            ->where('depot_id', $hewan->depot_id)
+            ->where('status_transaksi', '!=', 'DIBATALKAN')
+            ->whereHas('items', fn($q) => $q->where('jenis', 'SAPI'))
+            ->whereNotIn('id', $alreadyLinked)
+            ->orderByDesc('created_at')
+            ->limit(50)
+            ->get()
+            ->map(fn($t) => [
+                'transaksi_id'  => $t->id,
+                'no_faktur'     => $t->no_faktur,
+                'customer_id'   => $t->customer?->id,
+                'customer_nama' => $t->customer?->nama,
+                'customer_hp'   => $t->customer?->hp,
+                'tipe_qurban'   => $t->items->first()?->tipe_qurban,
+                'harga'         => $t->items->first()?->harga,
+            ]);
+
+        return response()->json(['data' => $candidates]);
+    }
+
     public function index(Hewan $hewan): JsonResponse
     {
         $filled = SlotSapi::with('customer:id,nama,hp')

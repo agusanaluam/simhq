@@ -139,6 +139,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('hewan/{hewan}/kematian', [\App\Http\Controllers\KesehatanController::class, 'storeKematian']);
     });
 
+    Route::get('hewan/{hewan}/kandidat-slot', [SlotSapiController::class, 'kandidatSlot']);
     Route::get('hewan/{hewan}/faktur-ploting', [\App\Http\Controllers\FakturController::class, 'ploting']);
     Route::get('hewan/{hewan}',    [HewanController::class, 'show']);
     Route::middleware('role:SUPER_ADMIN,KEPALA_DEPOT,KANDANG_SAPI_KETUA,KANDANG_DOMBA_KETUA')->group(function () {
