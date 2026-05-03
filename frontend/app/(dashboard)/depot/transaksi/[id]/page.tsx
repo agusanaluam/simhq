@@ -6,6 +6,7 @@ import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import api from '@/lib/api'
+import { formatDate } from '@/lib/format'
 
 interface PembayaranEntry {
   id: number
@@ -178,7 +179,7 @@ export default function TransaksiDetailPage() {
               <tbody>
                 {pembayaran.map(p => (
                   <tr key={p.id} className="border-b border-surface-high last:border-0">
-                    <td className="py-2 pr-3 font-body text-on-surface">{p.tgl_bayar}</td>
+                    <td className="py-2 pr-3 font-body text-on-surface">{formatDate(p.tgl_bayar)}</td>
                     <td className="py-2 pr-3 font-body font-medium text-on-surface">
                       {p.jumlah.toLocaleString('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 })}
                     </td>
