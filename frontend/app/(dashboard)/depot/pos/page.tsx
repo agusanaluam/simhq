@@ -78,6 +78,8 @@ export default function POSPage() {
           tipe_qurban: item.tipeQurban,
           harga:       item.harga,
           is_preorder: item.isPreorder,
+          satuan:      item.satuan,
+          nama_qurban: item.namaQurban || null,
         })),
       })
       const transaksiId = res.data.transaksi.id

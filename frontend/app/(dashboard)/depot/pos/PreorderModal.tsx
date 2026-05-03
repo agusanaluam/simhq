@@ -3,12 +3,12 @@
 import { useState } from 'react'
 
 interface KelasHewan { id: number; kode: string; nama: string }
-interface HargaEntry { kelas_id: number; jenis: string; harga_jual: number }
+interface HargaEntry { kelas_id: number; jenis: string; harga_jual: number; harga_slot?: number | null }
 
 interface Props {
   kelasList: KelasHewan[]
   hargaList: HargaEntry[]
-  onConfirm: (item: { jenis: string; kelasId: number; kelasKode: string; tipeQurban: string; harga: number }) => void
+  onConfirm: (item: { jenis: string; kelasId: number; kelasKode: string; tipeQurban: string; satuan: 'EKOR' | 'SLOT'; namaQurban: string; harga: number }) => void
   onClose: () => void
 }
 
@@ -19,9 +19,11 @@ const TIPE_OPTIONS = [
 ]
 
 export function PreorderModal({ kelasList, hargaList, onConfirm, onClose }: Props) {
-  const [jenis,   setJenis]   = useState('SAPI')
-  const [kelasId, setKelasId] = useState<number | null>(null)
-  const [tipe,    setTipe]    = useState('SHQ')
+  const [jenis,      setJenis]      = useState('SAPI')
+  const [kelasId,    setKelasId]    = useState<number | null>(null)
+  const [tipe,       setTipe]       = useState('SHQ')
+  const [satuan,     setSatuan]     = useState<'EKOR' | 'SLOT'>('EKOR')
+  const [namaQurban, setNamaQurban] = useState('')
 
   function getHarga(): number {
     if (!kelasId) return 0
@@ -30,8 +32,10 @@ export function PreorderModal({ kelasList, hargaList, onConfirm, onClose }: Prop
 
   function handleConfirm() {
     if (!kelasId) return
-    const kelas = kelasList.find(k => k.id === kelasId)!
-    onConfirm({ jenis, kelasId, kelasKode: kelas.kode, tipeQurban: tipe, harga: getHarga() })
+    const kelas        = kelasList.find(k => k.id === kelasId)!
+    const h            = hargaList.find(h => h.kelas_id === kelasId && h.jenis === jenis) as any
+    const hargaEfektif = satuan === 'SLOT' ? (h?.harga_slot ?? 0) : getHarga()
+    onConfirm({ jenis, kelasId, kelasKode: kelas.kode, tipeQurban: tipe, satuan, namaQurban, harga: hargaEfektif })
   }
 
   const harga = getHarga()
@@ -97,6 +101,39 @@ export function PreorderModal({ kelasList, hargaList, onConfirm, onClose }: Prop
             </div>
           </div>
 
+          <div>
+            <label className="block text-sm font-body font-medium text-on-surface mb-1">Satuan</label>
+            <div className="flex gap-2">
+              {(['EKOR', 'SLOT'] as const).map(s => (
+                <button
+                  key={s}
+                  type="button"
+                  onClick={() => { setSatuan(s); if (s === 'EKOR') setNamaQurban('') }}
+                  className={`flex-1 py-1.5 rounded-lg border-2 text-sm font-body transition-colors ${
+                    satuan === s ? 'border-primary bg-primary text-white' : 'border-surface-high text-on-surface'
+                  }`}
+                >
+                  {s === 'EKOR' ? '1 Ekor' : '1/7 Slot'}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {satuan === 'SLOT' && (
+            <div>
+              <label className="block text-sm font-body font-medium text-on-surface mb-1">
+                Nama Qurban{tipe === 'PHQ' ? ' *' : ''}
+              </label>
+              <input
+                type="text"
+                value={namaQurban}
+                onChange={e => setNamaQurban(e.target.value)}
+                placeholder={tipe === 'PHQ' ? 'Ahmad bin Budi...' : 'Ahmad bin Budi... (opsional)'}
+                className="input-field w-full"
+              />
+            </div>
+          )}
+
           {kelasId && harga > 0 && (
             <p className="text-sm font-body text-primary font-medium">
               Harga: {harga.toLocaleString('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 })}
@@ -115,7 +152,7 @@ export function PreorderModal({ kelasList, hargaList, onConfirm, onClose }: Prop
           <button
             type="button"
             onClick={handleConfirm}
-            disabled={!kelasId}
+            disabled={!kelasId || (satuan === 'SLOT' && tipe === 'PHQ' && !namaQurban.trim())}
             className="px-4 py-2 rounded-xl text-sm font-body font-medium bg-primary text-white hover:bg-primary/90 disabled:opacity-60 transition-colors"
           >
             Tambah ke Cart

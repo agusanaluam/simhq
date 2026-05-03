@@ -67,7 +67,7 @@ export function HewanBrowser({ musim, depotId, onAdd }: Props) {
     setSelected(null)
   }
 
-  function handlePreorderConfirm(item: { jenis: string; kelasId: number; kelasKode: string; tipeQurban: string; harga: number }) {
+  function handlePreorderConfirm(item: { jenis: string; kelasId: number; kelasKode: string; tipeQurban: string; satuan: 'EKOR' | 'SLOT'; namaQurban: string; harga: number }) {
     onAdd({
       tempId:     crypto.randomUUID(),
       hewanId:    null,
@@ -76,8 +76,8 @@ export function HewanBrowser({ musim, depotId, onAdd }: Props) {
       kelasId:    item.kelasId,
       kelasKode:  item.kelasKode,
       tipeQurban: item.tipeQurban,
-      satuan:     'EKOR',
-      namaQurban: '',
+      satuan:     item.satuan,
+      namaQurban: item.namaQurban,
       harga:      item.harga,
       isPreorder: true,
     })

@@ -132,7 +132,11 @@ export function CartPanel({ items, onRemove, onSubmit, submitting }: Props) {
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-body font-medium text-on-surface">
                     {item.isPreorder ? `Pre-order` : `#${item.noHewan}`}
-                    {' '}<span className="text-on-surface-variant font-normal">{item.jenis} {item.kelasKode} {item.tipeQurban}</span>
+                    {' '}<span className="text-on-surface-variant font-normal">
+                      {item.jenis} {item.kelasKode} {item.tipeQurban}
+                      {item.satuan === 'SLOT' && ' · 1/7'}
+                      {item.namaQurban && <span className="italic"> · {item.namaQurban}</span>}
+                    </span>
                   </p>
                   <p className="text-xs text-primary">
                     {item.harga.toLocaleString('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 })}
