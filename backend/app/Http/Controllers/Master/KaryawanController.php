@@ -26,11 +26,16 @@ class KaryawanController extends Controller
         return response()->json(['karyawan' => $karyawan], 201);
     }
 
-    public function users(): JsonResponse
+    public function users(\Illuminate\Http\Request $request): JsonResponse
     {
-        return response()->json([
-            'data' => \App\Models\User::select('id', 'name', 'email')->orderBy('name')->get(),
-        ]);
+        $query = \App\Models\User::select('id', 'name', 'email', 'role')->orderBy('name');
+
+        if ($request->filled('role')) {
+            $roles = explode(',', $request->role);
+            $query->whereIn('role', $roles);
+        }
+
+        return response()->json(['data' => $query->get()]);
     }
 
     public function update(Request $request, Karyawan $karyawan): JsonResponse
