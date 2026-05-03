@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { StatusChip } from '@/components/ui/StatusChip'
 import api from '@/lib/api'
+import { parseCurrency } from '@/lib/format'
 
 interface UserOption { id: number; name: string; email: string }
 interface Karyawan {
@@ -102,7 +103,7 @@ function KaryawanModal({ initialData, onDone, onClose }: {
           </div>
           <div>
             <label className="block text-xs font-body font-medium text-on-surface mb-1">Tarif Harian (Rp) *</label>
-            <Input type="number" value={form.tarif_harian} onChange={e => set('tarif_harian', e.target.value)} placeholder="100000" />
+            <Input type="text" value={form.tarif_harian ? Number(form.tarif_harian).toLocaleString('id-ID') : ''} onChange={e => set('tarif_harian', String(parseCurrency(e.target.value) || ''))} placeholder="100.000" />
           </div>
           <div>
             <label className="block text-xs font-body font-medium text-on-surface mb-1">Berlaku Dari *</label>

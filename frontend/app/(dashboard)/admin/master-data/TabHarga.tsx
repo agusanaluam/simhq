@@ -5,6 +5,7 @@ import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import api from '@/lib/api'
+import { parseCurrency } from '@/lib/format'
 
 interface KelasHewan { id: number; kode: string; nama: string; urutan: number }
 interface Depot      { id: number; nama: string }
@@ -117,21 +118,21 @@ function HargaModal({ depotId, musim, initialData, onDone, onClose }: {
           )}
           <div>
             <label className="block text-xs font-body font-medium text-on-surface mb-1">Harga Beli (Rp) *</label>
-            <Input type="number" value={form.harga_beli} onChange={e => set('harga_beli', e.target.value)} placeholder="5000000" />
+            <Input type="text" value={form.harga_beli ? Number(form.harga_beli).toLocaleString('id-ID') : ''} onChange={e => set('harga_beli', String(parseCurrency(e.target.value) || ''))} placeholder="5.000.000" />
           </div>
           <div>
             <label className="block text-xs font-body font-medium text-on-surface mb-1">Harga Jual (Rp) *</label>
-            <Input type="number" value={form.harga_jual} onChange={e => set('harga_jual', e.target.value)} placeholder="6000000" />
+            <Input type="text" value={form.harga_jual ? Number(form.harga_jual).toLocaleString('id-ID') : ''} onChange={e => set('harga_jual', String(parseCurrency(e.target.value) || ''))} placeholder="6.000.000" />
           </div>
           <div>
             <label className="block text-xs font-body font-medium text-on-surface mb-1">
               Harga Slot 1/7 (Rp) <span className="text-on-surface-variant font-normal">— opsional, hanya SAPI</span>
             </label>
-            <Input type="number" value={form.harga_slot} onChange={e => set('harga_slot', e.target.value)} placeholder="900000" />
+            <Input type="text" value={form.harga_slot ? Number(form.harga_slot).toLocaleString('id-ID') : ''} onChange={e => set('harga_slot', String(parseCurrency(e.target.value) || ''))} placeholder="900.000" />
           </div>
           <div>
             <label className="block text-xs font-body font-medium text-on-surface mb-1">Fee Sales (Rp)</label>
-            <Input type="number" value={form.fee_sales} onChange={e => set('fee_sales', e.target.value)} placeholder="50000" />
+            <Input type="text" value={form.fee_sales ? Number(form.fee_sales).toLocaleString('id-ID') : ''} onChange={e => set('fee_sales', String(parseCurrency(e.target.value) || ''))} placeholder="50.000" />
           </div>
           {error && <p className="text-xs text-red-600">{error}</p>}
         </div>
