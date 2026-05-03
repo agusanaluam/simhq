@@ -159,34 +159,43 @@ export function AssignSlotModal({ hewanId, noSlot, hargaDefault, onDone, onClose
 
         {/* Manual form */}
         <div className="space-y-3">
-          <div className="relative">
-            <label className="block text-xs font-body font-medium text-on-surface mb-1">Nama Pembeli *</label>
-            <Input
-              value={nama}
-              onChange={e => { setNama(e.target.value); searchCustomer(e.target.value) }}
-              onBlur={() => setTimeout(() => setShowSug(false), 150)}
-              placeholder="Cari atau isi baru..."
-            />
-            {showSug && suggestions.length > 0 && (
-              <div className="absolute z-10 top-full left-0 right-0 bg-surface-lowest border border-surface-high rounded-xl shadow-card mt-1 max-h-40 overflow-y-auto">
-                {suggestions.map(c => (
-                  <button
-                    key={c.id}
-                    onMouseDown={() => selectCustomer(c)}
-                    className="w-full text-left px-3 py-2 hover:bg-surface-high text-sm font-body"
-                  >
-                    <span className="font-medium text-on-surface">{c.nama}</span>
-                    <span className="text-on-surface-variant ml-2 text-xs">{c.hp}</span>
-                  </button>
-                ))}
+          {transaksiId ? (
+            <div className="bg-surface-high rounded-xl px-3 py-2 text-sm font-body">
+              <span className="text-on-surface-variant text-xs">Pembeli: </span>
+              <span className="font-medium text-on-surface">{nama}</span>
+              {hp && <span className="text-on-surface-variant text-xs ml-2">{hp}</span>}
+            </div>
+          ) : (
+            <>
+              <div className="relative">
+                <label className="block text-xs font-body font-medium text-on-surface mb-1">Nama Pembeli *</label>
+                <Input
+                  value={nama}
+                  onChange={e => { setNama(e.target.value); searchCustomer(e.target.value) }}
+                  onBlur={() => setTimeout(() => setShowSug(false), 150)}
+                  placeholder="Cari atau isi baru..."
+                />
+                {showSug && suggestions.length > 0 && (
+                  <div className="absolute z-10 top-full left-0 right-0 bg-surface-lowest border border-surface-high rounded-xl shadow-card mt-1 max-h-40 overflow-y-auto">
+                    {suggestions.map(c => (
+                      <button
+                        key={c.id}
+                        onMouseDown={() => selectCustomer(c)}
+                        className="w-full text-left px-3 py-2 hover:bg-surface-high text-sm font-body"
+                      >
+                        <span className="font-medium text-on-surface">{c.nama}</span>
+                        <span className="text-on-surface-variant ml-2 text-xs">{c.hp}</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
-            )}
-          </div>
-
-          <div>
-            <label className="block text-xs font-body font-medium text-on-surface mb-1">No HP</label>
-            <Input value={hp} onChange={e => setHp(e.target.value)} placeholder="08..." />
-          </div>
+              <div>
+                <label className="block text-xs font-body font-medium text-on-surface mb-1">No HP</label>
+                <Input value={hp} onChange={e => setHp(e.target.value)} placeholder="08..." />
+              </div>
+            </>
+          )}
 
           <div>
             <label className="block text-xs font-body font-medium text-on-surface mb-1">Nama Qurban (bin/binti) *</label>
