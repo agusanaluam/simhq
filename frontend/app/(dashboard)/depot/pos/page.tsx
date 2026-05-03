@@ -32,6 +32,8 @@ export interface CartSubmitData {
   tipeBayar: string
   nominalBayar: number
   rencana_pelunasan: string
+  ongkosKirim: number
+  biayaPotong: number
 }
 
 export default function POSPage() {
@@ -64,6 +66,8 @@ export default function POSPage() {
         sales_id:           null,
         sales_nama:         data.salesNama || null,
         rencana_pelunasan:  data.rencana_pelunasan || null,
+        ongkos_kirim:       data.ongkosKirim || 0,
+        biaya_potong:       data.biayaPotong || 0,
         musim:              MUSIM,
         items: cart.map(item => ({
           hewan_id:    item.hewanId,

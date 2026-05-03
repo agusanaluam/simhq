@@ -5,6 +5,7 @@ import { useSession } from 'next-auth/react'
 import { Input } from '@/components/ui/Input'
 import type { CartItem, CartSubmitData } from './page'
 import api from '@/lib/api'
+import { formatIDR, parseCurrency } from '@/lib/format'
 
 interface Customer { id: number; nama: string; hp: string; alamat: string | null; kelurahan: string | null; kecamatan: string | null; kode_pos: string | null; kota: string | null }
 interface CsUser   { id: number; name: string }
@@ -51,15 +52,18 @@ export function CartPanel({ items, onRemove, onSubmit, submitting }: Props) {
   const [tipe,    setTipe]    = useState('PELUNASAN')
   const [nominal, setNominal] = useState(0)
   const [rencana, setRencana] = useState('')
+  const [ongkosKirim, setOngkosKirim] = useState(0)
+  const [biayaPotong, setBiayaPotong] = useState(0)
 
-  const total = items.reduce((sum, i) => sum + i.harga, 0)
+  const subtotal = items.reduce((sum, i) => sum + i.harga, 0)
+  const total    = subtotal + ongkosKirim + biayaPotong
 
   useEffect(() => {
     setNominal(total)
   }, [total])
 
   useEffect(() => {
-    api.get('/api/users?role=CS_KETUA,CS_ANGGOTA').then(r => setCsUsers(r.data.data ?? []))
+    api.get('/api/karyawan/users').then(r => setCsUsers(r.data.data ?? []))
   }, [])
 
   function searchCustomer(q: string) {
@@ -99,6 +103,8 @@ export function CartPanel({ items, onRemove, onSubmit, submitting }: Props) {
       tipeBayar:         tipe,
       nominalBayar:      nominal,
       rencana_pelunasan: tipe === 'DP' ? rencana : '',
+      ongkosKirim,
+      biayaPotong,
     })
   }
 
@@ -137,11 +143,27 @@ export function CartPanel({ items, onRemove, onSubmit, submitting }: Props) {
         )}
 
         {items.length > 0 && (
-          <div className="flex justify-between mt-3 pt-3 border-t border-surface-high">
-            <span className="text-sm font-body font-semibold text-on-surface">Total</span>
-            <span className="text-sm font-semibold text-primary">
-              {total.toLocaleString('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 })}
-            </span>
+          <div className="mt-3 pt-3 border-t border-surface-high space-y-1">
+            <div className="flex justify-between">
+              <span className="text-xs font-body text-on-surface-variant">Subtotal</span>
+              <span className="text-xs text-on-surface">{formatIDR(subtotal)}</span>
+            </div>
+            {ongkosKirim > 0 && (
+              <div className="flex justify-between">
+                <span className="text-xs font-body text-on-surface-variant">Ongkos Kirim</span>
+                <span className="text-xs text-on-surface">{formatIDR(ongkosKirim)}</span>
+              </div>
+            )}
+            {biayaPotong > 0 && (
+              <div className="flex justify-between">
+                <span className="text-xs font-body text-on-surface-variant">Biaya Potong</span>
+                <span className="text-xs text-on-surface">{formatIDR(biayaPotong)}</span>
+              </div>
+            )}
+            <div className="flex justify-between border-t border-surface-high pt-1">
+              <span className="text-sm font-body font-semibold text-on-surface">Total</span>
+              <span className="text-sm font-semibold text-primary">{formatIDR(total)}</span>
+            </div>
           </div>
         )}
       </div>
@@ -207,6 +229,33 @@ export function CartPanel({ items, onRemove, onSubmit, submitting }: Props) {
         <Input label="Sales" value={salesNama} onChange={e => setSalesNama(e.target.value)} placeholder="Nama sales..." />
       </div>
 
+      {/* Biaya Tambahan */}
+      <div className="p-4 border-b border-surface-high space-y-3">
+        <h3 className="font-display font-semibold text-on-surface text-sm">Biaya Tambahan</h3>
+
+        <div>
+          <label className="block text-sm font-body font-medium text-on-surface mb-1">Ongkos Kirim</label>
+          <input
+            type="text"
+            value={ongkosKirim ? ongkosKirim.toLocaleString('id-ID') : ''}
+            onChange={e => setOngkosKirim(parseCurrency(e.target.value))}
+            className="input-field w-full"
+            placeholder="0"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-body font-medium text-on-surface mb-1">Biaya Potong</label>
+          <input
+            type="text"
+            value={biayaPotong ? biayaPotong.toLocaleString('id-ID') : ''}
+            onChange={e => setBiayaPotong(parseCurrency(e.target.value))}
+            className="input-field w-full"
+            placeholder="0"
+          />
+        </div>
+      </div>
+
       {/* Payment */}
       <div className="p-4 border-b border-surface-high space-y-3">
         <h3 className="font-display font-semibold text-on-surface text-sm">Pembayaran</h3>
@@ -243,7 +292,13 @@ export function CartPanel({ items, onRemove, onSubmit, submitting }: Props) {
           <label className="block text-sm font-body font-medium text-on-surface mb-1">
             Nominal {tipe === 'DP' ? 'DP' : 'Pembayaran'}
           </label>
-          <input type="number" min={1} value={nominal} onChange={e => setNominal(Number(e.target.value))} className="input-field w-full" />
+          <input
+            type="text"
+            value={nominal ? nominal.toLocaleString('id-ID') : ''}
+            onChange={e => setNominal(parseCurrency(e.target.value))}
+            className="input-field w-full"
+            placeholder="0"
+          />
         </div>
 
         {tipe === 'DP' && (
