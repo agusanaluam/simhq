@@ -12,7 +12,11 @@ interface Props {
   onClose: () => void
 }
 
-const TIPE_OPTIONS = ['SHQ', 'THQ', 'PHQ']
+const TIPE_OPTIONS = [
+  { value: 'SHQ', label: 'SHQ – Kirim Hidup' },
+  { value: 'THQ', label: 'THQ – Titip ke Yayasan' },
+  { value: 'PHQ', label: 'PHQ – Potong di Depot, Kirim Daging' },
+]
 
 export function PreorderModal({ kelasList, hargaList, onConfirm, onClose }: Props) {
   const [jenis,   setJenis]   = useState('SAPI')
@@ -77,17 +81,17 @@ export function PreorderModal({ kelasList, hargaList, onConfirm, onClose }: Prop
 
           <div>
             <label className="block text-sm font-body font-medium text-on-surface mb-1">Tipe Qurban</label>
-            <div className="flex gap-2">
+            <div className="flex flex-col gap-2">
               {TIPE_OPTIONS.map(t => (
                 <button
-                  key={t}
+                  key={t.value}
                   type="button"
-                  onClick={() => setTipe(t)}
-                  className={`px-3 py-1.5 rounded-lg border-2 text-sm font-body transition-colors ${
-                    tipe === t ? 'border-primary bg-primary text-white' : 'border-surface-high text-on-surface'
+                  onClick={() => setTipe(t.value)}
+                  className={`px-3 py-2 rounded-lg border-2 text-sm font-body text-left transition-colors ${
+                    tipe === t.value ? 'border-primary bg-primary text-white' : 'border-surface-high text-on-surface'
                   }`}
                 >
-                  {t}
+                  {t.label}
                 </button>
               ))}
             </div>

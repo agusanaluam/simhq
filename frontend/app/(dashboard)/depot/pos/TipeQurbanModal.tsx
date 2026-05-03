@@ -19,8 +19,8 @@ interface Props {
 
 const TIPE_OPTIONS = [
   { value: 'SHQ', label: 'SHQ – Kirim Hidup' },
-  { value: 'THQ', label: 'THQ – Sembelih di Depot' },
-  { value: 'PHQ', label: 'PHQ – Sembelih + Kirim' },
+  { value: 'THQ', label: 'THQ – Titip ke Yayasan' },
+  { value: 'PHQ', label: 'PHQ – Potong di Depot, Kirim Daging' },
 ]
 
 export function TipeQurbanModal({ hewan, harga, onConfirm, onClose }: Props) {
