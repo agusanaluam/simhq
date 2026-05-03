@@ -75,4 +75,35 @@ class POSImprovementsTest extends TestCase
             ->assertCreated()
             ->assertJsonPath('transaksi.sales_nama', 'Andi Sales');
     }
+
+    public function test_biaya_tambahan_masuk_ke_total(): void
+    {
+        $customer = Customer::create(['nama' => 'Test', 'hp' => '081234567890']);
+
+        $res = $this->actingAs($this->superAdmin)
+            ->postJson('/api/transaksi', [
+                'depot_id'     => $this->depot->id,
+                'customer_id'  => $customer->id,
+                'musim'        => 2026,
+                'ongkos_kirim' => 50_000,
+                'biaya_potong' => 100_000,
+                'items'        => [
+                    [
+                        'jenis'       => 'SAPI',
+                        'kelas_id'    => $this->kelas->id,
+                        'tipe_qurban' => 'PHQ',
+                        'harga'       => 6_000_000,
+                        'is_preorder' => true,
+                        'hewan_id'    => null,
+                    ],
+                ],
+            ])
+            ->assertCreated();
+
+        $this->assertDatabaseHas('transaksi', [
+            'ongkos_kirim' => 50_000,
+            'biaya_potong' => 100_000,
+            'total'        => 6_150_000,
+        ]);
+    }
 }

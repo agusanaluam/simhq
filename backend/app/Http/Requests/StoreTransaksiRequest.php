@@ -21,6 +21,8 @@ class StoreTransaksiRequest extends FormRequest
             'catatan'     => ['nullable', 'string', 'max:500'],
             'sales_nama'        => ['nullable', 'string', 'max:100'],
             'rencana_pelunasan' => ['nullable', 'date'],
+            'ongkos_kirim' => ['nullable', 'integer', 'min:0'],
+            'biaya_potong' => ['nullable', 'integer', 'min:0'],
 
             // Legacy single-item fields (nullable for backward compat)
             'hewan_id'    => ['nullable', 'exists:hewan,id'],

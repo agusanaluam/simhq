@@ -50,16 +50,17 @@ class TransaksiController extends Controller
 
     public function store(StoreTransaksiRequest $request): JsonResponse
     {
-        $data       = $request->validated();
-        $items      = $data['items'] ?? [];
-        $totalHarga = collect($items)->sum('harga');
+        $data          = $request->validated();
+        $items         = $data['items'] ?? [];
+        $totalHarga    = collect($items)->sum('harga');
+        $biayaTambahan = ($data['ongkos_kirim'] ?? 0) + ($data['biaya_potong'] ?? 0);
 
         $hasPreorder = collect($items)->contains('is_preorder', true);
         $status      = $hasPreorder
             ? StatusTransaksi::MENUNGGU_HEWAN->value
             : StatusTransaksi::HEWAN_TERALOKASI->value;
 
-        $transaksi = DB::transaction(function () use ($data, $items, $totalHarga, $status) {
+        $transaksi = DB::transaction(function () use ($data, $items, $totalHarga, $biayaTambahan, $status) {
             $noFaktur = $this->svc->generateNoFaktur($data['depot_id'], $data['musim']);
 
             $transaksi = Transaksi::create(array_merge(
@@ -67,7 +68,7 @@ class TransaksiController extends Controller
                 [
                     'no_faktur'        => $noFaktur,
                     'harga'            => $totalHarga,
-                    'total'            => $totalHarga,
+                    'total'            => $totalHarga + $biayaTambahan,
                     'status_transaksi' => $status,
                 ]
             ));
