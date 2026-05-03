@@ -68,7 +68,7 @@ export function CartPanel({ items, onRemove, onSubmit, submitting }: Props) {
   }, [items])
 
   useEffect(() => {
-    api.get('/api/karyawan/users').then(r => setCsUsers(r.data.data ?? []))
+    api.get('/api/karyawan/users?role=CS_KETUA,CS_ANGGOTA').then(r => setCsUsers(r.data.data ?? []))
   }, [])
 
   function searchCustomer(q: string) {
