@@ -16,6 +16,7 @@ class StoreHargaRequest extends FormRequest
             'musim'      => ['required', 'integer', 'min:2020', 'max:2100'],
             'harga_beli' => ['required', 'integer', 'min:0'],
             'harga_jual' => ['required', 'integer', 'gt:harga_beli'],
+            'harga_slot' => ['nullable', 'integer', 'min:0'],
             'fee_sales'  => ['sometimes', 'integer', 'min:0'],
         ];
     }

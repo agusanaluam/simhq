@@ -35,6 +35,7 @@ class HargaController extends Controller
             [
                 'harga_beli' => $request->harga_beli,
                 'harga_jual' => $request->harga_jual,
+                'harga_slot' => $request->harga_slot,
                 'fee_sales'  => $request->fee_sales ?? 0,
             ]
         );
@@ -47,6 +48,7 @@ class HargaController extends Controller
         $data = $request->validate([
             'harga_beli' => ['required', 'integer', 'min:0'],
             'harga_jual' => ['required', 'integer', 'gt:harga_beli'],
+            'harga_slot' => ['nullable', 'integer', 'min:0'],
             'fee_sales'  => ['sometimes', 'integer', 'min:0'],
         ]);
 

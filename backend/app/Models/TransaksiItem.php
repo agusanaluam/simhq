@@ -10,7 +10,7 @@ class TransaksiItem extends Model
 
     protected $fillable = [
         'transaksi_id', 'hewan_id', 'jenis', 'kelas_id',
-        'tipe_qurban', 'harga', 'is_preorder',
+        'tipe_qurban', 'harga', 'is_preorder', 'satuan', 'nama_qurban',
     ];
 
     protected $casts = [

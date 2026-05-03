@@ -9,12 +9,13 @@ class HargaKelas extends Model
     protected $table = 'harga_kelas';
     protected $fillable = [
         'depot_id', 'kelas_id', 'jenis', 'musim',
-        'harga_beli', 'harga_jual', 'fee_sales',
+        'harga_beli', 'harga_jual', 'harga_slot', 'fee_sales',
     ];
 
     protected $casts = [
         'harga_beli' => 'integer',
         'harga_jual' => 'integer',
+        'harga_slot' => 'integer',
         'fee_sales'  => 'integer',
         'musim'      => 'integer',
     ];
