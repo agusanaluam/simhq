@@ -75,6 +75,7 @@ class TransaksiController extends Controller
             }
         }
 
+        try {
         $transaksi = DB::transaction(function () use ($data, $items, $totalHarga, $totalBiayaTambahan, $status) {
             $noFaktur = $this->svc->generateNoFaktur($data['depot_id'], $data['musim']);
 
@@ -97,7 +98,9 @@ class TransaksiController extends Controller
                     if ($satuan === 'SLOT') {
                         $taken     = SlotSapi::where('hewan_id', $item['hewan_id'])->lockForUpdate()->pluck('no_slot')->toArray();
                         $available = array_diff(range(1, 7), $taken);
-                        abort_if(empty($available), 422, "Slot sapi #{$item['hewan_id']} sudah penuh.");
+                        if (empty($available)) {
+                            throw new \RuntimeException("Slot sapi #{$item['hewan_id']} sudah penuh.");
+                        }
                         $noSlot    = min($available);
 
                         SlotSapi::create([
@@ -126,6 +129,9 @@ class TransaksiController extends Controller
 
             return $transaksi;
         });
+        } catch (\RuntimeException $e) {
+            abort(422, $e->getMessage());
+        }
 
         return response()->json([
             'transaksi' => $transaksi->load(['items.kelas', 'customer']),
@@ -176,8 +182,21 @@ class TransaksiController extends Controller
             422, 'Transaksi tidak bisa dibatalkan.'
         );
 
+        // Handle legacy single-hewan transaksi
         if ($transaksi->hewan_id) {
             $transaksi->hewan?->update(['status' => StatusHewan::AVAILABLE->value]);
+        }
+
+        // Handle SLOT items — delete SlotSapi + recalculate hewan status
+        $slotItems = SlotSapi::where('transaksi_id', $transaksi->id)->with('hewan')->get();
+        foreach ($slotItems as $slot) {
+            $slot->delete();
+            if ($slot->hewan) {
+                $remaining = SlotSapi::where('hewan_id', $slot->hewan_id)->count();
+                $slot->hewan->update(['status' => $remaining > 0
+                    ? StatusHewan::BOOKED->value
+                    : StatusHewan::AVAILABLE->value]);
+            }
         }
 
         $transaksi->update(['status_transaksi' => StatusTransaksi::DIBATALKAN->value]);
