@@ -69,10 +69,16 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::put('sdm/kasbon/{kasbon}/reject',   [\App\Http\Controllers\KasbonController::class, 'reject']);
     });
 
+    // Depots — read: all authenticated, write: SUPER_ADMIN only
+    Route::get('depots',         [DepotController::class, 'index']);
+    Route::get('depots/{depot}', [DepotController::class, 'show']);
+
     // SUPER_ADMIN only
     Route::middleware('role:SUPER_ADMIN')->group(function () {
         Route::apiResource('users', UserController::class);
-        Route::apiResource('depots', DepotController::class);
+        Route::post('depots',              [DepotController::class, 'store']);
+        Route::put('depots/{depot}',       [DepotController::class, 'update']);
+        Route::delete('depots/{depot}',    [DepotController::class, 'destroy']);
     });
 
     // Master Data
@@ -95,8 +101,8 @@ Route::middleware('auth:sanctum')->group(function () {
         });
     });
 
+    Route::get('karyawan/users', [\App\Http\Controllers\Master\KaryawanController::class, 'users']);
     Route::middleware('role:SUPER_ADMIN,KEPALA_DEPOT')->group(function () {
-        Route::get('karyawan/users',          [\App\Http\Controllers\Master\KaryawanController::class, 'users']);
         Route::get('karyawan',                [\App\Http\Controllers\Master\KaryawanController::class, 'index']);
         Route::post('karyawan',               [\App\Http\Controllers\Master\KaryawanController::class, 'store']);
         Route::put('karyawan/{karyawan}',     [\App\Http\Controllers\Master\KaryawanController::class, 'update']);
