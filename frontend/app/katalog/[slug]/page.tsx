@@ -317,11 +317,11 @@ export default function KatalogSlugPage() {
     </div>
   )
 
-  const visibleItems = catalog.data
-    .filter(h => filterJenis === 'ALL' || h.jenis === filterJenis)
-    .filter(h => showSold || h.status !== 'SOLD')
-
-  const hasSold = catalog.data.some(h => h.status === 'SOLD')
+  const filtered   = catalog.data.filter(h => filterJenis === 'ALL' || h.jenis === filterJenis)
+  const available  = filtered.filter(h => h.status === 'AVAILABLE')
+  const nonAvail   = filtered.filter(h => h.status === 'BOOKED' || (showSold && h.status === 'SOLD'))
+  const hasSold    = catalog.data.some(h => h.status === 'SOLD')
+  const hasBooked  = catalog.data.some(h => h.status === 'BOOKED')
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -353,16 +353,43 @@ export default function KatalogSlugPage() {
               {showSold ? 'Sembunyikan Terjual' : 'Tampilkan Terjual'}
             </button>
           )}
+          {!hasSold && hasBooked && (
+            <span className="ml-auto text-xs text-gray-400">Booked ditampilkan di bawah</span>
+          )}
         </div>
 
-        {visibleItems.length === 0 ? (
+        {/* Available stock */}
+        {available.length === 0 && nonAvail.length === 0 ? (
           <p className="text-center text-gray-500 py-16">Belum ada hewan tersedia.</p>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {visibleItems.map(h => (
-              <HewanCard key={h.id} hewan={h} onOrder={() => setOrderItem(h)} />
-            ))}
-          </div>
+          <>
+            {available.length > 0 && (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {available.map(h => (
+                  <HewanCard key={h.id} hewan={h} onOrder={() => setOrderItem(h)} />
+                ))}
+              </div>
+            )}
+            {available.length === 0 && (
+              <p className="text-center text-gray-400 py-10 text-sm">Semua stok sudah habis.</p>
+            )}
+
+            {/* Separator + booked/sold section */}
+            {nonAvail.length > 0 && (
+              <div className="mt-10">
+                <div className="flex items-center gap-3 mb-5">
+                  <div className="flex-1 h-px bg-gray-200" />
+                  <span className="text-xs font-semibold uppercase tracking-widest text-gray-400">Sudah Booked / Terjual</span>
+                  <div className="flex-1 h-px bg-gray-200" />
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {nonAvail.map(h => (
+                    <HewanCard key={h.id} hewan={h} onOrder={() => setOrderItem(h)} />
+                  ))}
+                </div>
+              </div>
+            )}
+          </>
         )}
       </main>
 
