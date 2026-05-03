@@ -105,7 +105,7 @@ class TransaksiController extends Controller
                             'no_slot'     => $noSlot,
                             'transaksi_id'=> $transaksi->id,
                             'customer_id' => $data['customer_id'],
-                            'nama_qurban' => $item['nama_qurban'] ?? '',
+                            'nama_qurban' => $item['nama_qurban'] ?? null,
                             'tipe_qurban' => $item['tipe_qurban'],
                             'harga_slot'  => $item['harga'],
                             'status_bayar'=> 'DP',
