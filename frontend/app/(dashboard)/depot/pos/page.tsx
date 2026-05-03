@@ -19,6 +19,7 @@ export interface CartItem {
   tipeQurban: string
   satuan: 'EKOR' | 'SLOT'
   namaQurban: string
+  tglPengiriman: string
   harga: number
   isPreorder: boolean
 }
@@ -78,8 +79,9 @@ export default function POSPage() {
           tipe_qurban: item.tipeQurban,
           harga:       item.harga,
           is_preorder: item.isPreorder,
-          satuan:      item.satuan,
-          nama_qurban: item.namaQurban || null,
+          satuan:          item.satuan,
+          nama_qurban:     item.namaQurban || null,
+          tgl_pengiriman:  item.tglPengiriman || null,
         })),
       })
       const transaksiId = res.data.transaksi.id

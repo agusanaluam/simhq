@@ -61,31 +61,6 @@ export function SaldoCards({ summary }: SaldoCardsProps) {
         </Card>
       </div>
 
-      {summary.per_metode.length > 0 && (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {summary.per_metode.map((m) => (
-            <Card key={m.metode}>
-              <p className="text-xs font-body font-medium uppercase tracking-widest text-on-surface-variant mb-3">
-                {METODE_LABEL[m.metode] ?? m.metode}
-              </p>
-              <div className="flex justify-between text-sm">
-                <span className="text-on-surface-variant">Masuk</span>
-                <span className="font-display font-semibold text-[#15803d]">{rupiah(m.masuk)}</span>
-              </div>
-              <div className="flex justify-between text-sm mt-1">
-                <span className="text-on-surface-variant">Keluar</span>
-                <span className="font-display font-semibold text-error">{rupiah(m.keluar)}</span>
-              </div>
-              <div className="border-t border-surface-high mt-2 pt-2 flex justify-between text-sm">
-                <span className="text-on-surface-variant font-medium">Saldo</span>
-                <span className={`font-display font-semibold ${
-                  (m.masuk - m.keluar) >= 0 ? 'text-primary' : 'text-error'
-                }`}>{rupiah(m.masuk - m.keluar)}</span>
-              </div>
-            </Card>
-          ))}
-        </div>
-      )}
     </div>
   )
 }

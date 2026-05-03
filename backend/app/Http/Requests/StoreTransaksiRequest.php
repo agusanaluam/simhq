@@ -38,8 +38,9 @@ class StoreTransaksiRequest extends FormRequest
             'items.*.tipe_qurban' => ['required', 'in:SHQ,THQ,PHQ'],
             'items.*.harga'       => ['required', 'integer', 'min:0'],
             'items.*.is_preorder' => ['required', 'boolean'],
-            'items.*.satuan'      => ['nullable', 'in:EKOR,SLOT'],
-            'items.*.nama_qurban' => ['nullable', 'string', 'max:150'],
+            'items.*.satuan'          => ['nullable', 'in:EKOR,SLOT'],
+            'items.*.nama_qurban'     => ['nullable', 'string', 'max:150'],
+            'items.*.tgl_pengiriman'  => ['nullable', 'date'],
         ];
     }
 }

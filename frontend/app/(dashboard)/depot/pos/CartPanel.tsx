@@ -138,6 +138,11 @@ export function CartPanel({ items, onRemove, onSubmit, submitting }: Props) {
                       {item.namaQurban && <span className="italic"> · {item.namaQurban}</span>}
                     </span>
                   </p>
+                  {item.tipeQurban === 'SHQ' && item.tglPengiriman && (
+                    <p className="text-xs text-on-surface-variant font-body">
+                      Kirim: {new Date(item.tglPengiriman + 'T00:00:00').toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}
+                    </p>
+                  )}
                   <p className="text-xs text-primary">
                     {item.harga.toLocaleString('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 })}
                   </p>

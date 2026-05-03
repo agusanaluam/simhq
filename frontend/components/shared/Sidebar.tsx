@@ -28,7 +28,7 @@ const navItems: NavItem[] = [
   { href: '/absensi',       label: 'Absensi',       icon: ClipboardCheck, roles: ['SUPER_ADMIN','KEPALA_DEPOT','ADMIN_ANGGOTA','KANDANG_SAPI_KETUA','KANDANG_SAPI_ANGGOTA','KANDANG_DOMBA_KETUA','KANDANG_DOMBA_ANGGOTA','KEUANGAN'] },
   { href: '/admin/absensi', label: 'Rekap Absensi', icon: ClipboardList,  roles: ['SUPER_ADMIN','KEPALA_DEPOT','KEUANGAN'] },
   { href: '/keuangan',           label: 'Keuangan',      icon: Wallet,     roles: ['SUPER_ADMIN','KEPALA_DEPOT'] },
-  { href: '/keuangan/pendapatan',  label: 'Pendapatan & GUM', icon: TrendingUp, roles: ['SUPER_ADMIN','KEPALA_DEPOT'] },
+  { href: '/keuangan/pendapatan',  label: 'Pendapatan & Setoran', icon: TrendingUp, roles: ['SUPER_ADMIN','KEPALA_DEPOT'] },
 
   { href: '/laporan/mortalitas',       label: 'Mortalitas Hewan',  icon: Activity,   roles: ['SUPER_ADMIN','KEPALA_DEPOT','KANDANG_SAPI_KETUA','KANDANG_DOMBA_KETUA'] },
   { href: '/laporan/forecast',         label: 'Forecast',          icon: LineChart,  roles: ['SUPER_ADMIN','KEPALA_DEPOT'] },

@@ -16,7 +16,7 @@ interface Props {
   harga: number
   hargaSlot: number | null
   slotTerisi: number
-  onConfirm: (data: { tipeQurban: string; satuan: 'EKOR' | 'SLOT'; namaQurban: string; harga: number }) => void
+  onConfirm: (data: { tipeQurban: string; satuan: 'EKOR' | 'SLOT'; namaQurban: string; harga: number; tglPengiriman: string }) => void
   onClose: () => void
 }
 
@@ -27,9 +27,10 @@ const TIPE_OPTIONS = [
 ]
 
 export function TipeQurbanModal({ hewan, harga, hargaSlot, slotTerisi, onConfirm, onClose }: Props) {
-  const [tipe,       setTipe]       = useState('SHQ')
-  const [satuan,     setSatuan]     = useState<'EKOR' | 'SLOT'>('EKOR')
-  const [namaQurban, setNamaQurban] = useState('')
+  const [tipe,           setTipe]          = useState('SHQ')
+  const [satuan,         setSatuan]        = useState<'EKOR' | 'SLOT'>('EKOR')
+  const [namaQurban,     setNamaQurban]    = useState('')
+  const [tglPengiriman,  setTglPengiriman] = useState('')
 
   const slotTersisa     = 7 - slotTerisi
   const slotPenuh       = slotTersisa <= 0
@@ -109,6 +110,22 @@ export function TipeQurbanModal({ hewan, harga, hargaSlot, slotTerisi, onConfirm
           ))}
         </div>
 
+        {/* Tanggal pengiriman — only for SHQ */}
+        {tipe === 'SHQ' && (
+          <div className="mb-4">
+            <label className="block text-xs font-body font-medium text-on-surface mb-1">
+              Tgl Pengiriman *
+            </label>
+            <input
+              type="date"
+              value={tglPengiriman}
+              onChange={e => setTglPengiriman(e.target.value)}
+              className="input-field w-full"
+              min={new Date().toISOString().slice(0, 10)}
+            />
+          </div>
+        )}
+
         {/* Nama qurban — only for SLOT */}
         {satuan === 'SLOT' && (
           <div className="mb-4">
@@ -136,11 +153,11 @@ export function TipeQurbanModal({ hewan, harga, hargaSlot, slotTerisi, onConfirm
           <button
             type="button"
             onClick={() => {
-              if (canAdd && !(namaQurbanWajib && !namaQurban.trim())) {
-                onConfirm({ tipeQurban: tipe, satuan, namaQurban, harga: hargaEfektif })
+              if (canAdd && !(namaQurbanWajib && !namaQurban.trim()) && !(tipe === 'SHQ' && !tglPengiriman)) {
+                onConfirm({ tipeQurban: tipe, satuan, namaQurban, harga: hargaEfektif, tglPengiriman })
               }
             }}
-            disabled={!canAdd || (namaQurbanWajib && !namaQurban.trim())}
+            disabled={!canAdd || (namaQurbanWajib && !namaQurban.trim()) || (tipe === 'SHQ' && !tglPengiriman)}
             className="px-4 py-2 rounded-xl text-sm font-body font-medium bg-primary text-white hover:bg-primary/90 disabled:opacity-50 transition-colors"
           >
             Tambah ke Cart

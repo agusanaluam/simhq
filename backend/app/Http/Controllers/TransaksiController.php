@@ -4,8 +4,10 @@ namespace App\Http\Controllers;
 use App\Enums\StatusHewan;
 use App\Enums\StatusTransaksi;
 use App\Http\Requests\StoreTransaksiRequest;
+use App\Models\Customer;
 use App\Models\Hewan;
 use App\Models\HargaKelas;
+use App\Models\Pengiriman;
 use App\Models\SlotSapi;
 use App\Models\Transaksi;
 use App\Models\TransaksiItem;
@@ -89,8 +91,27 @@ class TransaksiController extends Controller
                 ]
             ));
 
+            $customer = Customer::find($data['customer_id']);
+
             foreach ($items as $item) {
                 TransaksiItem::create(array_merge($item, ['transaksi_id' => $transaksi->id]));
+
+                // Auto-create pengiriman for SHQ items with delivery date
+                if ($item['tipe_qurban'] === 'SHQ' && !empty($item['tgl_pengiriman'])) {
+                    Pengiriman::create([
+                        'depot_id'      => $data['depot_id'],
+                        'transaksi_id'  => $transaksi->id,
+                        'nama_penerima' => $customer?->nama ?? '-',
+                        'alamat'        => $customer?->alamat ?? '-',
+                        'kelurahan'     => $customer?->kelurahan ?? null,
+                        'kecamatan'     => $customer?->kecamatan ?? null,
+                        'kota'          => $customer?->kota ?? null,
+                        'no_hp1'        => $customer?->hp ?? '-',
+                        'tgl_kirim'     => $item['tgl_pengiriman'],
+                        'sesi'          => 'PAGI',
+                        'status'        => 'DIJADWALKAN',
+                    ]);
+                }
 
                 if (!($item['is_preorder'] ?? false) && !empty($item['hewan_id'])) {
                     $satuan = $item['satuan'] ?? 'EKOR';

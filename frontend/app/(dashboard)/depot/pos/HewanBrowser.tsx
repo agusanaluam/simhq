@@ -49,37 +49,39 @@ export function HewanBrowser({ musim, depotId, onAdd }: Props) {
     return hargaList.find(h => h.kelas_id === kelasId && h.jenis === j)?.harga_slot ?? null
   }
 
-  function handleHewanConfirm(data: { tipeQurban: string; satuan: 'EKOR' | 'SLOT'; namaQurban: string; harga: number }) {
+  function handleHewanConfirm(data: { tipeQurban: string; satuan: 'EKOR' | 'SLOT'; namaQurban: string; harga: number; tglPengiriman: string }) {
     if (!selected || !selected.kelas_jual) return
     onAdd({
-      tempId:     crypto.randomUUID(),
-      hewanId:    selected.id,
-      noHewan:    selected.no_hewan,
-      jenis:      selected.jenis,
-      kelasId:    selected.kelas_jual.id,
-      kelasKode:  selected.kelas_jual.kode,
-      tipeQurban: data.tipeQurban,
-      satuan:     data.satuan,
-      namaQurban: data.namaQurban,
-      harga:      data.harga,
-      isPreorder: false,
+      tempId:        crypto.randomUUID(),
+      hewanId:       selected.id,
+      noHewan:       selected.no_hewan,
+      jenis:         selected.jenis,
+      kelasId:       selected.kelas_jual.id,
+      kelasKode:     selected.kelas_jual.kode,
+      tipeQurban:    data.tipeQurban,
+      satuan:        data.satuan,
+      namaQurban:    data.namaQurban,
+      tglPengiriman: data.tglPengiriman,
+      harga:         data.harga,
+      isPreorder:    false,
     })
     setSelected(null)
   }
 
-  function handlePreorderConfirm(item: { jenis: string; kelasId: number; kelasKode: string; tipeQurban: string; satuan: 'EKOR' | 'SLOT'; namaQurban: string; harga: number }) {
+  function handlePreorderConfirm(item: { jenis: string; kelasId: number; kelasKode: string; tipeQurban: string; satuan: 'EKOR' | 'SLOT'; namaQurban: string; tglPengiriman: string; harga: number }) {
     onAdd({
-      tempId:     crypto.randomUUID(),
-      hewanId:    null,
-      noHewan:    null,
-      jenis:      item.jenis,
-      kelasId:    item.kelasId,
-      kelasKode:  item.kelasKode,
-      tipeQurban: item.tipeQurban,
-      satuan:     item.satuan,
-      namaQurban: item.namaQurban,
-      harga:      item.harga,
-      isPreorder: true,
+      tempId:        crypto.randomUUID(),
+      hewanId:       null,
+      noHewan:       null,
+      jenis:         item.jenis,
+      kelasId:       item.kelasId,
+      kelasKode:     item.kelasKode,
+      tipeQurban:    item.tipeQurban,
+      satuan:        item.satuan,
+      namaQurban:    item.namaQurban,
+      tglPengiriman: item.tglPengiriman,
+      harga:         item.harga,
+      isPreorder:    true,
     })
     setShowPreorder(false)
   }

@@ -8,7 +8,7 @@ interface HargaEntry { kelas_id: number; jenis: string; harga_jual: number; harg
 interface Props {
   kelasList: KelasHewan[]
   hargaList: HargaEntry[]
-  onConfirm: (item: { jenis: string; kelasId: number; kelasKode: string; tipeQurban: string; satuan: 'EKOR' | 'SLOT'; namaQurban: string; harga: number }) => void
+  onConfirm: (item: { jenis: string; kelasId: number; kelasKode: string; tipeQurban: string; satuan: 'EKOR' | 'SLOT'; namaQurban: string; tglPengiriman: string; harga: number }) => void
   onClose: () => void
 }
 
@@ -22,8 +22,9 @@ export function PreorderModal({ kelasList, hargaList, onConfirm, onClose }: Prop
   const [jenis,      setJenis]      = useState('SAPI')
   const [kelasId,    setKelasId]    = useState<number | null>(null)
   const [tipe,       setTipe]       = useState('SHQ')
-  const [satuan,     setSatuan]     = useState<'EKOR' | 'SLOT'>('EKOR')
-  const [namaQurban, setNamaQurban] = useState('')
+  const [satuan,         setSatuan]        = useState<'EKOR' | 'SLOT'>('EKOR')
+  const [namaQurban,     setNamaQurban]    = useState('')
+  const [tglPengiriman,  setTglPengiriman] = useState('')
 
   function getHarga(): number {
     if (!kelasId) return 0
@@ -35,7 +36,7 @@ export function PreorderModal({ kelasList, hargaList, onConfirm, onClose }: Prop
     const kelas        = kelasList.find(k => k.id === kelasId)!
     const h            = hargaList.find(h => h.kelas_id === kelasId && h.jenis === jenis)
     const hargaEfektif = satuan === 'SLOT' ? (h?.harga_slot ?? 0) : getHarga()
-    onConfirm({ jenis, kelasId, kelasKode: kelas.kode, tipeQurban: tipe, satuan, namaQurban, harga: hargaEfektif })
+    onConfirm({ jenis, kelasId, kelasKode: kelas.kode, tipeQurban: tipe, satuan, namaQurban, tglPengiriman, harga: hargaEfektif })
   }
 
   const harga = getHarga()
@@ -134,6 +135,21 @@ export function PreorderModal({ kelasList, hargaList, onConfirm, onClose }: Prop
             </div>
           )}
 
+          {tipe === 'SHQ' && (
+            <div>
+              <label className="block text-sm font-body font-medium text-on-surface mb-1">
+                Tgl Pengiriman *
+              </label>
+              <input
+                type="date"
+                value={tglPengiriman}
+                onChange={e => setTglPengiriman(e.target.value)}
+                className="input-field w-full"
+                min={new Date().toISOString().slice(0, 10)}
+              />
+            </div>
+          )}
+
           {(() => {
             const displayHarga = satuan === 'SLOT'
               ? (hargaList.find(h => h.kelas_id === kelasId && h.jenis === jenis)?.harga_slot ?? 0)
@@ -157,7 +173,7 @@ export function PreorderModal({ kelasList, hargaList, onConfirm, onClose }: Prop
           <button
             type="button"
             onClick={handleConfirm}
-            disabled={!kelasId || (satuan === 'SLOT' && tipe === 'PHQ' && !namaQurban.trim())}
+            disabled={!kelasId || (satuan === 'SLOT' && tipe === 'PHQ' && !namaQurban.trim()) || (tipe === 'SHQ' && !tglPengiriman)}
             className="px-4 py-2 rounded-xl text-sm font-body font-medium bg-primary text-white hover:bg-primary/90 disabled:opacity-60 transition-colors"
           >
             Tambah ke Cart
