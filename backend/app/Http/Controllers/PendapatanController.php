@@ -8,6 +8,7 @@ use App\Models\SetoranGum;
 use App\Models\Transaksi;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class PendapatanController extends Controller
 {
@@ -44,12 +45,37 @@ class PendapatanController extends Controller
             ->whereYear('tgl_setor', $musim)
             ->sum('jumlah');
 
+        // Pendapatan per kelas
+        $perKelas = DB::table('transaksi_items as ti')
+            ->join('transaksi as t',   'ti.transaksi_id', '=', 't.id')
+            ->join('kelas_hewan as k', 'ti.kelas_id',     '=', 'k.id')
+            ->where('t.depot_id', $depotId)
+            ->where('t.musim', $musim)
+            ->where('t.status_transaksi', '!=', StatusTransaksi::DIBATALKAN->value)
+            ->select(
+                'k.kode as kelas',
+                'ti.jenis',
+                DB::raw('COUNT(ti.id) as jumlah_item'),
+                DB::raw('SUM(ti.harga) as total_tagihan')
+            )
+            ->groupBy('k.kode', 'ti.jenis')
+            ->orderBy('k.kode')
+            ->orderBy('ti.jenis')
+            ->get()
+            ->map(fn($r) => [
+                'kelas'        => $r->kelas,
+                'jenis'        => $r->jenis,
+                'jumlah_item'  => (int) $r->jumlah_item,
+                'total_tagihan'=> (int) $r->total_tagihan,
+            ]);
+
         return response()->json([
             'pengadaan'       => $pengadaan,
             'total_tagihan'   => $totalTagihan,
             'pendapatan'      => $pendapatan,
             'total_setor_gum' => $totalSetorGum,
             'sisa_hutang_gum' => max(0, $pengadaan - $totalSetorGum),
+            'per_kelas'       => $perKelas,
         ]);
     }
 }

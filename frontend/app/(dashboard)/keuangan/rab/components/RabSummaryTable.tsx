@@ -95,13 +95,6 @@ export function RabSummaryTable({ rows, onSetRab, onAddRealisasi }: RabSummaryTa
                     >
                       <Settings className="w-4 h-4" />
                     </button>
-                    <button
-                      onClick={() => onAddRealisasi(row)}
-                      className="p-1.5 rounded-md text-primary hover:bg-surface-high transition-colors"
-                      title="Tambah Realisasi"
-                    >
-                      <Plus className="w-4 h-4" />
-                    </button>
                   </div>
                 </td>
               </tr>

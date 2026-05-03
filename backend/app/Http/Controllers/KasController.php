@@ -147,6 +147,30 @@ class KasController extends Controller
         }, $filename, ['Content-Type' => 'text/csv; charset=UTF-8']);
     }
 
+    public function perDivisi(Request $request): JsonResponse
+    {
+        $user    = $request->user();
+        $depotId = $user->isSuperAdmin() ? ($request->depot_id ?? $user->depot_id) : $user->depot_id;
+
+        $query = KasHarian::where('depot_id', $depotId)
+            ->where('tipe', 'KELUAR');
+
+        if ($request->tgl_dari)   { $query->where('tgl_transaksi', '>=', $request->tgl_dari); }
+        if ($request->tgl_sampai) { $query->where('tgl_transaksi', '<=', $request->tgl_sampai); }
+
+        $rows = $query
+            ->select('divisi', DB::raw('SUM(jumlah) as total'))
+            ->groupBy('divisi')
+            ->orderByDesc('total')
+            ->get()
+            ->map(fn($r) => [
+                'divisi' => $r->divisi ?? 'Lain-lain',
+                'total'  => (int) $r->total,
+            ]);
+
+        return response()->json(['data' => $rows]);
+    }
+
     private function buildSummary($query): array
     {
         $counts = (clone $query)

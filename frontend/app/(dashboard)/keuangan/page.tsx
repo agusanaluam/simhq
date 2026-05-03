@@ -36,6 +36,11 @@ interface CashFlowItem {
   keluar: number
 }
 
+interface DivisiItem {
+  divisi: string
+  total: number
+}
+
 const currentBulan = new Date().toISOString().slice(0, 7)
 
 const DIVISI_OPTIONS = ['', 'KONSTRUKSI', 'LOGISTIK', 'ADMIN', 'CS', 'KANDANG', 'DISTRIBUSI', 'PAKAN', 'LISTRIK', 'LAIN']
@@ -44,6 +49,7 @@ export default function KeuanganPage() {
   const [entries, setEntries]   = useState<KasEntry[]>([])
   const [summary, setSummary]   = useState<KasSummary>({ total_masuk: 0, total_keluar: 0, saldo: 0, per_metode: [] })
   const [cashflow, setCashflow] = useState<CashFlowItem[]>([])
+  const [perDivisi, setPerDivisi] = useState<DivisiItem[]>([])
   const [loading, setLoading]   = useState(true)
   const [error, setError]       = useState<string | null>(null)
   const [showModal, setShowModal] = useState(false)
@@ -62,14 +68,16 @@ export default function KeuanganPage() {
       if (tglSampai) params.set('tgl_sampai', tglSampai)
       if (divisi)    params.set('divisi',      divisi)
 
-      const [listRes, cfRes] = await Promise.all([
+      const [listRes, cfRes, divisiRes] = await Promise.all([
         api.get(`/api/keuangan/kas?${params}`),
         api.get(`/api/keuangan/cashflow?bulan=${bulan}`),
+        api.get(`/api/keuangan/kas/per-divisi?${params}`),
       ])
 
       setEntries(listRes.data.entries?.data ?? [])
       setSummary(listRes.data.summary)
       setCashflow(cfRes.data.data ?? [])
+      setPerDivisi(divisiRes.data.data ?? [])
     } catch {
       setError('Gagal memuat data keuangan.')
     } finally {
@@ -155,6 +163,46 @@ export default function KeuanganPage() {
         <div className="space-y-6">
           <SaldoCards summary={summary} />
           <CashFlowChart data={cashflow} bulan={bulan} />
+
+          {/* Biaya operasional per divisi */}
+          {perDivisi.length > 0 && (
+            <div>
+              <p className="text-xs font-body font-medium uppercase tracking-widest text-on-surface-variant mb-3">
+                Biaya Operasional per Divisi
+              </p>
+              <div className="bg-surface-lowest rounded-2xl border border-surface-high overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b border-surface-high text-left text-xs text-on-surface-variant font-body">
+                      <th className="pb-2 px-4 pt-3">Divisi</th>
+                      <th className="pb-2 px-4 pt-3 text-right">Total Keluar</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {perDivisi.map((row, i) => (
+                      <tr key={i} className="border-b border-surface-high last:border-0">
+                        <td className="py-2 px-4 font-body text-on-surface">{row.divisi}</td>
+                        <td className="py-2 px-4 font-body font-medium text-right text-error">
+                          {new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(row.total)}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                  <tfoot>
+                    <tr className="border-t-2 border-surface-high">
+                      <td className="pt-2 px-4 pb-3 font-body font-semibold text-on-surface text-xs uppercase tracking-wide">Total</td>
+                      <td className="pt-2 px-4 pb-3 font-body font-semibold text-right text-error">
+                        {new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(
+                          perDivisi.reduce((s, r) => s + r.total, 0)
+                        )}
+                      </td>
+                    </tr>
+                  </tfoot>
+                </table>
+              </div>
+            </div>
+          )}
+
           <KasTable entries={entries} />
         </div>
       )}

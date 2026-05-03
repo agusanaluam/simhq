@@ -9,10 +9,10 @@ class KelasHewanSeeder extends Seeder
     public function run(): void
     {
         $kelas = [
-            ['kode' => 'D',    'nama' => 'Domba',    'urutan' => 1],
-            ['kode' => 'C',    'nama' => 'Cukup',    'urutan' => 2],
-            ['kode' => 'B',    'nama' => 'Bagus',    'urutan' => 3],
-            ['kode' => 'A',    'nama' => 'A',        'urutan' => 4],
+            ['kode' => 'D',    'nama' => 'Kelas D',    'urutan' => 1],
+            ['kode' => 'C',    'nama' => 'Kelas C',    'urutan' => 2],
+            ['kode' => 'B',    'nama' => 'Kelas B',    'urutan' => 3],
+            ['kode' => 'A',    'nama' => 'Kelas A',        'urutan' => 4],
             ['kode' => 'SPR1', 'nama' => 'Super 1',  'urutan' => 5],
             ['kode' => 'SPR2', 'nama' => 'Super 2',  'urutan' => 6],
             ['kode' => 'SPR3', 'nama' => 'Super 3',  'urutan' => 7],

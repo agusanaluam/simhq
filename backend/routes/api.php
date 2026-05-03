@@ -43,6 +43,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('keuangan/saldo',             [\App\Http\Controllers\KasController::class,       'saldo']);
         Route::get('keuangan/cashflow',          [\App\Http\Controllers\KasController::class,       'cashflow']);
         Route::get('keuangan/pendapatan',          [\App\Http\Controllers\PendapatanController::class,  'index']);
+        Route::get('keuangan/kas/per-divisi',      [\App\Http\Controllers\KasController::class,         'perDivisi']);
         // Setoran GUM — posisi MUST be before the GET collection route
         Route::get('keuangan/setoran-gum/posisi', [\App\Http\Controllers\SetoranGumController::class, 'posisi']);
         Route::get('keuangan/setoran-gum',        [\App\Http\Controllers\SetoranGumController::class, 'index']);
