@@ -58,7 +58,7 @@ export function TipeQurbanModal({ hewan, harga, hargaSlot, slotTerisi, onConfirm
           <div className="flex gap-2">
             <button
               type="button"
-              onClick={() => setSatuan('EKOR')}
+              onClick={() => { setSatuan('EKOR'); setNamaQurban('') }}
               className={`flex-1 py-2 rounded-xl border-2 text-sm font-body transition-colors ${
                 satuan === 'EKOR' ? 'border-primary bg-primary text-white' : 'border-surface-high text-on-surface'
               }`}
@@ -84,7 +84,7 @@ export function TipeQurbanModal({ hewan, harga, hargaSlot, slotTerisi, onConfirm
           {satuan === 'SLOT' && !slotPenuh && (
             <p className="text-xs text-on-surface-variant mt-1 font-body">Tersisa {slotTersisa} slot</p>
           )}
-          {slotPenuh && <p className="text-xs text-red-600 mt-1 font-body">Semua slot penuh</p>}
+          {slotPenuh && hewan.jenis === 'SAPI' && <p className="text-xs text-red-600 mt-1 font-body">Semua slot penuh</p>}
         </div>
 
         {/* Tipe qurban */}
