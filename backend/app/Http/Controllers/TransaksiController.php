@@ -28,10 +28,13 @@ class TransaksiController extends Controller
                 'items.hewan:id,no_hewan',
                 'items.kelas:id,kode',
             ])
-            ->when($request->depot,  fn($q) => $q->where('depot_id', $request->depot))
-            ->when($request->status, fn($q) => $q->where('status_transaksi', $request->status))
-            ->when($request->musim,  fn($q) => $q->where('musim', $request->musim))
-            ->when($request->tgl,    fn($q) => $q->whereDate('created_at', $request->tgl))
+            ->when($request->depot,       fn($q) => $q->where('depot_id', $request->depot))
+            ->when($request->status,      fn($q) => $q->where('status_transaksi', $request->status))
+            ->when($request->status_bayar,fn($q) => $q->where('status_bayar', $request->status_bayar))
+            ->when($request->musim,       fn($q) => $q->where('musim', $request->musim))
+            ->when($request->tgl,         fn($q) => $q->whereDate('created_at', $request->tgl))
+            ->when($request->tipe_qurban, fn($q) => $q->whereHas('items', fn($q2) => $q2->where('tipe_qurban', $request->tipe_qurban)))
+            ->when($request->no_hewan,    fn($q) => $q->whereHas('items.hewan', fn($q2) => $q2->where('no_hewan', 'like', "%{$request->no_hewan}%")))
             ->orderByDesc('created_at')
             ->paginate(50);
 

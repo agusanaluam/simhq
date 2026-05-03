@@ -20,6 +20,7 @@ interface Transaksi {
   id: number
   no_faktur: string
   status_transaksi: string
+  status_bayar: string
   total: number
   created_at: string
   customer: { nama: string; hp: string } | null
@@ -42,22 +43,40 @@ const STATUS_COLOR: Record<string, string> = {
   DIBATALKAN:       'bg-red-100 text-red-700',
 }
 
+const BAYAR_LABEL: Record<string, string> = {
+  BELUM_BAYAR: 'Belum Bayar',
+  DP:          'DP',
+  LUNAS:       'Lunas',
+}
+
+const BAYAR_COLOR: Record<string, string> = {
+  BELUM_BAYAR: 'bg-red-100 text-red-700',
+  DP:          'bg-yellow-100 text-yellow-800',
+  LUNAS:       'bg-green-100 text-green-800',
+}
+
 export default function TransaksiPage() {
   const [list, setList]       = useState<Transaksi[]>([])
   const [loading, setLoading] = useState(true)
-  const [filter, setFilter]   = useState('')
+  const [filterStatus,   setFilterStatus]   = useState('')
+  const [filterBayar,    setFilterBayar]    = useState('')
+  const [filterTipe,     setFilterTipe]     = useState('')
+  const [filterNoHewan,  setFilterNoHewan]  = useState('')
   const [assignModal, setAssignModal] = useState<{ id: number; jenis: string } | null>(null)
 
   function load() {
     setLoading(true)
     const p = new URLSearchParams()
-    if (filter) p.set('status', filter)
+    if (filterStatus)  p.set('status',       filterStatus)
+    if (filterBayar)   p.set('status_bayar', filterBayar)
+    if (filterTipe)    p.set('tipe_qurban',  filterTipe)
+    if (filterNoHewan) p.set('no_hewan',     filterNoHewan)
     api.get(`/api/transaksi?${p}`)
       .then(r => setList(r.data.data ?? []))
       .finally(() => setLoading(false))
   }
 
-  useEffect(() => { load() }, [filter])
+  useEffect(() => { load() }, [filterStatus, filterBayar, filterTipe, filterNoHewan])
 
   async function konfirmasi(id: number) {
     await api.put(`/api/transaksi/${id}/konfirmasi`)
@@ -82,20 +101,49 @@ export default function TransaksiPage() {
         </Link>
       </div>
 
-      <div className="flex gap-2 mb-4 flex-wrap">
-        {['', 'MENUNGGU_HEWAN', 'HEWAN_TERALOKASI', 'DIKONFIRMASI', 'SELESAI', 'DIBATALKAN'].map(s => (
-          <button
-            key={s}
-            onClick={() => setFilter(s)}
-            className={`px-3 py-1.5 rounded-xl text-xs font-body font-medium transition-colors ${
-              filter === s
-                ? 'bg-primary text-white'
-                : 'bg-surface-high text-on-surface-variant hover:text-on-surface'
-            }`}
-          >
-            {s ? STATUS_LABEL[s] : 'Semua'}
-          </button>
-        ))}
+      <div className="space-y-2 mb-4">
+        {/* Status transaksi */}
+        <div className="flex gap-2 flex-wrap">
+          {['', 'MENUNGGU_HEWAN', 'HEWAN_TERALOKASI', 'DIKONFIRMASI', 'SELESAI', 'DIBATALKAN'].map(s => (
+            <button key={s} onClick={() => setFilterStatus(s)}
+              className={`px-3 py-1.5 rounded-xl text-xs font-body font-medium transition-colors ${
+                filterStatus === s ? 'bg-primary text-white' : 'bg-surface-high text-on-surface-variant hover:text-on-surface'
+              }`}>
+              {s ? STATUS_LABEL[s] : 'Semua Status'}
+            </button>
+          ))}
+        </div>
+
+        {/* Status bayar */}
+        <div className="flex gap-2 flex-wrap">
+          {['', 'BELUM_BAYAR', 'DP', 'LUNAS'].map(s => (
+            <button key={s} onClick={() => setFilterBayar(s)}
+              className={`px-3 py-1.5 rounded-xl text-xs font-body font-medium transition-colors ${
+                filterBayar === s ? 'bg-primary text-white' : 'bg-surface-high text-on-surface-variant hover:text-on-surface'
+              }`}>
+              {s ? BAYAR_LABEL[s] : 'Semua Pembayaran'}
+            </button>
+          ))}
+        </div>
+
+        {/* Tipe qurban + no hewan */}
+        <div className="flex gap-2 flex-wrap items-center">
+          {['', 'SHQ', 'THQ', 'PHQ'].map(t => (
+            <button key={t} onClick={() => setFilterTipe(t)}
+              className={`px-3 py-1.5 rounded-xl text-xs font-body font-medium transition-colors ${
+                filterTipe === t ? 'bg-primary text-white' : 'bg-surface-high text-on-surface-variant hover:text-on-surface'
+              }`}>
+              {t || 'Semua Tipe'}
+            </button>
+          ))}
+          <input
+            type="text"
+            value={filterNoHewan}
+            onChange={e => setFilterNoHewan(e.target.value)}
+            placeholder="Cari no hewan..."
+            className="input-field text-xs w-36"
+          />
+        </div>
       </div>
 
       <Card>
@@ -114,6 +162,7 @@ export default function TransaksiPage() {
                   <th className="pb-2 pr-4">Tipe</th>
                   <th className="pb-2 pr-4">Total</th>
                   <th className="pb-2 pr-4">Status</th>
+                  <th className="pb-2 pr-4">Bayar</th>
                   <th className="pb-2">Aksi</th>
                 </tr>
               </thead>
@@ -168,6 +217,11 @@ export default function TransaksiPage() {
                     <td className="py-2 pr-4">
                       <span className={`px-2 py-0.5 rounded-full text-xs font-body ${STATUS_COLOR[t.status_transaksi] ?? ''}`}>
                         {STATUS_LABEL[t.status_transaksi] ?? t.status_transaksi}
+                      </span>
+                    </td>
+                    <td className="py-2 pr-4">
+                      <span className={`px-2 py-0.5 rounded-full text-xs font-body ${BAYAR_COLOR[t.status_bayar] ?? ''}`}>
+                        {BAYAR_LABEL[t.status_bayar] ?? t.status_bayar}
                       </span>
                     </td>
                     <td className="py-2">
