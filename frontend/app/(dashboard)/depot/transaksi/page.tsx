@@ -7,17 +7,23 @@ import { AssignHewanModal } from './AssignHewanModal'
 import api from '@/lib/api'
 import Link from 'next/link'
 
+interface TransaksiItem {
+  id: number
+  tipe_qurban: string
+  jenis: string
+  is_preorder: boolean
+  hewan: { no_hewan: string } | null
+  kelas: { kode: string } | null
+}
+
 interface Transaksi {
   id: number
   no_faktur: string
   status_transaksi: string
-  tipe_qurban: string
-  jenis: string
   total: number
   created_at: string
   customer: { nama: string; hp: string } | null
-  hewan: { no_hewan: string } | null
-  kelas: { kode: string } | null
+  items: TransaksiItem[]
 }
 
 const STATUS_LABEL: Record<string, string> = {
@@ -133,17 +139,26 @@ export default function TransaksiPage() {
                       <p className="font-medium text-on-surface">{t.customer?.nama ?? '—'}</p>
                       <p className="text-xs text-on-surface-variant">{t.customer?.hp}</p>
                     </td>
-                    <td className="py-2 pr-4 font-body text-on-surface">
-                      {t.hewan
-                        ? `#${t.hewan.no_hewan}`
-                        : <span className="text-on-surface-variant italic">Pre-order</span>
-                      }
+                    <td className="py-2 pr-4 font-body text-on-surface text-xs">
+                      {t.items?.length > 0
+                        ? t.items.map(item => (
+                            <div key={item.id}>
+                              {item.is_preorder
+                                ? <span className="text-on-surface-variant italic">Pre-order</span>
+                                : `#${item.hewan?.no_hewan ?? '—'}`}
+                            </div>
+                          ))
+                        : <span className="text-on-surface-variant italic">—</span>}
                     </td>
-                    <td className="py-2 pr-4 font-body">
-                      <span className="text-xs">{t.tipe_qurban} · {t.jenis}</span>
-                      {t.kelas && (
-                        <span className="text-xs text-on-surface-variant ml-1">· {t.kelas.kode}</span>
-                      )}
+                    <td className="py-2 pr-4 font-body text-xs">
+                      {t.items?.length > 0
+                        ? t.items.map(item => (
+                            <div key={item.id} className="text-on-surface">
+                              {item.tipe_qurban} · {item.jenis}
+                              {item.kelas && <span className="text-on-surface-variant"> · {item.kelas.kode}</span>}
+                            </div>
+                          ))
+                        : '—'}
                     </td>
                     <td className="py-2 pr-4 font-body font-medium text-on-surface">
                       {t.total.toLocaleString('id-ID', {
@@ -159,7 +174,7 @@ export default function TransaksiPage() {
                       <div className="flex gap-1">
                         {t.status_transaksi === 'MENUNGGU_HEWAN' && (
                           <button
-                            onClick={() => setAssignModal({ id: t.id, jenis: t.jenis })}
+                            onClick={() => setAssignModal({ id: t.id, jenis: t.items?.[0]?.jenis ?? 'SAPI' })}
                             className="text-xs text-primary hover:underline"
                           >
                             Assign Hewan

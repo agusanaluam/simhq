@@ -22,11 +22,11 @@ class TransaksiController extends Controller
     {
         $data = Transaksi::with([
                 'customer:id,nama,hp',
-                'hewan:id,no_hewan,jenis',
-                'kelas:id,kode',
                 'cs:id,name',
                 'teller:id,name',
                 'sales:id,name',
+                'items.hewan:id,no_hewan',
+                'items.kelas:id,kode',
             ])
             ->when($request->depot,  fn($q) => $q->where('depot_id', $request->depot))
             ->when($request->status, fn($q) => $q->where('status_transaksi', $request->status))
