@@ -50,7 +50,8 @@ export function CartPanel({ items, onRemove, onSubmit, submitting }: Props) {
   // Payment
   const [metode,  setMetode]  = useState('CASH')
   const [tipe,    setTipe]    = useState('PELUNASAN')
-  const [nominal, setNominal] = useState(0)
+  const [nominal,        setNominal]        = useState(0)
+  const [nominalTouched, setNominalTouched] = useState(false)
   const [rencana, setRencana] = useState('')
   const [ongkosKirim, setOngkosKirim] = useState(0)
   const [biayaPotong, setBiayaPotong] = useState(0)
@@ -59,8 +60,12 @@ export function CartPanel({ items, onRemove, onSubmit, submitting }: Props) {
   const total    = subtotal + ongkosKirim + biayaPotong
 
   useEffect(() => {
-    setNominal(total)
-  }, [total])
+    if (!nominalTouched) setNominal(total)
+  }, [total, nominalTouched])
+
+  useEffect(() => {
+    setNominalTouched(false)
+  }, [items])
 
   useEffect(() => {
     api.get('/api/karyawan/users').then(r => setCsUsers(r.data.data ?? []))
@@ -295,7 +300,7 @@ export function CartPanel({ items, onRemove, onSubmit, submitting }: Props) {
           <input
             type="text"
             value={nominal ? nominal.toLocaleString('id-ID') : ''}
-            onChange={e => setNominal(parseCurrency(e.target.value))}
+            onChange={e => { setNominal(parseCurrency(e.target.value)); setNominalTouched(true) }}
             className="input-field w-full"
             placeholder="0"
           />
