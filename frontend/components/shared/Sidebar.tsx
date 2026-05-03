@@ -17,30 +17,65 @@ type NavItem = {
   roles?: string[]
 }
 
-const navItems: NavItem[] = [
-  { href: '/dashboard',     label: 'Dashboard',    icon: LayoutDashboard },
-  { href: '/depot/pengadaan', label: 'Pengadaan', icon: PawPrint, roles: ['SUPER_ADMIN','KEPALA_DEPOT','KANDANG_SAPI_KETUA','KANDANG_SAPI_ANGGOTA','KANDANG_DOMBA_KETUA','KANDANG_DOMBA_ANGGOTA'] },
-  { href: '/depot/kandang', label: 'Ploting Kandang', icon: Grid3x3, roles: ['SUPER_ADMIN','KEPALA_DEPOT','KANDANG_SAPI_KETUA','KANDANG_SAPI_ANGGOTA','KANDANG_DOMBA_KETUA','KANDANG_DOMBA_ANGGOTA'] },
-  { href: '/depot/pos',       label: 'POS Penjualan', icon: ShoppingCart, roles: ['SUPER_ADMIN','KEPALA_DEPOT','ADMIN_ANGGOTA'] },
-  { href: '/depot/transaksi', label: 'Transaksi',      icon: Receipt,      roles: ['SUPER_ADMIN','KEPALA_DEPOT','ADMIN_ANGGOTA','KEUANGAN'] },
-  { href: '/depot/ploting-sapi', label: 'Ploting Slot Sapi', icon: Layers, roles: ['SUPER_ADMIN','KEPALA_DEPOT','ADMIN_ANGGOTA'] },
-  { href: '/depot/keuangan/rekap-setoran', label: 'Rekap Setoran', icon: BarChart2, roles: ['SUPER_ADMIN','KEPALA_DEPOT','KEUANGAN'] },
-  { href: '/absensi',       label: 'Absensi',       icon: ClipboardCheck, roles: ['SUPER_ADMIN','KEPALA_DEPOT','ADMIN_ANGGOTA','KANDANG_SAPI_KETUA','KANDANG_SAPI_ANGGOTA','KANDANG_DOMBA_KETUA','KANDANG_DOMBA_ANGGOTA','KEUANGAN'] },
-  { href: '/admin/absensi', label: 'Rekap Absensi', icon: ClipboardList,  roles: ['SUPER_ADMIN','KEPALA_DEPOT','KEUANGAN'] },
-  { href: '/keuangan',           label: 'Keuangan',      icon: Wallet,     roles: ['SUPER_ADMIN','KEPALA_DEPOT'] },
-  { href: '/keuangan/pendapatan',  label: 'Pendapatan & Setoran', icon: TrendingUp, roles: ['SUPER_ADMIN','KEPALA_DEPOT'] },
+type NavGroup = {
+  label?: string
+  items: NavItem[]
+}
 
-  { href: '/laporan/mortalitas',       label: 'Mortalitas Hewan',  icon: Activity,   roles: ['SUPER_ADMIN','KEPALA_DEPOT','KANDANG_SAPI_KETUA','KANDANG_DOMBA_KETUA'] },
-  { href: '/laporan/forecast',         label: 'Forecast',          icon: LineChart,  roles: ['SUPER_ADMIN','KEPALA_DEPOT'] },
-  { href: '/cs/order',                 label: 'Order Katalog',    icon: Inbox,      roles: ['SUPER_ADMIN','KEPALA_DEPOT','CS_KETUA','CS_ANGGOTA','ADMIN_KETUA'] },
-  { href: '/cs/customer',     label: 'Database Customer', icon: UserCheck,  roles: ['SUPER_ADMIN','KEPALA_DEPOT','CS_KETUA','CS_ANGGOTA','ADMIN_KETUA'] },
-  { href: '/cs/retargeting',  label: 'Retargeting',       icon: Target,     roles: ['SUPER_ADMIN','KEPALA_DEPOT','CS_KETUA','CS_ANGGOTA','ADMIN_KETUA'] },
-  { href: '/admin/wa-log',   label: 'Log WA',        icon: MessageSquare, roles: ['SUPER_ADMIN','KEPALA_DEPOT'] },
-  { href: '/admin/sdm/upah', label: 'Upah Harian', icon: Calculator,    roles: ['SUPER_ADMIN','KEPALA_DEPOT','ADMIN_KETUA'] },
-  { href: '/sdm/kasbon',     label: 'Kasbon',       icon: CreditCard,    roles: ['SUPER_ADMIN','KEPALA_DEPOT','ADMIN_KETUA'] },
-  { href: '/pengiriman',    label: 'Pengiriman',    icon: Truck,          roles: ['SUPER_ADMIN','KEPALA_DEPOT','LOGISTIK_KETUA','LOGISTIK_ANGGOTA'] },
-  { href: '/admin/users',   label: 'Manaj. User',   icon: Users,          roles: ['SUPER_ADMIN'] },
-  { href: '/admin/master-data', label: 'Master Data', icon: Database, roles: ['SUPER_ADMIN', 'KEPALA_DEPOT'] },
+const KANDANG_ROLES = ['SUPER_ADMIN','KEPALA_DEPOT','KANDANG_SAPI_KETUA','KANDANG_SAPI_ANGGOTA','KANDANG_DOMBA_KETUA','KANDANG_DOMBA_ANGGOTA']
+const CS_ROLES      = ['SUPER_ADMIN','KEPALA_DEPOT','CS_KETUA','CS_ANGGOTA','ADMIN_KETUA']
+
+const navGroups: NavGroup[] = [
+  {
+    items: [
+      { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+    ],
+  },
+  {
+    label: 'Transaksi',
+    items: [
+      { href: '/depot/pos',          label: 'POS Penjualan',    icon: ShoppingCart, roles: ['SUPER_ADMIN','KEPALA_DEPOT','ADMIN_ANGGOTA'] },
+      { href: '/depot/transaksi',    label: 'Transaksi',        icon: Receipt,      roles: ['SUPER_ADMIN','KEPALA_DEPOT','ADMIN_ANGGOTA','KEUANGAN'] },
+      { href: '/depot/ploting-sapi', label: 'Ploting Slot Sapi',icon: Layers,       roles: ['SUPER_ADMIN','KEPALA_DEPOT','ADMIN_ANGGOTA'] },
+      { href: '/depot/pengadaan',    label: 'Pengadaan',        icon: PawPrint,     roles: KANDANG_ROLES },
+    ],
+  },
+  {
+    label: 'Keuangan',
+    items: [
+      { href: '/keuangan',            label: 'Keuangan BIOP',      icon: Wallet,     roles: ['SUPER_ADMIN','KEPALA_DEPOT'] },
+      { href: '/keuangan/pendapatan', label: 'Pendapatan & Setoran',icon: TrendingUp, roles: ['SUPER_ADMIN','KEPALA_DEPOT'] },
+    ],
+  },
+  {
+    label: 'Operasional',
+    items: [
+      { href: '/depot/kandang',    label: 'Ploting Kandang', icon: Grid3x3,  roles: KANDANG_ROLES },
+      { href: '/laporan/mortalitas',label: 'Mortalitas Hewan',icon: Activity, roles: ['SUPER_ADMIN','KEPALA_DEPOT','KANDANG_SAPI_KETUA','KANDANG_DOMBA_KETUA'] },
+      { href: '/pengiriman',       label: 'Pengiriman',      icon: Truck,    roles: ['SUPER_ADMIN','KEPALA_DEPOT','LOGISTIK_KETUA','LOGISTIK_ANGGOTA'] },
+    ],
+  },
+  {
+    label: 'Karyawan',
+    items: [
+      { href: '/absensi',        label: 'Absensi',       icon: ClipboardCheck, roles: ['SUPER_ADMIN','KEPALA_DEPOT','ADMIN_ANGGOTA',...KANDANG_ROLES.slice(2),'KEUANGAN'] },
+      { href: '/admin/absensi',  label: 'Rekap Absensi', icon: ClipboardList,  roles: ['SUPER_ADMIN','KEPALA_DEPOT','KEUANGAN'] },
+      { href: '/admin/sdm/upah', label: 'Upah Harian',   icon: Calculator,     roles: ['SUPER_ADMIN','KEPALA_DEPOT','ADMIN_KETUA'] },
+      { href: '/sdm/kasbon',     label: 'Kasbon',         icon: CreditCard,     roles: ['SUPER_ADMIN','KEPALA_DEPOT','ADMIN_KETUA'] },
+    ],
+  },
+  {
+    items: [
+      { href: '/depot/keuangan/rekap-setoran', label: 'Rekap Setoran',    icon: BarChart2,     roles: ['SUPER_ADMIN','KEPALA_DEPOT','KEUANGAN'] },
+      { href: '/laporan/forecast',             label: 'Forecast',          icon: LineChart,     roles: ['SUPER_ADMIN','KEPALA_DEPOT'] },
+      { href: '/cs/order',                     label: 'Order Katalog',     icon: Inbox,         roles: CS_ROLES },
+      { href: '/cs/customer',                  label: 'Database Customer', icon: UserCheck,     roles: CS_ROLES },
+      { href: '/cs/retargeting',               label: 'Retargeting',       icon: Target,        roles: CS_ROLES },
+      { href: '/admin/wa-log',                 label: 'Log WA',            icon: MessageSquare, roles: ['SUPER_ADMIN','KEPALA_DEPOT'] },
+      { href: '/admin/users',                  label: 'Manaj. User',       icon: Users,         roles: ['SUPER_ADMIN'] },
+      { href: '/admin/master-data',            label: 'Master Data',       icon: Database,      roles: ['SUPER_ADMIN','KEPALA_DEPOT'] },
+    ],
+  },
 ]
 
 export function Sidebar() {
@@ -52,9 +87,9 @@ export function Sidebar() {
   // Close sidebar on route change (mobile navigation)
   useEffect(() => { setOpen(false) }, [pathname])
 
-  const visibleItems = navItems.filter(
-    (item) => !item.roles || item.roles.includes(userRole)
-  )
+  const visibleGroups = navGroups
+    .map(g => ({ ...g, items: g.items.filter(i => !i.roles || i.roles.includes(userRole)) }))
+    .filter(g => g.items.length > 0)
 
   return (
     <>
@@ -114,26 +149,37 @@ export function Sidebar() {
         </div>
 
         {/* Nav — scrollable */}
-        <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-1">
-          {visibleItems.map((item) => {
-            const Icon = item.icon
-            const active = pathname.startsWith(item.href)
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={cn(
-                  'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-body transition-colors',
-                  active
-                    ? 'bg-primary text-on-primary font-medium'
-                    : 'text-on-surface-variant hover:bg-surface-high hover:text-on-surface'
-                )}
-              >
-                <Icon className="w-4 h-4 flex-shrink-0" />
-                {item.label}
-              </Link>
-            )
-          })}
+        <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-4">
+          {visibleGroups.map((group, gi) => (
+            <div key={gi}>
+              {group.label && (
+                <p className="px-3 mb-1 text-[10px] font-body font-semibold uppercase tracking-widest text-on-surface-variant/60">
+                  {group.label}
+                </p>
+              )}
+              <div className="space-y-0.5">
+                {group.items.map((item) => {
+                  const Icon = item.icon
+                  const active = pathname.startsWith(item.href)
+                  return (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      className={cn(
+                        'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-body transition-colors',
+                        active
+                          ? 'bg-primary text-on-primary font-medium'
+                          : 'text-on-surface-variant hover:bg-surface-high hover:text-on-surface'
+                      )}
+                    >
+                      <Icon className="w-4 h-4 flex-shrink-0" />
+                      {item.label}
+                    </Link>
+                  )
+                })}
+              </div>
+            </div>
+          ))}
         </nav>
 
         {/* Footer — fixed at bottom, never scrolled away */}
