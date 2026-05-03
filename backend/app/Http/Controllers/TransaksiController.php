@@ -6,6 +6,7 @@ use App\Enums\StatusTransaksi;
 use App\Http\Requests\StoreTransaksiRequest;
 use App\Models\Hewan;
 use App\Models\HargaKelas;
+use App\Models\SlotSapi;
 use App\Models\Transaksi;
 use App\Models\TransaksiItem;
 use App\Services\TransaksiService;
@@ -65,6 +66,15 @@ class TransaksiController extends Controller
             ? StatusTransaksi::MENUNGGU_HEWAN->value
             : StatusTransaksi::HEWAN_TERALOKASI->value;
 
+        // Validate slots are available before starting transaction
+        foreach ($items as $item) {
+            if (($item['satuan'] ?? 'EKOR') === 'SLOT' && !($item['is_preorder'] ?? false) && !empty($item['hewan_id'])) {
+                $taken     = SlotSapi::where('hewan_id', $item['hewan_id'])->pluck('no_slot')->toArray();
+                $available = array_diff(range(1, 7), $taken);
+                abort_if(empty($available), 422, "Slot sapi #{$item['hewan_id']} sudah penuh.");
+            }
+        }
+
         $transaksi = DB::transaction(function () use ($data, $items, $totalHarga, $totalBiayaTambahan, $status) {
             $noFaktur = $this->svc->generateNoFaktur($data['depot_id'], $data['musim']);
 
@@ -80,8 +90,37 @@ class TransaksiController extends Controller
 
             foreach ($items as $item) {
                 TransaksiItem::create(array_merge($item, ['transaksi_id' => $transaksi->id]));
-                if (!$item['is_preorder'] && !empty($item['hewan_id'])) {
-                    Hewan::where('id', $item['hewan_id'])->update(['status' => StatusHewan::BOOKED->value]);
+
+                if (!($item['is_preorder'] ?? false) && !empty($item['hewan_id'])) {
+                    $satuan = $item['satuan'] ?? 'EKOR';
+
+                    if ($satuan === 'SLOT') {
+                        $taken     = SlotSapi::where('hewan_id', $item['hewan_id'])->lockForUpdate()->pluck('no_slot')->toArray();
+                        $available = array_diff(range(1, 7), $taken);
+                        abort_if(empty($available), 422, "Slot sapi #{$item['hewan_id']} sudah penuh.");
+                        $noSlot    = min($available);
+
+                        SlotSapi::create([
+                            'hewan_id'    => $item['hewan_id'],
+                            'no_slot'     => $noSlot,
+                            'transaksi_id'=> $transaksi->id,
+                            'customer_id' => $data['customer_id'],
+                            'nama_qurban' => $item['nama_qurban'] ?? '',
+                            'tipe_qurban' => $item['tipe_qurban'],
+                            'harga_slot'  => $item['harga'],
+                            'status_bayar'=> 'DP',
+                        ]);
+
+                        $hewan = Hewan::find($item['hewan_id']);
+                        if ($hewan) {
+                            $slotCount = SlotSapi::where('hewan_id', $hewan->id)->count();
+                            $hewan->update(['status' => $slotCount >= 7
+                                ? StatusHewan::SOLD->value
+                                : StatusHewan::BOOKED->value]);
+                        }
+                    } else {
+                        Hewan::where('id', $item['hewan_id'])->update(['status' => StatusHewan::BOOKED->value]);
+                    }
                 }
             }
 
