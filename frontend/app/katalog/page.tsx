@@ -1,3 +1,4 @@
+import { redirect } from 'next/navigation'
 import { KatalogContent } from './components/KatalogContent'
 
 interface PageProps {
@@ -17,15 +18,52 @@ async function getCatalog(depotId: string) {
   }
 }
 
+async function getDepots(): Promise<{ id: number; nama: string }[]> {
+  try {
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_API_URL}/api/depots`,
+      { cache: 'no-store' }
+    )
+    if (!res.ok) return []
+    const json = await res.json()
+    return json.data ?? []
+  } catch {
+    return []
+  }
+}
+
 export default async function KatalogPage({ searchParams }: PageProps) {
   const params  = await searchParams
   const depotId = params.depot ?? ''
 
+  // No depot param — resolve automatically
   if (!depotId || isNaN(Number(depotId))) {
+    const depots = await getDepots()
+
+    // Single depot → redirect straight in
+    if (depots.length === 1) {
+      redirect(`/katalog?depot=${depots[0].id}`)
+    }
+
+    // Multiple depots → show picker
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <p className="text-gray-600">Link katalog tidak valid. Silakan gunakan link yang benar.</p>
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 w-full max-w-sm text-center">
+          <h1 className="text-xl font-bold text-gray-900 mb-2">Katalog Hewan Qurban</h1>
+          <p className="text-sm text-gray-500 mb-6">Pilih depot yang ingin Anda lihat</p>
+          <div className="space-y-2">
+            {depots.length === 0 ? (
+              <p className="text-sm text-gray-400">Belum ada depot tersedia.</p>
+            ) : depots.map(d => (
+              <a
+                key={d.id}
+                href={`/katalog?depot=${d.id}`}
+                className="block w-full px-4 py-3 rounded-xl border border-gray-200 text-sm font-medium text-gray-800 hover:bg-gray-50 transition-colors"
+              >
+                {d.nama}
+              </a>
+            ))}
+          </div>
         </div>
       </div>
     )
