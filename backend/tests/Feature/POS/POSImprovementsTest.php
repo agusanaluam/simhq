@@ -98,7 +98,8 @@ class POSImprovementsTest extends TestCase
                     ],
                 ],
             ])
-            ->assertCreated();
+            ->assertCreated()
+            ->assertJsonPath('transaksi.total', 6_150_000);
 
         $this->assertDatabaseHas('transaksi', [
             'ongkos_kirim' => 50_000,
