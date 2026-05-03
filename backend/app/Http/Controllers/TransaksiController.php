@@ -41,8 +41,10 @@ class TransaksiController extends Controller
     public function show(Transaksi $transaksi): JsonResponse
     {
         $transaksi->load([
-            'customer', 'hewan.kelasJual', 'kelas',
+            'customer',
             'cs:id,name', 'teller:id,name', 'sales:id,name', 'yayasan:id,nama',
+            'items.hewan:id,no_hewan',
+            'items.kelas:id,kode',
         ]);
 
         return response()->json(['transaksi' => $transaksi]);

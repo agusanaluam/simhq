@@ -18,17 +18,26 @@ interface PembayaranEntry {
   teller: { name: string } | null
 }
 
+interface TransaksiItem {
+  id: number
+  tipe_qurban: string
+  jenis: string
+  harga: number
+  is_preorder: boolean
+  hewan: { no_hewan: string } | null
+  kelas: { kode: string } | null
+}
+
 interface TransaksiDetail {
   id: number
   no_faktur: string
-  tipe_qurban: string
-  jenis: string
   total: number
+  ongkos_kirim: number
+  biaya_potong: number
   status_transaksi: string
   status_bayar: string
   customer: { nama: string; hp: string } | null
-  hewan: { no_hewan: string } | null
-  kelas: { kode: string } | null
+  items: TransaksiItem[]
 }
 
 const STATUS_BAYAR_COLOR: Record<string, string> = {
@@ -128,19 +137,64 @@ export default function TransaksiDetailPage() {
 
       <Card>
         <h2 className="font-display font-semibold text-on-surface mb-3">Info Transaksi</h2>
-        <div className="grid grid-cols-2 gap-2 text-sm font-body">
+        <div className="grid grid-cols-2 gap-2 text-sm font-body mb-4">
           <div><span className="text-on-surface-variant">Pembeli: </span><span className="font-medium">{transaksi.customer?.nama}</span></div>
           <div><span className="text-on-surface-variant">HP: </span><span>{transaksi.customer?.hp}</span></div>
-          <div><span className="text-on-surface-variant">Hewan: </span><span>{transaksi.hewan ? `#${transaksi.hewan.no_hewan}` : 'Pre-order'}</span></div>
-          <div><span className="text-on-surface-variant">Tipe: </span><span>{transaksi.tipe_qurban} · {transaksi.jenis} · {transaksi.kelas?.kode}</span></div>
-          <div>
-            <span className="text-on-surface-variant">Total Tagihan: </span>
+        </div>
+
+        {/* Items */}
+        {transaksi.items?.length > 0 && (
+          <div className="mb-4">
+            <p className="text-xs font-body font-medium text-on-surface-variant mb-2">Item ({transaksi.items.length})</p>
+            <div className="space-y-1">
+              {transaksi.items.map(item => (
+                <div key={item.id} className="flex items-center justify-between text-sm font-body bg-surface-high rounded-lg px-3 py-2">
+                  <div>
+                    <span className="font-medium text-on-surface">
+                      {item.is_preorder
+                        ? <span className="italic text-yellow-700">Pre-order</span>
+                        : `#${item.hewan?.no_hewan ?? '—'}`}
+                    </span>
+                    <span className="text-on-surface-variant text-xs ml-2">
+                      {item.tipe_qurban} · {item.jenis} · {item.kelas?.kode ?? '—'}
+                    </span>
+                  </div>
+                  <span className="text-primary font-medium text-xs">
+                    {item.harga.toLocaleString('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 })}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Total breakdown */}
+        <div className="space-y-1 text-sm font-body border-t border-surface-high pt-3">
+          <div className="flex justify-between">
+            <span className="text-on-surface-variant">Subtotal</span>
+            <span>{(transaksi.total - (transaksi.ongkos_kirim ?? 0) - (transaksi.biaya_potong ?? 0))
+              .toLocaleString('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 })}</span>
+          </div>
+          {(transaksi.ongkos_kirim ?? 0) > 0 && (
+            <div className="flex justify-between">
+              <span className="text-on-surface-variant">Ongkos Kirim</span>
+              <span>{transaksi.ongkos_kirim.toLocaleString('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 })}</span>
+            </div>
+          )}
+          {(transaksi.biaya_potong ?? 0) > 0 && (
+            <div className="flex justify-between">
+              <span className="text-on-surface-variant">Biaya Potong</span>
+              <span>{transaksi.biaya_potong.toLocaleString('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 })}</span>
+            </div>
+          )}
+          <div className="flex justify-between border-t border-surface-high pt-1">
+            <span className="font-semibold text-on-surface">Total Tagihan</span>
             <span className="font-semibold text-primary">
               {transaksi.total.toLocaleString('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 })}
             </span>
           </div>
-          <div>
-            <span className="text-on-surface-variant">Sisa: </span>
+          <div className="flex justify-between">
+            <span className="text-on-surface-variant">Sisa</span>
             <span className={`font-semibold ${sisaPelunasan > 0 ? 'text-red-600' : 'text-green-700'}`}>
               {sisaPelunasan.toLocaleString('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 })}
             </span>
