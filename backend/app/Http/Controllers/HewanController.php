@@ -24,7 +24,22 @@ class HewanController extends Controller
         $hewan = Hewan::with(['kelasAsal:id,kode', 'kelasJual:id,kode', 'supplier:id,nama'])
             ->withCount('slotSapi')
             ->when($request->depot,  fn($q) => $q->where('depot_id', $request->depot))
-            ->when($request->status, fn($q) => $q->where('status', $request->status))
+            ->when(
+                $request->boolean('include_partial_slots'),
+                function ($q) {
+                    $q->where(function ($sub) {
+                        $sub->where('status', 'AVAILABLE')
+                            ->orWhere(function ($inner) {
+                                $inner->where('status', 'BOOKED')
+                                      ->where('jenis', 'SAPI')
+                                      ->whereRaw(
+                                          '(SELECT COUNT(*) FROM slot_sapi WHERE slot_sapi.hewan_id = hewan.id) < 7'
+                                      );
+                            });
+                    });
+                },
+                fn($q) => $request->status ? $q->where('status', $request->status) : $q
+            )
             ->when($request->jenis,  fn($q) => $q->where('jenis', $request->jenis))
             ->when($request->kelas,  fn($q) => $request->kelas === 'UNCLASSED'
                 ? $q->whereNull('kelas_jual_id')

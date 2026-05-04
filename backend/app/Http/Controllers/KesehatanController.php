@@ -79,19 +79,31 @@ class KesehatanController extends Controller
         $depotId = $user->isSuperAdmin() ? ($request->depot_id ?? $user->depot_id) : $user->depot_id;
         $musim   = (int) $request->input('musim', date('Y'));
 
-        $rows = Hewan::where('depot_id', $depotId)
-            ->where('musim', $musim)
-            ->select('jenis',
-                DB::raw('COUNT(*) as total_hewan'),
-                DB::raw("SUM(CASE WHEN status = 'MATI' THEN 1 ELSE 0 END) as total_mati")
+        $rows = Hewan::where('hewan.depot_id', $depotId)
+            ->where('hewan.musim', $musim)
+            ->leftJoinSub(
+                DB::table('riwayat_hewan as rh')
+                    ->select('rh.hewan_id', 'rh.kondisi')
+                    ->whereRaw('rh.id = (SELECT MAX(rh2.id) FROM riwayat_hewan rh2 WHERE rh2.hewan_id = rh.hewan_id)'),
+                'rh_latest',
+                'rh_latest.hewan_id', '=', 'hewan.id'
             )
-            ->groupBy('jenis')
-            ->orderBy('jenis')
+            ->select(
+                'hewan.jenis',
+                DB::raw('COUNT(*) as total_hewan'),
+                DB::raw("SUM(CASE WHEN hewan.status = 'MATI' THEN 1 ELSE 0 END) as total_mati"),
+                DB::raw("SUM(CASE WHEN rh_latest.kondisi = 'SAKIT' THEN 1 ELSE 0 END) as total_sakit"),
+                DB::raw("SUM(CASE WHEN rh_latest.kondisi = 'KRITIS' THEN 1 ELSE 0 END) as total_kritis")
+            )
+            ->groupBy('hewan.jenis')
+            ->orderBy('hewan.jenis')
             ->get()
             ->map(fn($r) => [
-                'jenis'           => $r->jenis,
-                'total_hewan'     => (int) $r->total_hewan,
-                'total_mati'      => (int) $r->total_mati,
+                'jenis'            => $r->jenis,
+                'total_hewan'      => (int) $r->total_hewan,
+                'total_mati'       => (int) $r->total_mati,
+                'total_sakit'      => (int) $r->total_sakit,
+                'total_kritis'     => (int) $r->total_kritis,
                 'rasio_mortalitas' => (int) $r->total_hewan > 0
                     ? round((int) $r->total_mati / (int) $r->total_hewan * 100, 1)
                     : 0.0,

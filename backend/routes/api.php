@@ -123,7 +123,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Slot CRUD
     Route::get('hewan/{hewan}/slot', [SlotSapiController::class, 'index']);
-    Route::middleware('role:SUPER_ADMIN,KEPALA_DEPOT,ADMIN_ANGGOTA')->group(function () {
+    Route::middleware('role:SUPER_ADMIN,KEPALA_DEPOT,ADMIN_KETUA,ADMIN_ANGGOTA')->group(function () {
         Route::post('hewan/{hewan}/slot',            [SlotSapiController::class, 'store']);
         Route::put('hewan/{hewan}/slot/{noSlot}',    [SlotSapiController::class, 'update']);
         Route::delete('hewan/{hewan}/slot/{noSlot}', [SlotSapiController::class, 'destroy']);
@@ -131,7 +131,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Foto Hewan
     Route::get('hewan/{hewan}/foto', [\App\Http\Controllers\FotoHewanController::class, 'index']);
-    Route::middleware('role:SUPER_ADMIN,KEPALA_DEPOT,KANDANG_SAPI_KETUA,KANDANG_DOMBA_KETUA,KANDANG_SAPI_ANGGOTA,KANDANG_DOMBA_ANGGOTA')->group(function () {
+    Route::middleware('role:SUPER_ADMIN,KEPALA_DEPOT,ADMIN_KETUA')->group(function () {
         Route::post('hewan/{hewan}/foto',          [\App\Http\Controllers\FotoHewanController::class, 'store']);
         Route::delete('hewan/{hewan}/foto/{foto}', [\App\Http\Controllers\FotoHewanController::class, 'destroy']);
     });
@@ -145,7 +145,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('hewan/{hewan}/kandidat-slot', [SlotSapiController::class, 'kandidatSlot']);
     Route::get('hewan/{hewan}/faktur-ploting', [\App\Http\Controllers\FakturController::class, 'ploting']);
     Route::get('hewan/{hewan}',    [HewanController::class, 'show']);
-    Route::middleware('role:SUPER_ADMIN,KEPALA_DEPOT,KANDANG_SAPI_KETUA,KANDANG_DOMBA_KETUA')->group(function () {
+    Route::middleware('role:SUPER_ADMIN,KEPALA_DEPOT,ADMIN_KETUA,KANDANG_SAPI_KETUA,KANDANG_DOMBA_KETUA')->group(function () {
         Route::post('hewan/bulk',               [HewanController::class, 'storeBulk']);
         Route::post('hewan',                    [HewanController::class, 'store']);
         Route::put('hewan/{hewan}',             [HewanController::class, 'update']);
@@ -168,7 +168,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Pembayaran routes
     Route::get('transaksi/{transaksi}/pembayaran', [PembayaranController::class, 'index']);
-    Route::middleware('role:SUPER_ADMIN,KEPALA_DEPOT,ADMIN_ANGGOTA')->group(function () {
+    Route::middleware('role:SUPER_ADMIN,KEPALA_DEPOT,ADMIN_KETUA,ADMIN_ANGGOTA')->group(function () {
         Route::post('transaksi/{transaksi}/bayar',          [PembayaranController::class, 'store']);
         Route::post('transaksi/{transaksi}/biaya-tambahan', [PembayaranController::class, 'storeBiaya']);
     });
@@ -189,6 +189,7 @@ Route::middleware('auth:sanctum')->group(function () {
     // Absensi — static routes ordered: export before rekap, checkin/checkout before wildcards
     Route::prefix('absensi')->group(function () {
         Route::get('hari-ini',     [AbsensiController::class, 'hariIni']);
+        Route::get('riwayat',      [AbsensiController::class, 'riwayat']);
         Route::get('rekap/export', [AbsensiController::class, 'exportCsv']);
         Route::get('rekap',        [AbsensiController::class, 'rekap']);
 
@@ -201,7 +202,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
         Route::post('checkin',     [AbsensiController::class, 'checkIn']);
         Route::post('checkout',    [AbsensiController::class, 'checkOut']);
-        Route::middleware('role:SUPER_ADMIN,KEPALA_DEPOT,KANDANG_SAPI_KETUA,KANDANG_DOMBA_KETUA')
+        Route::middleware('role:SUPER_ADMIN,KEPALA_DEPOT,ADMIN_KETUA,KANDANG_SAPI_KETUA,KANDANG_DOMBA_KETUA')
             ->group(function () {
                 Route::post('manual', [AbsensiController::class, 'manual']);
             });
@@ -215,7 +216,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('transaksi',                          [TransaksiController::class, 'index']);
     Route::get('transaksi/{transaksi}/faktur',        [\App\Http\Controllers\FakturController::class, 'transaksi']);
     Route::get('transaksi/{transaksi}',              [TransaksiController::class, 'show']);
-    Route::middleware('role:SUPER_ADMIN,KEPALA_DEPOT,ADMIN_ANGGOTA')->group(function () {
+    Route::middleware('role:SUPER_ADMIN,KEPALA_DEPOT,ADMIN_KETUA,ADMIN_ANGGOTA')->group(function () {
         Route::post('transaksi',                            [TransaksiController::class, 'store']);
         Route::put('transaksi/{transaksi}/assign-hewan',    [TransaksiController::class, 'assignHewan']);
         Route::put('transaksi/{transaksi}/konfirmasi',      [TransaksiController::class, 'konfirmasi']);
@@ -223,13 +224,13 @@ Route::middleware('auth:sanctum')->group(function () {
     });
 
     // CS Order Management
-    Route::middleware('role:SUPER_ADMIN,KEPALA_DEPOT,CS_KETUA,CS_ANGGOTA,ADMIN_KETUA')->group(function () {
+    Route::middleware('role:SUPER_ADMIN,KEPALA_DEPOT,ADMIN_KETUA')->group(function () {
         Route::get('cs/order',                     [\App\Http\Controllers\CsOrderController::class, 'index']);
         Route::put('cs/order/{order}/status',       [\App\Http\Controllers\CsOrderController::class, 'updateStatus']);
     });
 
     // CRM
-    Route::middleware('role:SUPER_ADMIN,KEPALA_DEPOT,CS_KETUA,CS_ANGGOTA,ADMIN_KETUA')->group(function () {
+    Route::middleware('role:SUPER_ADMIN,KEPALA_DEPOT,ADMIN_KETUA')->group(function () {
         Route::get('crm/customer/retargeting',     [\App\Http\Controllers\CrmController::class, 'retargeting']);
         Route::get('crm/customer',                 [\App\Http\Controllers\CrmController::class, 'index']);
         Route::get('crm/customer/{customer}',      [\App\Http\Controllers\CrmController::class, 'show']);

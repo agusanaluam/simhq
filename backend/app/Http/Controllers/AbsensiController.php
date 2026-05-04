@@ -102,6 +102,28 @@ class AbsensiController extends Controller
         return response()->json(['absensi' => $absensi->load('karyawan:id,nama')], 201);
     }
 
+    public function riwayat(Request $request): JsonResponse
+    {
+        $karyawan = Karyawan::where('user_id', $request->user()->id)
+            ->where('is_active', true)
+            ->first();
+
+        if (! $karyawan) {
+            return response()->json(['data' => []]);
+        }
+
+        $bulan = $request->bulan ?? now()->format('Y-m');
+        [$year, $month] = explode('-', $bulan);
+
+        $data = Absensi::where('karyawan_id', $karyawan->id)
+            ->whereYear('tgl', $year)
+            ->whereMonth('tgl', $month)
+            ->orderBy('tgl', 'desc')
+            ->get(['id', 'tgl', 'jam_masuk', 'jam_keluar', 'status', 'durasi', 'catatan']);
+
+        return response()->json(['data' => $data, 'bulan' => $bulan]);
+    }
+
     public function rekap(Request $request): JsonResponse
     {
         $bulan = $request->bulan ?? now()->format('Y-m');

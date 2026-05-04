@@ -101,49 +101,35 @@ export default function TransaksiPage() {
         </Link>
       </div>
 
-      <div className="space-y-2 mb-4">
-        {/* Status transaksi */}
-        <div className="flex gap-2 flex-wrap">
-          {['', 'MENUNGGU_HEWAN', 'HEWAN_TERALOKASI', 'DIKONFIRMASI', 'SELESAI', 'DIBATALKAN'].map(s => (
-            <button key={s} onClick={() => setFilterStatus(s)}
-              className={`px-3 py-1.5 rounded-xl text-xs font-body font-medium transition-colors ${
-                filterStatus === s ? 'bg-primary text-white' : 'bg-surface-high text-on-surface-variant hover:text-on-surface'
-              }`}>
-              {s ? STATUS_LABEL[s] : 'Semua Status'}
-            </button>
+      <div className="flex gap-2 flex-wrap items-center mb-4">
+        <select value={filterStatus} onChange={e => setFilterStatus(e.target.value)} className="input-field text-sm w-44">
+          <option value="">Semua Status</option>
+          {['MENUNGGU_HEWAN', 'HEWAN_TERALOKASI', 'DIKONFIRMASI', 'SELESAI', 'DIBATALKAN'].map(s => (
+            <option key={s} value={s}>{STATUS_LABEL[s]}</option>
           ))}
-        </div>
+        </select>
 
-        {/* Status bayar */}
-        <div className="flex gap-2 flex-wrap">
-          {['', 'BELUM_BAYAR', 'DP', 'LUNAS'].map(s => (
-            <button key={s} onClick={() => setFilterBayar(s)}
-              className={`px-3 py-1.5 rounded-xl text-xs font-body font-medium transition-colors ${
-                filterBayar === s ? 'bg-primary text-white' : 'bg-surface-high text-on-surface-variant hover:text-on-surface'
-              }`}>
-              {s ? BAYAR_LABEL[s] : 'Semua Pembayaran'}
-            </button>
+        <select value={filterBayar} onChange={e => setFilterBayar(e.target.value)} className="input-field text-sm w-44">
+          <option value="">Semua Pembayaran</option>
+          {['BELUM_BAYAR', 'DP', 'LUNAS'].map(s => (
+            <option key={s} value={s}>{BAYAR_LABEL[s]}</option>
           ))}
-        </div>
+        </select>
 
-        {/* Tipe qurban + no hewan */}
-        <div className="flex gap-2 flex-wrap items-center">
-          {['', 'SHQ', 'THQ', 'PHQ'].map(t => (
-            <button key={t} onClick={() => setFilterTipe(t)}
-              className={`px-3 py-1.5 rounded-xl text-xs font-body font-medium transition-colors ${
-                filterTipe === t ? 'bg-primary text-white' : 'bg-surface-high text-on-surface-variant hover:text-on-surface'
-              }`}>
-              {t || 'Semua Tipe'}
-            </button>
+        <select value={filterTipe} onChange={e => setFilterTipe(e.target.value)} className="input-field text-sm w-36">
+          <option value="">Semua Tipe</option>
+          {['SHQ', 'THQ', 'PHQ'].map(t => (
+            <option key={t} value={t}>{t}</option>
           ))}
-          <input
-            type="text"
-            value={filterNoHewan}
-            onChange={e => setFilterNoHewan(e.target.value)}
-            placeholder="Cari no hewan..."
-            className="input-field text-xs w-36"
-          />
-        </div>
+        </select>
+
+        <input
+          type="text"
+          value={filterNoHewan}
+          onChange={e => setFilterNoHewan(e.target.value)}
+          placeholder="Cari no hewan..."
+          className="input-field text-sm w-36"
+        />
       </div>
 
       <Card>

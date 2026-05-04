@@ -5,9 +5,18 @@ import { useState } from 'react'
 interface KelasHewan { id: number; kode: string; nama: string }
 interface HargaEntry { kelas_id: number; jenis: string; harga_jual: number; harga_slot?: number | null }
 
+export interface PreorderInitialValues {
+  jenis:      string
+  kelasKode:  string
+  tipeQurban: string
+  satuan:     'EKOR' | 'SLOT'
+  catatan?:   string
+}
+
 interface Props {
-  kelasList: KelasHewan[]
-  hargaList: HargaEntry[]
+  kelasList:      KelasHewan[]
+  hargaList:      HargaEntry[]
+  initialValues?: PreorderInitialValues
   onConfirm: (item: { jenis: string; kelasId: number; kelasKode: string; tipeQurban: string; satuan: 'EKOR' | 'SLOT'; namaQurban: string; tglPengiriman: string; harga: number }) => void
   onClose: () => void
 }
@@ -18,11 +27,13 @@ const TIPE_OPTIONS = [
   { value: 'PHQ', label: 'PHQ – Potong di Depot, Kirim Daging' },
 ]
 
-export function PreorderModal({ kelasList, hargaList, onConfirm, onClose }: Props) {
-  const [jenis,      setJenis]      = useState('SAPI')
-  const [kelasId,    setKelasId]    = useState<number | null>(null)
-  const [tipe,       setTipe]       = useState('SHQ')
-  const [satuan,         setSatuan]        = useState<'EKOR' | 'SLOT'>('EKOR')
+export function PreorderModal({ kelasList, hargaList, initialValues, onConfirm, onClose }: Props) {
+  const [jenis,      setJenis]      = useState(initialValues?.jenis ?? 'SAPI')
+  const [kelasId,    setKelasId]    = useState<number | null>(
+    initialValues?.kelasKode ? (kelasList.find(k => k.kode === initialValues.kelasKode)?.id ?? null) : null
+  )
+  const [tipe,       setTipe]       = useState(initialValues?.tipeQurban ?? 'SHQ')
+  const [satuan,         setSatuan]        = useState<'EKOR' | 'SLOT'>(initialValues?.satuan ?? 'EKOR')
   const [namaQurban,     setNamaQurban]    = useState('')
   const [tglPengiriman,  setTglPengiriman] = useState('')
 
@@ -44,7 +55,12 @@ export function PreorderModal({ kelasList, hargaList, onConfirm, onClose }: Prop
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
       <div className="bg-surface-lowest rounded-2xl shadow-xl w-full max-w-sm p-6">
-        <h2 className="font-display font-bold text-lg text-on-surface mb-4">Tambah Pre-order</h2>
+        <h2 className="font-display font-bold text-lg text-on-surface mb-3">Tambah Pre-order</h2>
+        {initialValues?.catatan && (
+          <div className="bg-surface-high rounded-xl px-3 py-2 mb-4 text-xs text-on-surface-variant font-body">
+            <span className="font-medium text-on-surface">Dari booking:</span> {initialValues.catatan}
+          </div>
+        )}
 
         <div className="space-y-4">
           <div>

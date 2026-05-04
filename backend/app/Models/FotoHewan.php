@@ -22,6 +22,6 @@ class FotoHewan extends Model
 
     public function getFotoUrlAttribute(): string
     {
-        return Storage::disk('public')->url($this->url);
+        return Storage::disk('r2')->url($this->url);
     }
 }

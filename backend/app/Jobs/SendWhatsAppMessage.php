@@ -25,10 +25,15 @@ class SendWhatsAppMessage implements ShouldQueue
 
         $url     = config('services.waha.url') . '/api/sendText';
         $session = config('services.waha.session', 'default');
+        $apiKey  = config('services.waha.api_key', '');
         $chatId  = $log->penerima . '@c.us';
 
         try {
-            $response = Http::timeout(10)->post($url, [
+            $http = Http::timeout(10);
+            if ($apiKey) {
+                $http = $http->withHeaders(['X-Api-Key' => $apiKey]);
+            }
+            $response = $http->post($url, [
                 'session' => $session,
                 'chatId'  => $chatId,
                 'text'    => $log->pesan,

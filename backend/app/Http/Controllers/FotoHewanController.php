@@ -24,16 +24,16 @@ class FotoHewanController extends Controller
 
         abort_unless((int) $hewan->depot_id === (int) $depotId, 403);
 
-        if ($hewan->fotos()->count() >= 2) {
-            return response()->json(['message' => 'Maksimal 2 foto per hewan.'], 422);
+        if ($hewan->fotos()->count() >= 4) {
+            return response()->json(['message' => 'Maksimal 4 foto per hewan.'], 422);
         }
 
         $request->validate([
             'foto'   => ['required', 'image', 'mimes:jpg,jpeg,png', 'max:5120'],
-            'urutan' => ['required', 'integer', 'in:1,2'],
+            'urutan' => ['required', 'integer', 'min:1', 'max:4'],
         ]);
 
-        $path = $request->file('foto')->store("hewan/{$hewan->id}", 'public');
+        $path = $request->file('foto')->store("hewan/{$hewan->id}", 'r2');
 
         $foto = FotoHewan::create([
             'hewan_id'  => $hewan->id,
@@ -44,7 +44,7 @@ class FotoHewanController extends Controller
 
         return response()->json([
             'foto' => $foto,
-            'url'  => Storage::disk('public')->url($path),
+            'url'  => Storage::disk('r2')->url($path),
         ], 201);
     }
 
@@ -56,7 +56,7 @@ class FotoHewanController extends Controller
         abort_unless((int) $hewan->depot_id === (int) $depotId, 403);
         abort_unless((int) $foto->hewan_id === (int) $hewan->id, 422);
 
-        Storage::disk('public')->delete($foto->url);
+        Storage::disk('r2')->delete($foto->url);
         $foto->delete();
 
         return response()->json(['message' => 'Foto dihapus.']);

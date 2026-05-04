@@ -206,6 +206,10 @@ function TambahJamKerjaModal({ onClose, onSuccess }: TambahJamKerjaModalProps) {
 type Tab = 'rekap' | 'jam-kerja'
 
 export default function AdminAbsensiPage() {
+  const { data: session }           = useSession()
+  const userRole                    = (session?.user as any)?.role ?? ''
+  const canManageJamKerja           = !['ADMIN_KETUA'].includes(userRole)
+
   const today = new Date().toISOString().slice(0, 7)
   const [tab, setTab]               = useState<Tab>('rekap')
   const [bulan, setBulan]           = useState(today)
@@ -267,14 +271,14 @@ export default function AdminAbsensiPage() {
           </div>
         )}
 
-        {tab === 'jam-kerja' && (
+        {tab === 'jam-kerja' && canManageJamKerja && (
           <Button onClick={() => setShowJKModal(true)}>+ Tambah / Update Jam Kerja</Button>
         )}
       </div>
 
       {/* Tab switcher */}
       <div className="flex bg-surface-high rounded-xl p-1 gap-1 w-fit mb-6">
-        {(['rekap', 'jam-kerja'] as const).map(t => (
+        {(['rekap', ...(canManageJamKerja ? ['jam-kerja'] : [])] as Tab[]).map(t => (
           <button
             key={t}
             onClick={() => setTab(t)}

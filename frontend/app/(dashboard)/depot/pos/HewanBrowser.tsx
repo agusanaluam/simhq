@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from 'react'
 import { TipeQurbanModal, type HewanForCart } from './TipeQurbanModal'
-import { PreorderModal } from './PreorderModal'
+import { PreorderModal, type PreorderInitialValues } from './PreorderModal'
+import { KatalogBookingModal, type BookingOrderRow } from './KatalogBookingModal'
 import type { CartItem } from './page'
 import api from '@/lib/api'
 
@@ -24,6 +25,8 @@ export function HewanBrowser({ musim, depotId, onAdd }: Props) {
   const [loading,      setLoading]      = useState(false)
   const [selected,     setSelected]     = useState<HewanForCart | null>(null)
   const [showPreorder, setShowPreorder] = useState(false)
+  const [showBooking,       setShowBooking]       = useState(false)
+  const [bookingInitValues, setBookingInitValues] = useState<PreorderInitialValues | null>(null)
 
   useEffect(() => {
     api.get('/api/master/kelas').then(r => setKelasList(r.data.data ?? []))
@@ -32,7 +35,12 @@ export function HewanBrowser({ musim, depotId, onAdd }: Props) {
 
   useEffect(() => {
     setLoading(true)
-    const params = new URLSearchParams({ status: 'AVAILABLE', jenis })
+    const params = new URLSearchParams({ jenis })
+    if (jenis === 'SAPI') {
+      params.set('include_partial_slots', '1')
+    } else {
+      params.set('status', 'AVAILABLE')
+    }
     if (kelasFilter) params.set('kelas', kelasFilter)
     if (depotId)     params.set('depot', String(depotId))
     params.set('musim', String(musim))
@@ -84,6 +92,20 @@ export function HewanBrowser({ musim, depotId, onAdd }: Props) {
       isPreorder:    true,
     })
     setShowPreorder(false)
+    setBookingInitValues(null)
+  }
+
+  function handleBookingSelect(order: BookingOrderRow) {
+    const isSlot = order.catatan?.includes('[1/7 Slot]') ?? false
+    setBookingInitValues({
+      jenis:      order.jenis,
+      kelasKode:  order.kelas,
+      tipeQurban: order.tipe_qurban,
+      satuan:     isSlot ? 'SLOT' : 'EKOR',
+      catatan:    `${order.nama} (${order.hp})${order.catatan ? ' — ' + order.catatan : ''}`,
+    })
+    setShowBooking(false)
+    setShowPreorder(true)
   }
 
   return (
@@ -114,6 +136,13 @@ export function HewanBrowser({ musim, depotId, onAdd }: Props) {
           className="px-3 py-1.5 rounded-xl border border-primary text-primary text-sm font-body hover:bg-primary/5 transition-colors"
         >
           + Pre-order
+        </button>
+
+        <button
+          onClick={() => setShowBooking(true)}
+          className="px-3 py-1.5 rounded-xl border border-secondary text-secondary text-sm font-body hover:bg-secondary/5 transition-colors"
+        >
+          Booking Katalog
         </button>
 
         <span className="text-xs text-on-surface-variant font-body ml-auto">
@@ -169,8 +198,16 @@ export function HewanBrowser({ musim, depotId, onAdd }: Props) {
         <PreorderModal
           kelasList={kelasList}
           hargaList={hargaList}
+          initialValues={bookingInitValues ?? undefined}
           onConfirm={handlePreorderConfirm}
-          onClose={() => setShowPreorder(false)}
+          onClose={() => { setShowPreorder(false); setBookingInitValues(null) }}
+        />
+      )}
+
+      {showBooking && (
+        <KatalogBookingModal
+          onSelect={handleBookingSelect}
+          onClose={() => setShowBooking(false)}
         />
       )}
     </div>

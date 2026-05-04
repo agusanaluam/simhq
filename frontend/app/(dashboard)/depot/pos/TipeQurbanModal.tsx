@@ -28,15 +28,16 @@ const TIPE_OPTIONS = [
 
 export function TipeQurbanModal({ hewan, harga, hargaSlot, slotTerisi, onConfirm, onClose }: Props) {
   const [tipe,           setTipe]          = useState('SHQ')
-  const [satuan,         setSatuan]        = useState<'EKOR' | 'SLOT'>('EKOR')
+  const [satuan,         setSatuan]        = useState<'EKOR' | 'SLOT'>(slotTerisi > 0 ? 'SLOT' : 'EKOR')
   const [namaQurban,     setNamaQurban]    = useState('')
   const [tglPengiriman,  setTglPengiriman] = useState('')
 
-  const slotTersisa     = 7 - slotTerisi
-  const slotPenuh       = slotTersisa <= 0
-  const hargaEfektif    = satuan === 'SLOT' ? (hargaSlot ?? 0) : harga
-  const namaQurbanWajib = satuan === 'SLOT' && tipe === 'PHQ'
-  const canAdd          = satuan === 'EKOR' ? true : (hargaSlot != null && !slotPenuh)
+  const slotTersisa      = 7 - slotTerisi
+  const slotPenuh        = slotTersisa <= 0
+  const hasExistingSlot  = slotTerisi > 0
+  const hargaEfektif     = satuan === 'SLOT' ? (hargaSlot ?? 0) : harga
+  const namaQurbanWajib  = satuan === 'SLOT' && tipe === 'PHQ'
+  const canAdd           = satuan === 'EKOR' ? true : (hargaSlot != null && !slotPenuh)
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
@@ -56,32 +57,44 @@ export function TipeQurbanModal({ hewan, harga, hargaSlot, slotTerisi, onConfirm
         {/* Satuan toggle */}
         <div className="mb-4">
           <label className="block text-xs font-body font-medium text-on-surface mb-2">Satuan</label>
-          <div className="flex gap-2">
-            <button
-              type="button"
-              onClick={() => { setSatuan('EKOR'); setNamaQurban('') }}
-              className={`flex-1 py-2 rounded-xl border-2 text-sm font-body transition-colors ${
-                satuan === 'EKOR' ? 'border-primary bg-primary text-white' : 'border-surface-high text-on-surface'
-              }`}
-            >
-              1 Ekor
-            </button>
-            <button
-              type="button"
-              onClick={() => !slotPenuh && hargaSlot != null && setSatuan('SLOT')}
-              disabled={slotPenuh || hargaSlot == null}
-              className={`flex-1 py-2 rounded-xl border-2 text-sm font-body transition-colors ${
-                satuan === 'SLOT' ? 'border-primary bg-primary text-white'
-                : slotPenuh || hargaSlot == null ? 'border-surface-high text-on-surface-variant opacity-50 cursor-not-allowed'
-                : 'border-surface-high text-on-surface'
-              }`}
-            >
+          {hasExistingSlot ? (
+            <div className="py-2 px-3 rounded-xl border-2 border-primary bg-primary/10 text-primary text-sm font-body font-medium">
               1/7 Slot
-              {hargaSlot != null
-                ? <span className="block text-xs font-normal opacity-80">{hargaSlot.toLocaleString('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 })}</span>
-                : <span className="block text-xs font-normal opacity-70">Harga belum diset</span>}
-            </button>
-          </div>
+              {hargaSlot != null && (
+                <span className="ml-2 font-normal text-xs opacity-80">
+                  {hargaSlot.toLocaleString('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 })}
+                </span>
+              )}
+              <p className="text-xs font-normal text-on-surface-variant mt-0.5">Sudah ada slot — tidak bisa beli 1 ekor</p>
+            </div>
+          ) : (
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={() => { setSatuan('EKOR'); setNamaQurban('') }}
+                className={`flex-1 py-2 rounded-xl border-2 text-sm font-body transition-colors ${
+                  satuan === 'EKOR' ? 'border-primary bg-primary text-white' : 'border-surface-high text-on-surface'
+                }`}
+              >
+                1 Ekor
+              </button>
+              <button
+                type="button"
+                onClick={() => !slotPenuh && hargaSlot != null && setSatuan('SLOT')}
+                disabled={slotPenuh || hargaSlot == null}
+                className={`flex-1 py-2 rounded-xl border-2 text-sm font-body transition-colors ${
+                  satuan === 'SLOT' ? 'border-primary bg-primary text-white'
+                  : slotPenuh || hargaSlot == null ? 'border-surface-high text-on-surface-variant opacity-50 cursor-not-allowed'
+                  : 'border-surface-high text-on-surface'
+                }`}
+              >
+                1/7 Slot
+                {hargaSlot != null
+                  ? <span className="block text-xs font-normal opacity-80">{hargaSlot.toLocaleString('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 })}</span>
+                  : <span className="block text-xs font-normal opacity-70">Harga belum diset</span>}
+              </button>
+            </div>
+          )}
           {satuan === 'SLOT' && !slotPenuh && (
             <p className="text-xs text-on-surface-variant mt-1 font-body">Tersisa {slotTersisa} slot</p>
           )}

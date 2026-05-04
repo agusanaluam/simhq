@@ -14,6 +14,16 @@ interface AbsensiHariIni {
 
 interface KaryawanInfo { id: number; nama: string; divisi: string }
 
+interface RiwayatRow {
+  id:         number
+  tgl:        string
+  jam_masuk:  string | null
+  jam_keluar: string | null
+  status:     string
+  durasi:     number | null
+  catatan:    string | null
+}
+
 const STATUS_COLOR: Record<string, string> = {
   HADIR:       'text-green-700',
   TERLAMBAT:   'text-yellow-700',
@@ -26,12 +36,18 @@ const STATUS_LABEL: Record<string, string> = {
   TIDAK_HADIR: 'Tidak Hadir',
 }
 
+const today = new Date().toISOString().slice(0, 7)
+
 export default function AbsensiPage() {
   const [absensi, setAbsensi]   = useState<AbsensiHariIni | null>(null)
   const [karyawan, setKaryawan] = useState<KaryawanInfo | null>(null)
   const [loading, setLoading]   = useState(true)
   const [saving, setSaving]     = useState(false)
   const [error, setError]       = useState('')
+
+  const [riwayat,      setRiwayat]      = useState<RiwayatRow[]>([])
+  const [bulan,        setBulan]        = useState(today)
+  const [loadingRiwayat, setLoadingRiwayat] = useState(false)
 
   async function load() {
     setLoading(true)
@@ -44,7 +60,18 @@ export default function AbsensiPage() {
     }
   }
 
+  async function loadRiwayat() {
+    setLoadingRiwayat(true)
+    try {
+      const r = await api.get(`/api/absensi/riwayat?bulan=${bulan}`)
+      setRiwayat(r.data.data ?? [])
+    } finally {
+      setLoadingRiwayat(false)
+    }
+  }
+
   useEffect(() => { load() }, [])
+  useEffect(() => { loadRiwayat() }, [bulan])
 
   async function checkIn() {
     setSaving(true); setError('')
@@ -138,6 +165,48 @@ export default function AbsensiPage() {
         </Button>
       ) : (
         <p className="text-green-700 font-body font-semibold text-center">✓ Absensi hari ini selesai</p>
+      )}
+
+      {/* Riwayat Absensi */}
+      {karyawan && (
+        <div className="mt-8">
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="font-display font-semibold text-base text-on-surface">Riwayat Absensi</h2>
+            <input
+              type="month"
+              value={bulan}
+              onChange={e => setBulan(e.target.value)}
+              className="input-field text-xs w-32"
+            />
+          </div>
+
+          {loadingRiwayat ? (
+            <p className="text-sm text-on-surface-variant text-center py-4">Memuat...</p>
+          ) : riwayat.length === 0 ? (
+            <p className="text-sm text-on-surface-variant text-center py-4 italic">Belum ada data absensi bulan ini.</p>
+          ) : (
+            <div className="space-y-2">
+              {riwayat.map(r => {
+                const tgl = new Date(r.tgl).toLocaleDateString('id-ID', { weekday: 'short', day: 'numeric', month: 'short' })
+                const durStr = r.durasi != null ? `${Math.floor(r.durasi / 60)}j ${r.durasi % 60}m` : null
+                return (
+                  <div key={r.id} className="flex items-center justify-between bg-surface-high rounded-xl px-4 py-3 text-sm">
+                    <div>
+                      <p className="font-body font-medium text-on-surface">{tgl}</p>
+                      <p className="text-xs text-on-surface-variant font-body">
+                        {r.jam_masuk ?? '—'} {r.jam_keluar ? `→ ${r.jam_keluar}` : ''}
+                        {durStr && <span className="ml-1">({durStr})</span>}
+                      </p>
+                    </div>
+                    <span className={`text-xs font-body font-semibold ${STATUS_COLOR[r.status] ?? 'text-on-surface-variant'}`}>
+                      {STATUS_LABEL[r.status] ?? r.status}
+                    </span>
+                  </div>
+                )
+              })}
+            </div>
+          )}
+        </div>
       )}
     </div>
   )

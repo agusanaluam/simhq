@@ -6,7 +6,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import {
   LayoutDashboard, ShoppingCart, Package, Users,
-  Wallet, Truck, ClipboardList, ClipboardCheck, LogOut, Database, PawPrint, Grid3x3, Receipt, Layers, BarChart2, HandCoins, TrendingUp, Inbox, UserCheck, Target, MessageSquare, Calculator, Activity, LineChart, CreditCard, Menu, X,
+  Wallet, Truck, ClipboardList, ClipboardCheck, LogOut, Database, PawPrint, Grid3x3, Receipt, Layers, HandCoins, TrendingUp, UserCheck, MessageSquare, Calculator, Activity, CreditCard, Menu, X,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -22,29 +22,30 @@ type NavGroup = {
   items: NavItem[]
 }
 
-const KANDANG_ROLES = ['SUPER_ADMIN','KEPALA_DEPOT','KANDANG_SAPI_KETUA','KANDANG_SAPI_ANGGOTA','KANDANG_DOMBA_KETUA','KANDANG_DOMBA_ANGGOTA']
-const CS_ROLES      = ['SUPER_ADMIN','KEPALA_DEPOT','CS_KETUA','CS_ANGGOTA','ADMIN_KETUA']
+const KANDANG_ROLES  = ['SUPER_ADMIN','KEPALA_DEPOT','KANDANG_SAPI_KETUA','KANDANG_SAPI_ANGGOTA','KANDANG_DOMBA_KETUA','KANDANG_DOMBA_ANGGOTA']
+const ABSENSI_ONLY   = ['PAKAN_KETUA','PAKAN_ANGGOTA','LOGISTIK_KETUA','LOGISTIK_ANGGOTA','KONSTRUKSI_KETUA','KONSTRUKSI_ANGGOTA']
+const DASHBOARD_ROLES = ['SUPER_ADMIN','KEPALA_DEPOT','ADMIN_KETUA','ADMIN_ANGGOTA','CS_KETUA','CS_ANGGOTA','KEUANGAN',...KANDANG_ROLES.slice(2)]
 
 const navGroups: NavGroup[] = [
   {
     items: [
-      { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+      { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, roles: DASHBOARD_ROLES },
     ],
   },
   {
     label: 'Transaksi',
     items: [
-      { href: '/depot/pos',          label: 'POS Penjualan',    icon: ShoppingCart, roles: ['SUPER_ADMIN','KEPALA_DEPOT','ADMIN_ANGGOTA'] },
-      { href: '/depot/transaksi',    label: 'Transaksi',        icon: Receipt,      roles: ['SUPER_ADMIN','KEPALA_DEPOT','ADMIN_ANGGOTA','KEUANGAN'] },
-      { href: '/depot/ploting-sapi', label: 'Ploting Slot Sapi',icon: Layers,       roles: ['SUPER_ADMIN','KEPALA_DEPOT','ADMIN_ANGGOTA'] },
-      { href: '/depot/pengadaan',    label: 'Pengadaan',        icon: PawPrint,     roles: KANDANG_ROLES },
+      { href: '/depot/pos',          label: 'POS Penjualan',    icon: ShoppingCart, roles: ['SUPER_ADMIN','KEPALA_DEPOT','ADMIN_KETUA','ADMIN_ANGGOTA'] },
+      { href: '/depot/transaksi',    label: 'Transaksi',        icon: Receipt,      roles: ['SUPER_ADMIN','KEPALA_DEPOT','ADMIN_KETUA','ADMIN_ANGGOTA','KEUANGAN'] },
+      { href: '/depot/ploting-sapi', label: 'Ploting Slot Sapi',icon: Layers,       roles: ['SUPER_ADMIN','KEPALA_DEPOT','ADMIN_KETUA','ADMIN_ANGGOTA'] },
+      { href: '/depot/pengadaan',    label: 'Pengadaan',        icon: PawPrint,     roles: [...KANDANG_ROLES, 'ADMIN_KETUA', 'CS_KETUA', 'CS_ANGGOTA'] },
     ],
   },
   {
     label: 'Keuangan',
     items: [
-      { href: '/keuangan',            label: 'Keuangan BIOP',      icon: Wallet,     roles: ['SUPER_ADMIN','KEPALA_DEPOT'] },
-      { href: '/keuangan/pendapatan', label: 'Pendapatan & Setoran',icon: TrendingUp, roles: ['SUPER_ADMIN','KEPALA_DEPOT'] },
+      { href: '/keuangan',            label: 'Keuangan BIOP',      icon: Wallet,     roles: ['SUPER_ADMIN','KEPALA_DEPOT','ADMIN_KETUA'] },
+      { href: '/keuangan/pendapatan', label: 'Pendapatan & Setoran',icon: TrendingUp, roles: ['SUPER_ADMIN','KEPALA_DEPOT','ADMIN_KETUA'] },
     ],
   },
   {
@@ -52,25 +53,21 @@ const navGroups: NavGroup[] = [
     items: [
       { href: '/depot/kandang',    label: 'Ploting Kandang', icon: Grid3x3,  roles: KANDANG_ROLES },
       { href: '/laporan/mortalitas',label: 'Mortalitas Hewan',icon: Activity, roles: ['SUPER_ADMIN','KEPALA_DEPOT','KANDANG_SAPI_KETUA','KANDANG_DOMBA_KETUA'] },
-      { href: '/pengiriman',       label: 'Pengiriman',      icon: Truck,    roles: ['SUPER_ADMIN','KEPALA_DEPOT','LOGISTIK_KETUA','LOGISTIK_ANGGOTA'] },
+      { href: '/pengiriman',       label: 'Pengiriman',      icon: Truck,    roles: ['SUPER_ADMIN','KEPALA_DEPOT'] },
     ],
   },
   {
     label: 'Karyawan',
     items: [
-      { href: '/absensi',        label: 'Absensi',       icon: ClipboardCheck, roles: ['SUPER_ADMIN','KEPALA_DEPOT','ADMIN_ANGGOTA',...KANDANG_ROLES.slice(2),'KEUANGAN'] },
-      { href: '/admin/absensi',  label: 'Rekap Absensi', icon: ClipboardList,  roles: ['SUPER_ADMIN','KEPALA_DEPOT','KEUANGAN'] },
+      { href: '/absensi',        label: 'Absensi',       icon: ClipboardCheck, roles: ['SUPER_ADMIN','KEPALA_DEPOT','ADMIN_KETUA','ADMIN_ANGGOTA','CS_KETUA','CS_ANGGOTA','KEUANGAN',...KANDANG_ROLES.slice(2),...ABSENSI_ONLY] },
+      { href: '/admin/absensi',  label: 'Rekap Absensi', icon: ClipboardList,  roles: ['SUPER_ADMIN','KEPALA_DEPOT','ADMIN_KETUA','KEUANGAN'] },
       { href: '/admin/sdm/upah', label: 'Upah Harian',   icon: Calculator,     roles: ['SUPER_ADMIN','KEPALA_DEPOT','ADMIN_KETUA'] },
       { href: '/sdm/kasbon',     label: 'Kasbon',         icon: CreditCard,     roles: ['SUPER_ADMIN','KEPALA_DEPOT','ADMIN_KETUA'] },
     ],
   },
   {
     items: [
-      { href: '/depot/keuangan/rekap-setoran', label: 'Rekap Setoran',    icon: BarChart2,     roles: ['SUPER_ADMIN','KEPALA_DEPOT','KEUANGAN'] },
-      { href: '/laporan/forecast',             label: 'Forecast',          icon: LineChart,     roles: ['SUPER_ADMIN','KEPALA_DEPOT'] },
-      { href: '/cs/order',                     label: 'Order Katalog',     icon: Inbox,         roles: CS_ROLES },
-      { href: '/cs/customer',                  label: 'Database Customer', icon: UserCheck,     roles: CS_ROLES },
-      { href: '/cs/retargeting',               label: 'Retargeting',       icon: Target,        roles: CS_ROLES },
+      { href: '/cs/customer',                  label: 'Database Customer', icon: UserCheck,     roles: ['SUPER_ADMIN','KEPALA_DEPOT','ADMIN_KETUA'] },
       { href: '/admin/wa-log',                 label: 'Log WA',            icon: MessageSquare, roles: ['SUPER_ADMIN','KEPALA_DEPOT'] },
       { href: '/admin/users',                  label: 'Manaj. User',       icon: Users,         roles: ['SUPER_ADMIN'] },
       { href: '/admin/master-data',            label: 'Master Data',       icon: Database,      roles: ['SUPER_ADMIN','KEPALA_DEPOT'] },

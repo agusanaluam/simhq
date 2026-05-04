@@ -92,12 +92,13 @@ function OrderModal({ hewan, depotId, onClose, onSuccess }: {
   const [nama,       setNama]    = useState('')
   const [hp,         setHp]      = useState('')
   const [tipe,       setTipe]    = useState('SHQ')
-  const [satuan,     setSatuan]  = useState<'EKOR' | 'SLOT'>('EKOR')
   const [catatan,    setCatatan] = useState('')
   const [saving,     setSaving]  = useState(false)
   const [err,        setErr]     = useState('')
 
-  const canSlot = hewan.jenis === 'SAPI' && hewan.harga_slot && (hewan.slot_tersedia ?? 0) > 0
+  const canSlot        = hewan.jenis === 'SAPI' && hewan.harga_slot && (hewan.slot_tersedia ?? 0) > 0
+  const hasExistingSlot = (hewan.slot_terisi ?? 0) > 0
+  const [satuan, setSatuan] = useState<'EKOR' | 'SLOT'>(hasExistingSlot ? 'SLOT' : 'EKOR')
 
   async function submit() {
     if (!nama.trim() || !hp.trim()) { setErr('Nama dan HP wajib diisi.'); return }
@@ -135,19 +136,26 @@ function OrderModal({ hewan, depotId, onClose, onSuccess }: {
         {canSlot && (
           <div className="mb-4">
             <label className="block text-xs font-medium text-gray-700 mb-1">Satuan</label>
-            <div className="flex gap-2">
-              {[
-                { v: 'EKOR', l: `1 Ekor — ${rupiah(hewan.harga_jual)}` },
-                { v: 'SLOT', l: `1/7 Slot — ${rupiah(hewan.harga_slot!)}` },
-              ].map(({ v, l }) => (
-                <button key={v} type="button" onClick={() => setSatuan(v as 'EKOR' | 'SLOT')}
-                  className={`flex-1 py-2 px-2 rounded-lg border-2 text-xs font-medium transition-colors ${
-                    satuan === v ? 'border-green-600 bg-green-50 text-green-800' : 'border-gray-200 text-gray-700'
-                  }`}>
-                  {l}
-                </button>
-              ))}
-            </div>
+            {hasExistingSlot ? (
+              <div className="py-2 px-3 rounded-lg border-2 border-green-600 bg-green-50 text-green-800 text-xs font-medium">
+                1/7 Slot — {rupiah(hewan.harga_slot!)}
+                <span className="ml-2 text-green-600">(slot sudah ada, tidak bisa beli 1 ekor)</span>
+              </div>
+            ) : (
+              <div className="flex gap-2">
+                {[
+                  { v: 'EKOR', l: `1 Ekor — ${rupiah(hewan.harga_jual)}` },
+                  { v: 'SLOT', l: `1/7 Slot — ${rupiah(hewan.harga_slot!)}` },
+                ].map(({ v, l }) => (
+                  <button key={v} type="button" onClick={() => setSatuan(v as 'EKOR' | 'SLOT')}
+                    className={`flex-1 py-2 px-2 rounded-lg border-2 text-xs font-medium transition-colors ${
+                      satuan === v ? 'border-green-600 bg-green-50 text-green-800' : 'border-gray-200 text-gray-700'
+                    }`}>
+                    {l}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
         )}
 

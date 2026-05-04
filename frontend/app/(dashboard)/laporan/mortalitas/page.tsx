@@ -8,6 +8,8 @@ interface MortalitasRow {
   jenis:            string
   total_hewan:      number
   total_mati:       number
+  total_sakit:      number
+  total_kritis:     number
   rasio_mortalitas: number
 }
 
@@ -66,7 +68,7 @@ export default function MortalitasPage() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-surface-high">
-                  {['Jenis', 'Total Hewan', 'Total Mati', 'Rasio Mortalitas'].map((h) => (
+                  {['Jenis', 'Total Hewan', 'Sakit', 'Kritis', 'Mati', 'Rasio Mortalitas'].map((h) => (
                     <th key={h} className={`py-3 px-4 font-body font-medium text-on-surface-variant text-xs uppercase tracking-widest ${
                       h === 'Jenis' ? 'text-left' : 'text-right'
                     }`}>{h}</th>
@@ -78,7 +80,13 @@ export default function MortalitasPage() {
                   <tr key={r.jenis} className="border-b border-surface-high last:border-0">
                     <td className="py-3 px-4 font-body font-medium text-on-surface">{r.jenis}</td>
                     <td className="py-3 px-4 font-display text-right text-on-surface">{r.total_hewan}</td>
-                    <td className={`py-3 px-4 font-display font-semibold text-right ${r.total_mati > 0 ? 'text-error' : 'text-on-surface'}`}>
+                    <td className={`py-3 px-4 font-display font-semibold text-right ${r.total_sakit > 0 ? 'text-[#ca8a04]' : 'text-on-surface-variant'}`}>
+                      {r.total_sakit}
+                    </td>
+                    <td className={`py-3 px-4 font-display font-semibold text-right ${r.total_kritis > 0 ? 'text-[#ea580c]' : 'text-on-surface-variant'}`}>
+                      {r.total_kritis}
+                    </td>
+                    <td className={`py-3 px-4 font-display font-semibold text-right ${r.total_mati > 0 ? 'text-error' : 'text-on-surface-variant'}`}>
                       {r.total_mati}
                     </td>
                     <td className={`py-3 px-4 font-display font-semibold text-right ${r.rasio_mortalitas >= 5 ? 'text-error' : 'text-[#15803d]'}`}>
